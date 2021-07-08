@@ -24,7 +24,7 @@ struct _VvmplayerWindow
   GtkApplicationWindow  parent_instance;
 
   /* Template widgets */
-  GtkHeaderBar        *header_bar;
+  HdyHeaderBar        *header_bar;
   GtkLabel            *label;
 };
 

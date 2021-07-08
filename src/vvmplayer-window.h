@@ -19,6 +19,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <handy.h>
 
 G_BEGIN_DECLS
 

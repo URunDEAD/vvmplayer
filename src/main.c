@@ -22,6 +22,13 @@
 #include "vvmplayer-window.h"
 
 static void
+on_startup (GtkApplication *app)
+{
+  g_assert (GTK_IS_APPLICATION (app));
+  hdy_init();
+}
+
+static void
 on_activate (GtkApplication *app)
 {
 	GtkWindow *window;
@@ -74,6 +81,7 @@ main (int   argc,
 	 * our "on_activate" function to a GCallback.
 	 */
 	g_signal_connect (app, "activate", G_CALLBACK (on_activate), NULL);
+	g_signal_connect (app, "startup", G_CALLBACK (on_startup), NULL);
 
 	/*
 	 * Run the application. This function will block until the applicaiton
