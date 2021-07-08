@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=vvmplayer
+Exec=vvmplayer
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true

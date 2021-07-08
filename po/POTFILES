@@ -1,0 +1,7 @@
+data/org.kop316.vvmplayer.desktop.in
+data/org.kop316.vvmplayer.appdata.xml.in
+data/org.kop316.vvmplayer.gschema.xml
+src/vvmplayer-window.ui
+src/main.c
+src/vvmplayer-window.c
+
