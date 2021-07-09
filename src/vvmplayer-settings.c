@@ -23,6 +23,14 @@ struct _VvmSettings
   GObject     parent_instance;
 
   GtkSettings *gtk_settings;
+
+  int    provision_status;
+  int    enable_vvm;
+  char  *vvm_destination_number;
+  char  *vvm_type;
+  char  *default_number;
+  char  *carrier_prefix;
+  int    vvmd_connected;
 };
 
 G_DEFINE_TYPE (VvmSettings, vvm_settings, G_TYPE_OBJECT)
@@ -61,6 +69,10 @@ vvm_settings_finalize (GObject *object)
   VvmSettings *self = (VvmSettings *)object;
 
   g_object_unref (self->gtk_settings);
+  g_free(self->vvm_destination_number);
+  g_free(self->vvm_type);
+  g_free(self->default_number);
+  g_free(self->carrier_prefix);
 
   G_OBJECT_CLASS (vvm_settings_parent_class)->finalize (object);
 }
@@ -74,6 +86,18 @@ vvm_settings_class_init (VvmSettingsClass *klass)
   object_class->set_property = vvm_settings_set_property;
   object_class->constructed = vvm_settings_constructed;
   object_class->finalize = vvm_settings_finalize;
+}
+
+static void
+vvm_settings_load_defaults (VvmSettings *self)
+{
+  self->provision_status = VVM_PROVISION_STATUS_NOT_SET;
+  self->enable_vvm = FALSE;
+  self->vvmd_connected = FALSE;
+  self->vvm_destination_number = g_strdup("number_invalid");
+  self->vvm_type = g_strdup("type_invalid");
+  self->default_number = NULL;
+  self->carrier_prefix = g_strdup("//VVM");
 }
 
 static void
@@ -91,7 +115,7 @@ vvm_settings_get_default (void)
     {
       self = g_object_new (VVM_TYPE_SETTINGS, NULL);
       g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&self);
-      //TODO: Load vvmd settings!
+      vvm_settings_load_defaults (self);
     }
   return self;
 }
