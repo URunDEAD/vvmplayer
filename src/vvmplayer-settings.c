@@ -24,7 +24,7 @@ struct _VvmSettings
 
   GtkSettings *gtk_settings;
 
-  int    provision_status;
+  char  *provision_status;
   int    enable_vvm;
   char  *vvm_destination_number;
   char  *vvm_type;
@@ -35,29 +35,72 @@ struct _VvmSettings
 
 G_DEFINE_TYPE (VvmSettings, vvm_settings, G_TYPE_OBJECT)
 
-static void
-vvm_settings_get_property (GObject    *object,
-                           guint       prop_id,
-                           GValue     *value,
-                           GParamSpec *pspec)
+void
+vvm_settings_set_vvm_enabled (VvmSettings *self, int VVMEnabled)
 {
-  VvmSettings *self = (VvmSettings *)object;
+  self->enable_vvm = VVMEnabled;
+  if (self->enable_vvm)
+    g_debug ("VVM Enabled is set to TRUE");
+  else
+    g_debug ("VVM Enabled is set to FALSE");
 
 }
 
-static void
-vvm_settings_set_property (GObject      *object,
-                              guint         prop_id,
-                              const GValue *value,
-                              GParamSpec   *pspec)
+void
+vvm_settings_set_vvm_type (VvmSettings *self, const char *VVMType)
 {
-  VvmSettings *self = (VvmSettings *)object;
+  g_free(self->vvm_type);
+  self->vvm_type = g_strdup(VVMType);
+  g_debug ("VVM Type is set to %s", self->vvm_type);
+
+}
+
+void
+vvm_settings_set_vvm_destination_number (VvmSettings *self,
+                                         const char *VVMDestinationNumber)
+{
+  g_free(self->vvm_destination_number);
+  self->vvm_destination_number = g_strdup(VVMDestinationNumber);
+  g_debug ("VVM Destination Number is set to %s", self->vvm_destination_number);
+
+}
+
+void
+vvm_settings_set_vvm_carrier_prefix (VvmSettings *self,
+                                     const char *CarrierPrefix)
+{
+  g_free(self->carrier_prefix);
+  self->carrier_prefix = g_strdup(CarrierPrefix);
+  g_debug ("VVM Carrier Prefix is set to %s", self->carrier_prefix);
+
+}
+
+void
+vvm_settings_set_vvm_default_number (VvmSettings *self,
+                                     const char *DefaultModemNumber)
+{
+
+  g_free(self->default_number);
+  self->default_number = g_strdup(DefaultModemNumber);
+
+  g_debug ("VVM Modem Default Number is set to %s", self->default_number);
+
+}
+
+void
+vvm_settings_set_vvm_provision_status (VvmSettings *self,
+                                       const char *ProvisionStatus)
+{
+  g_free(self->provision_status);
+  self->provision_status = g_strdup(ProvisionStatus);
+  g_debug ("VVM ProvisionStatus is set to %s", self->provision_status);
+
 }
 
 static void
 vvm_settings_constructed (GObject *object)
 {
-  VvmSettings *self = (VvmSettings *)object;
+  //VvmSettings *self = (VvmSettings *)object;
 
   G_OBJECT_CLASS (vvm_settings_parent_class)->constructed (object);
 
@@ -73,6 +116,7 @@ vvm_settings_finalize (GObject *object)
   g_free(self->vvm_type);
   g_free(self->default_number);
   g_free(self->carrier_prefix);
+  g_free(self->provision_status);
 
   G_OBJECT_CLASS (vvm_settings_parent_class)->finalize (object);
 }
@@ -82,8 +126,6 @@ vvm_settings_class_init (VvmSettingsClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-  object_class->get_property = vvm_settings_get_property;
-  object_class->set_property = vvm_settings_set_property;
   object_class->constructed = vvm_settings_constructed;
   object_class->finalize = vvm_settings_finalize;
 }
@@ -91,12 +133,13 @@ vvm_settings_class_init (VvmSettingsClass *klass)
 static void
 vvm_settings_load_defaults (VvmSettings *self)
 {
-  self->provision_status = VVM_PROVISION_STATUS_NOT_SET;
+
   self->enable_vvm = FALSE;
   self->vvmd_connected = FALSE;
-  self->vvm_destination_number = g_strdup("number_invalid");
-  self->vvm_type = g_strdup("type_invalid");
-  self->default_number = NULL;
+  self->vvm_destination_number = g_strdup("Destination Number Invalid");
+  self->vvm_type = g_strdup("Type Invalid");
+  self->default_number = g_strdup("Default Number Invalid");
+  self->provision_status = g_strdup("Provision Status Invalid");
   self->carrier_prefix = g_strdup("//VVM");
 }
 
