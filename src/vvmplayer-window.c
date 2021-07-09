@@ -39,17 +39,11 @@ vvmplayer_window_show_about_dialog (VvmplayerWindow *self)
     NULL
   };
 
-  static const gchar *artists[] = {
-    "Tobias Bernard <tbernard@gnome.org>",
-    NULL
-  };
-
   gtk_show_about_dialog (GTK_WINDOW (self),
                          "website", "https://gitlab.com/kop316/vvmplayer",
                          "copyright", "© 2021 Chris Talbot",
                          "license-type", GTK_LICENSE_GPL_3_0,
                          "authors", authors,
-                         "artists", artists,
                          NULL);
 }
 
