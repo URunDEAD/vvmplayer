@@ -18,6 +18,7 @@
 
 #include "vvmplayer-config.h"
 #include "vvmplayer-window.h"
+#include "vvmplayer-preferences-window.h"
 
 struct _VvmplayerWindow
 {
@@ -57,11 +58,9 @@ vvmplayer_window_show_settings_dialog (VvmplayerWindow *self)
 {
   //GtkWidget *dialog;
   g_debug("Hello!");
-
-  //dialog = chatty_settings_dialog_new (GTK_WINDOW (self));
-  //gtk_dialog_run (GTK_DIALOG (dialog));
-
-  //gtk_widget_destroy (dialog);
+  HdyVvmPreferencesWindow *preferences = hdy_vvm_preferences_window_new ();
+  gtk_window_set_transient_for (GTK_WINDOW (preferences), GTK_WINDOW (self));
+  gtk_widget_show (GTK_WIDGET (preferences));
 }
 
 static void

@@ -2,5 +2,6 @@
 <gresources>
   <gresource prefix="/org/kop316/vvmplayer">
     <file>vvmplayer-window.ui</file>
+    <file>vvmplayer-preferences-window.ui</file>
   </gresource>
 </gresources>
