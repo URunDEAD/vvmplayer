@@ -73,17 +73,24 @@
         <property name="has-subtitle">False</property>
         <property name="show-close-button">True</property>
         <child>
-          <object class="GtkMenuButton">
+          <object class="GtkMenuButton" id="menu_button">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="focus-on-click">False</property>
-            <property name="receives-default">True</property>
+            <property name="receives-default">False</property>
             <property name="popup">menu1</property>
             <property name="popover">popovermenu1</property>
             <child>
-              <placeholder/>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="icon-name">open-menu-symbolic</property>
+              </object>
             </child>
           </object>
+          <packing>
+            <property name="pack-type">end</property>
+          </packing>
         </child>
       </object>
     </child>
