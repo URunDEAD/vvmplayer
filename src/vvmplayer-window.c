@@ -31,6 +31,40 @@ struct _VvmplayerWindow
 G_DEFINE_TYPE (VvmplayerWindow, vvmplayer_window, GTK_TYPE_APPLICATION_WINDOW)
 
 static void
+vvmplayer_window_show_about_dialog (VvmplayerWindow *self)
+{
+  static const gchar *authors[] = {
+    "Chris Talbot <chris@talbothome.com>",
+    NULL
+  };
+
+  static const gchar *artists[] = {
+    "Tobias Bernard <tbernard@gnome.org>",
+    NULL
+  };
+
+  gtk_show_about_dialog (GTK_WINDOW (self),
+                         "website", "https://gitlab.com/kop316/vvmplayer",
+                         "copyright", "© 2021 Chris Talbot",
+                         "license-type", GTK_LICENSE_GPL_3_0,
+                         "authors", authors,
+                         "artists", artists,
+                         NULL);
+}
+
+static void
+vvmplayer_window_show_settings_dialog (VvmplayerWindow *self)
+{
+  //GtkWidget *dialog;
+  g_debug("Hello!");
+
+  //dialog = chatty_settings_dialog_new (GTK_WINDOW (self));
+  //gtk_dialog_run (GTK_DIALOG (dialog));
+
+  //gtk_widget_destroy (dialog);
+}
+
+static void
 vvmplayer_window_class_init (VvmplayerWindowClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
@@ -38,6 +72,8 @@ vvmplayer_window_class_init (VvmplayerWindowClass *klass)
   gtk_widget_class_set_template_from_resource (widget_class, "/org/kop316/vvmplayer/vvmplayer-window.ui");
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, header_bar);
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, label);
+  gtk_widget_class_bind_template_callback (widget_class, vvmplayer_window_show_about_dialog);
+  gtk_widget_class_bind_template_callback (widget_class, vvmplayer_window_show_settings_dialog);
 }
 
 static void

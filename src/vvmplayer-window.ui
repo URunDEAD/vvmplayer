@@ -12,17 +12,41 @@
     <property name="transitions-enabled">False</property>
     <property name="constrain-to">none</property>
     <child>
-      <object class="GtkButton" id="Settings">
-        <property name="label" translatable="yes">Settings</property>
-        <property name="name">Settings</property>
+      <object class="GtkBox" id="menubox">
         <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="margin-left">5</property>
-        <property name="margin-right">5</property>
-        <property name="margin-top">10</property>
-        <property name="margin-bottom">10</property>
-        <property name="relief">none</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkButton">
+            <property name="label" translatable="yes">Settings</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="vvmplayer_window_show_settings_dialog" swapped="yes"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="About VVM Player">
+            <property name="label" translatable="yes">About VVM Player</property>
+            <property name="name">About VVM Player</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="vvmplayer_window_show_about_dialog" swapped="yes"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
       </object>
       <packing>
         <property name="submenu">main</property>
