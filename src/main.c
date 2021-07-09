@@ -20,6 +20,21 @@
 
 #include "vvmplayer-config.h"
 #include "vvmplayer-window.h"
+#include "vvmplayer-settings.h"
+#include "vvmplayer-vvmd.h"
+
+typedef struct
+{
+  GtkApplication parent_instance;
+  VvmSettings *settings;
+  VvmVvmd *backend;
+
+} VvmPlayer;
+
+typedef GtkApplicationClass VvmPlayerClass;
+
+GType vvm_player_get_type (void);
+G_DEFINE_TYPE (VvmPlayer, vvm_player, GTK_TYPE_APPLICATION)
 
 static void
 on_startup (GtkApplication *app)
@@ -52,48 +67,63 @@ on_activate (GtkApplication *app)
 	gtk_window_present (window);
 }
 
+static void
+vvm_player_finalize (GObject *object)
+{
+  G_OBJECT_CLASS (vvm_player_parent_class)->finalize (object);
+}
+
+static void
+vvm_player_init (VvmPlayer *vvm_player)
+{
+}
+
+static void
+vvm_player_class_init (VvmPlayerClass *class)
+{
+  //GApplicationClass *application_class = G_APPLICATION_CLASS (class);
+  GObjectClass *object_class = G_OBJECT_CLASS (class);
+
+  object_class->finalize = vvm_player_finalize;
+
+}
+
+static VvmPlayer *
+vvm_player_new (void)
+{
+  VvmPlayer *vvm_player;
+
+  g_set_application_name ("VVM Player");
+
+  vvm_player = g_object_new (vvm_player_get_type (),
+                            "application-id", "org.kop316.vvmplayer",
+                            "flags", G_APPLICATION_FLAGS_NONE,
+                            "inactivity-timeout", 30000,
+                            "register-session", TRUE,
+                            NULL);
+
+  vvm_player->settings = vvm_settings_get_default ();
+  vvm_player->backend = vvm_vvmd_get_default ();
+
+  return vvm_player;
+}
+
 int
 main (int   argc,
       char *argv[])
 {
-	g_autoptr(GtkApplication) app = NULL;
+	VvmPlayer *vvm_player;
 	int ret;
 
-	/* Set up gettext translations */
 	bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
 
-	/*
-	 * Create a new GtkApplication. The application manages our main loop,
-	 * application windows, integration with the window manager/compositor, and
-	 * desktop features such as file opening and single-instance applications.
-	 */
-	app = gtk_application_new ("org.kop316.vvmplayer", G_APPLICATION_FLAGS_NONE);
+	vvm_player = vvm_player_new ();
+	g_signal_connect (G_APPLICATION (vvm_player), "activate", G_CALLBACK (on_activate), NULL);
+	g_signal_connect (G_APPLICATION (vvm_player), "startup", G_CALLBACK (on_startup), NULL);
 
-	/*
-	 * We connect to the activate signal to create a window when the application
-	 * has been lauched. Additionally, this signal notifies us when the user
-	 * tries to launch a "second instance" of the application. When they try
-	 * to do that, we'll just present any existing window.
-	 *
-	 * Because we can't pass a pointer to any function type, we have to cast
-	 * our "on_activate" function to a GCallback.
-	 */
-	g_signal_connect (app, "activate", G_CALLBACK (on_activate), NULL);
-	g_signal_connect (app, "startup", G_CALLBACK (on_startup), NULL);
-
-	/*
-	 * Run the application. This function will block until the applicaiton
-	 * exits. Upon return, we have our exit code to return to the shell. (This
-	 * is the code you see when you do `echo $?` after running a command in a
-	 * terminal.
-	 *
-	 * Since GtkApplication inherits from GApplication, we use the parent class
-	 * method "run". But we need to cast, which is what the "G_APPLICATION()"
-	 * macro does.
-	 */
-	ret = g_application_run (G_APPLICATION (app), argc, argv);
+	ret = g_application_run (G_APPLICATION (vvm_player), argc, argv);
 
 	return ret;
 }
