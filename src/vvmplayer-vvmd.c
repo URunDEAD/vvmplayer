@@ -210,6 +210,93 @@ vvmplayer_vvmd_get_service_settings (VvmVvmd *self)
 }
 
 static void
+vvmplayer_vvmd_receive_message (VvmVvmd   *self,
+                                GVariant *message_t)
+{
+  g_debug("Decoding Message!");
+  g_autofree char      *objectpath = NULL;
+  g_autofree char      *Date = NULL;
+  g_autofree char      *Sender = NULL;
+  g_autofree char      *To = NULL;
+  g_autofree char      *MessageContext = NULL;
+  g_autofree char      *Attachments = NULL;
+  g_autofree char      **Attachment_list = NULL;
+
+  GVariant  *properties;
+  GVariantDict        dict;
+
+  g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
+
+  g_debug ("%s: New MMS at %s", __func__, objectpath);
+  g_debug ("%s", g_variant_print (properties, FALSE));
+  g_variant_dict_init (&dict, properties);
+  if (!g_variant_dict_lookup (&dict, "Date", "s", &Date))
+    Date = NULL;
+  if (!g_variant_dict_lookup (&dict, "Sender", "s", &Sender))
+    Sender = NULL;
+  if (!g_variant_dict_lookup (&dict, "To", "s", &To))
+    To = NULL;
+  if (!g_variant_dict_lookup (&dict, "MessageContext", "s", &MessageContext))
+    MessageContext = NULL;
+  if (!g_variant_dict_lookup (&dict, "Sender", "s", &Attachments))
+    Attachments = NULL;
+
+  if (Attachments)
+    Attachment_list = g_strsplit(Attachments, ";", -1);
+
+  //TODO: Do something with these?
+
+}
+
+static void
+vvmplayer_vvmd_get_new_vvm_cb (GDBusConnection   *connection,
+                               const char     *sender_name,
+                               const char     *object_path,
+                               const char     *interface_name,
+                               const char     *signal_name,
+                               GVariant       *parameters,
+                               gpointer       user_data)
+{
+  VvmVvmd *self = user_data;
+
+  g_debug ("%s", __func__);
+  vvmplayer_vvmd_receive_message (self, parameters);
+}
+
+static void
+vvmplayer_vvmd_get_all_vvm_cb (GObject      *service,
+                            GAsyncResult *res,
+                            gpointer      user_data)
+{
+  VvmVvmd *self = user_data;
+  g_autoptr (GError) error = NULL;
+  GVariant *ret;
+
+  g_debug ("%s", __func__);
+
+  ret = g_dbus_proxy_call_finish (self->service_proxy,
+                                  res,
+                                  &error);
+
+  if (error != NULL) {
+      g_warning ("Error in Proxy call: %s\n", error->message);
+  } else {
+    GVariant *msg_pack = g_variant_get_child_value (ret, 0);
+    GVariantIter iter;
+    unsigned long num;
+
+    if ((num = g_variant_iter_init (&iter, msg_pack))) {
+      GVariant *message_t;
+      g_debug ("Have %lu VVM (s) to process", num);
+
+      while ((message_t = g_variant_iter_next_value (&iter))) {
+        vvmplayer_vvmd_receive_message (self, message_t);
+      }
+    }
+  }
+}
+
+static void
 vvmplayer_vvmd_get_service_cb (GObject      *service,
                                GAsyncResult *res,
                                gpointer      user_data)
@@ -229,10 +316,35 @@ vvmplayer_vvmd_get_service_cb (GObject      *service,
     } else {
       VvmSettings *settings = vvm_settings_get_default ();
       vvm_settings_set_service_available (settings, TRUE);
-    }
-    //TODO: Subscribe to MessageAdded
 
-    //TODO: Get All Messages
+      self->vvmd_service_proxy_watch_id = g_dbus_connection_signal_subscribe (self->connection,
+                                        VVMD_SERVICE,
+                                        VVMD_SERVICE_INTERFACE,
+                                        "MessageAdded",
+                                        VVMD_MODEMMANAGER_PATH,
+                                        NULL,
+                                        G_DBUS_SIGNAL_FLAGS_NONE,
+                                        (GDBusSignalCallback)vvmplayer_vvmd_get_new_vvm_cb,
+                                        self,
+                                        NULL);
+
+
+    if (self->vvmd_service_proxy_watch_id) {
+      g_debug ("Listening for new VVMs");
+    } else {
+      g_warning ("Failed to connect 'MessageAdded' signal");
+    }
+
+    g_dbus_proxy_call (self->service_proxy,
+                       "GetMessages",
+                       NULL,
+                       G_DBUS_CALL_FLAGS_NONE,
+                       -1,
+                       NULL,
+                       (GAsyncReadyCallback)vvmplayer_vvmd_get_all_vvm_cb,
+                       self);
+
+    }
 
   }
 }
