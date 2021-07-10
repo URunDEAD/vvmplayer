@@ -22,8 +22,8 @@ struct _VvmPreferencesWindow
 {
   HdyPreferencesWindow parent_instance;
 
-  GtkEntry *avatar_text;
-  GtkSwitch *avatar_show_initials;
+  GtkEntry *demo_text;
+  GtkSwitch *demo_switch;
 
 };
 
@@ -36,26 +36,20 @@ vvm_preferences_window_new (void)
 }
 
 static void
-avatar_switch_set_init (VvmPreferencesWindow *self)
+vvm_preferences_window_populate (VvmPreferencesWindow *self)
 {
 
-gtk_switch_set_active (self->avatar_show_initials,
-                       TRUE);
-}
-
-static void
-avatar_page_init (VvmPreferencesWindow *self)
-{
   g_autofree gchar *name = g_strdup("Hello!!!!");
 
-  gtk_entry_set_text (self->avatar_text, name);
-
+  gtk_entry_set_text (self->demo_text, name);
+  gtk_switch_set_active (self->demo_switch,
+                         TRUE);
 }
 
 static void
-switch_signal_flipped_cb (GtkSwitch *widget,
-                          gboolean   state,
-                          VvmPreferencesWindow *self)
+demo_switch_signal_flipped_cb (GtkSwitch *widget,
+                               gboolean   state,
+                               VvmPreferencesWindow *self)
 {
 
   if (state)
@@ -66,11 +60,24 @@ switch_signal_flipped_cb (GtkSwitch *widget,
 }
 
 static void
-view_switcher_demo_clicked_cb (GtkButton     *btn,
+activation_vvm_switch_flipped_cb (GtkSwitch *widget,
+                                  gboolean   state,
+                                  VvmPreferencesWindow *self)
+{
+
+  if (state)
+    g_debug("Activation of VVM is set to true!");
+  else
+    g_debug("Activation of VVM is set to false!");
+
+}
+
+static void
+demo_button_clicked_cb (GtkButton     *btn,
                                VvmPreferencesWindow *self)
 {
   g_debug ("Button was pressed");
-  g_debug ("I got here: Showed %s", gtk_entry_get_text (self->avatar_text));
+  g_debug ("I got here: Showed %s", gtk_entry_get_text (self->demo_text));
 }
 
 static void
@@ -86,12 +93,16 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
 
   gtk_widget_class_set_template_from_resource (widget_class, "/org/kop316/vvmplayer/vvmplayer-preferences-window.ui");
 
-  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, avatar_text);
-  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, avatar_show_initials);
 
-  gtk_widget_class_bind_template_callback (widget_class, view_switcher_demo_clicked_cb);
-  gtk_widget_class_bind_template_callback (widget_class, switch_signal_flipped_cb);
+
+  gtk_widget_class_bind_template_callback (widget_class, activation_vvm_switch_flipped_cb);
   gtk_widget_class_bind_template_callback (widget_class, return_to_preferences_cb);
+
+  //Demos only
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, demo_text);
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, demo_switch);
+  gtk_widget_class_bind_template_callback (widget_class, demo_button_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, demo_switch_signal_flipped_cb);
 }
 
 static void
@@ -99,7 +110,6 @@ vvm_preferences_window_init (VvmPreferencesWindow *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
 
-  avatar_page_init (self);
-  avatar_switch_set_init (self);
+  vvm_preferences_window_populate (self);
 
 }
