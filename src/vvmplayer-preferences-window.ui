@@ -54,13 +54,13 @@
               </object>
             </child>
             <child>
-              <object class="HdyActionRow">
+              <object class="HdyActionRow" id="enable_vvm_text">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="title" translatable="yes">Enable VVM</property>
                 <property name="use-underline">True</property>
                 <child>
-                  <object class="GtkSwitch" id="activate_vvm_switch">
+                  <object class="GtkSwitch" id="enable_vvm_switch">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="valign">center</property>
@@ -125,7 +125,7 @@
                 <property name="title" translatable="yes">Activate VVM</property>
                 <property name="use-underline">True</property>
                 <child>
-                  <object class="GtkButton" id="activate_vvm">
+                  <object class="GtkButton" id="activate_vvm_button">
                     <property name="label" translatable="yes">Activate</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -251,6 +251,13 @@
                     </style>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="HdyComboRow" id="vvm_type_combo_row">
+                <property name="title" translatable="yes">VVM Type</property>
+                <property name="visible">True</property>
+                <signal name="notify::selected-index" handler="vvm_type_selected_cb" swapped="no"/>
               </object>
             </child>
           </object>

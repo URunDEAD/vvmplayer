@@ -30,22 +30,28 @@ struct _VvmPreferencesWindow
   //Refresh
   GtkButton *refresh_settings_button;
 
-  //Modem Manager Settings
-  GtkEntry *destination_number_text;
-  GtkEntry *modem_number_text;
-  GtkEntry *carrier_prefix_text;
+  //Enable VVM
+  GtkSwitch *enable_vvm_switch;
+  HdyActionRow *enable_vvm_text;
 
   //Status
   GtkImage *vvmd_enabled_image;
   GtkImage *mailbox_active_image;
   HdyActionRow *provision_status_text;
 
-  //Demos
-  GtkEntry *demo_text;
-  GtkSwitch *demo_switch;
+  //Activate
+  GtkButton *activate_vvm_button;
 
+  //Modem Manager Settings
+  GtkEntry *destination_number_text;
+  GtkEntry *modem_number_text;
+  GtkEntry *carrier_prefix_text;
+  HdyComboRow *vvm_type_combo_row;
 
+  //Timeouts
   int refresh_settings_button_timeout;
+  int activate_vvm_button_clicked_timeout;
+  int enable_vvm_switch_clicked_timeout;
 };
 
 G_DEFINE_TYPE (VvmPreferencesWindow, vvm_preferences_window, HDY_TYPE_PREFERENCES_WINDOW)
@@ -110,7 +116,14 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   g_autofree char     *VVMDefaultModemNumber = NULL;
   g_autofree char     *VVMProvisionStatus = NULL;
   g_autofree char     *VVMCarrierPrefix = NULL;
+  g_autofree char     *VVMType = NULL;
+  int VVMEnabled;
+  int VVMType_encoded;
   VvmSettings *settings = vvm_settings_get_default ();
+
+  //Enable VVM
+  VVMEnabled = vvm_settings_get_vvm_enabled (settings);
+  gtk_switch_set_active (self->enable_vvm_switch, VVMEnabled);
 
 
   //Modem Manager settings
@@ -135,6 +148,11 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
     gtk_entry_set_text (self->carrier_prefix_text, "");
   }
 
+  VVMType = vvm_settings_get_vvm_type (settings);
+  VVMType_encoded = vvmplayer_vvmd_encode_vvm_type (VVMType);
+  g_debug("VVMType: %s, VVMType_encoded: %d", VVMType, VVMType_encoded);
+  hdy_combo_row_set_selected_index (self->vvm_type_combo_row, VVMType_encoded);
+
   //Status
   if(vvm_settings_get_mm_available (settings) &&
      vvm_settings_get_service_available (settings)) {
@@ -152,19 +170,6 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   VVMProvisionStatus = vvm_settings_get_vvm_provision_status (settings);
   VVMProvisionStatus = g_strdup_printf("Provision Status: %s", VVMProvisionStatus);
   vvm_preferences_set_hdyactionrow_text(self->provision_status_text, VVMProvisionStatus);
-
-}
-
-static void
-enable_vvm_switch_flipped_cb (GtkSwitch *widget,
-                                  gboolean   state,
-                                  VvmPreferencesWindow *self)
-{
-
-  if (state)
-    g_debug("Enable of VVM is set to true!");
-  else
-    g_debug("Enable of VVM is set to false!");
 
 }
 
@@ -282,13 +287,6 @@ refresh_settings_button_timeout(gpointer user_data)
 
   return FALSE;
 }
-static void
-activate_vvm_button_clicked_cb (GtkButton     *btn,
-                                VvmPreferencesWindow *self)
-{
-
-  g_debug("Activate VVM Button Clicked!");
-}
 
 static void
 refresh_settings_button_clicked_cb (GtkButton     *btn,
@@ -312,6 +310,161 @@ refresh_settings_button_clicked_cb (GtkButton     *btn,
   }
 }
 
+static gboolean
+activate_vvm_button_timeout(gpointer user_data)
+{
+  VvmPreferencesWindow *self = user_data;
+  g_debug("Removing timeout to activate_vvm_button_clicked_cb()");
+  self->activate_vvm_button_clicked_timeout = FALSE;
+  vvm_preferences_set_button_content (self->activate_vvm_button, "Activate");
+
+  refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+
+  return FALSE;
+}
+
+static void
+activate_vvm_button_clicked_cb (GtkButton     *btn,
+                                VvmPreferencesWindow *self)
+{
+  VvmSettings *settings = vvm_settings_get_default ();
+  if(vvm_settings_get_mm_available (settings) == FALSE) {
+    g_warning("Cannot find VVMD!");
+    refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+    return;
+  }
+
+  if (self->activate_vvm_button_clicked_timeout == FALSE) {
+    VvmVvmd *backend = vvm_vvmd_get_default ();
+
+    g_debug("Activating VVM.....");
+    self->activate_vvm_button_clicked_timeout = TRUE;
+    vvm_preferences_set_button_content (self->activate_vvm_button, "Activating...");
+
+    vvmplayer_vvmd_check_subscription_status (backend);
+
+    g_debug("Adding timeout to activate_vvm_button_clicked_cb()");
+    g_timeout_add_seconds(10,activate_vvm_button_timeout, self);
+  } else {
+    g_debug("activate_vvm_button_clicked_cb() timed out!");
+  }
+}
+
+static gboolean
+enable_vvm_switch_timeout(gpointer user_data)
+{
+  VvmPreferencesWindow *self = user_data;
+  g_debug("Removing timeout to enable_vvm_switch_clicked_cb()");
+
+  self->enable_vvm_switch_clicked_timeout = FALSE;
+  vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Enable VVM");
+
+  refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+
+  return FALSE;
+}
+
+static void
+enable_vvm_switch_flipped_cb (GtkSwitch *widget,
+                              gboolean   state,
+                              VvmPreferencesWindow *self)
+{
+  VvmSettings *settings = vvm_settings_get_default ();
+  if(vvm_settings_get_mm_available (settings) == FALSE) {
+    g_warning("Cannot find VVMD!");
+    refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+    return;
+  }
+
+  if (self->enable_vvm_switch_clicked_timeout == FALSE) {
+    VvmVvmd *backend = vvm_vvmd_get_default ();
+    self->enable_vvm_switch_clicked_timeout = TRUE;
+
+    if (state) {
+      g_debug("Enabling VVM");
+      vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Enabling VVM...");
+    } else {
+      g_debug("Disabling VVM");
+      vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Disabling VVM...");
+    }
+    g_debug("Adding timeout to enable_vvm_switch_clicked_cb()");
+    g_timeout_add_seconds(10,enable_vvm_switch_timeout, self);
+
+    vvmplayer_vvmd_set_mm_vvm_enabled (backend, state);
+
+  } else {
+    g_debug("enable_vvm_switch_clicked_cb() timed out!");
+  }
+
+}
+
+static void
+vvm_type_selected_cb (GObject              *sender,
+                      GParamSpec           *pspec,
+                      VvmPreferencesWindow *self)
+{
+  //HdyComboRow *row = HDY_COMBO_ROW (sender);
+  VvmVvmd *backend = vvm_vvmd_get_default ();
+  VvmSettings *settings = vvm_settings_get_default ();
+  int row_selected;
+
+  row_selected = hdy_combo_row_get_selected_index (self->vvm_type_combo_row);
+
+  if (row_selected == VVM_TYPE_UNKNOWN) {
+    //This is not a valid vvmd type, so don't set it
+    return;
+  }
+
+  if(vvm_settings_get_mm_available (settings)) {
+    g_autofree char *vvm_type;
+
+
+    vvm_type = vvmplayer_vvmd_decode_vvm_type (row_selected);
+
+    if(vvmplayer_vvmd_set_mm_setting (backend,
+                                      "VVMType",
+                                      vvm_type) == FALSE) {
+      g_error("Error changing setting in vvmd!");
+      hdy_combo_row_set_selected_index (self->vvm_type_combo_row, VVM_TYPE_UNKNOWN);
+    }
+  } else {
+     hdy_combo_row_set_selected_index (self->vvm_type_combo_row, VVM_TYPE_UNKNOWN);
+  }
+
+}
+
+static void
+lists_page_init (VvmPreferencesWindow *self)
+{
+
+  GListStore *list_store;
+  HdyValueObject *obj;
+
+  list_store = g_list_store_new (HDY_TYPE_VALUE_OBJECT);
+
+  obj = hdy_value_object_new_string ("Unknown");
+  g_list_store_insert (list_store, VVM_TYPE_UNKNOWN, obj);
+  g_clear_object (&obj);
+
+  obj = hdy_value_object_new_string ("cvvm");
+  g_list_store_insert (list_store, VVM_TYPE_CVVM, obj);
+  g_clear_object (&obj);
+
+  obj = hdy_value_object_new_string ("AT&T USA");
+  g_list_store_insert (list_store, VVM_TYPE_ATTUSA, obj);
+  g_clear_object (&obj);
+
+  obj = hdy_value_object_new_string ("otmp");
+  g_list_store_insert (list_store, VVM_TYPE_OTMP, obj);
+  g_clear_object (&obj);
+
+  obj = hdy_value_object_new_string ("vvm3");
+  g_list_store_insert (list_store, VVM_TYPE_VVM_THREE, obj);
+  g_clear_object (&obj);
+
+  hdy_combo_row_bind_name_model (self->vvm_type_combo_row, G_LIST_MODEL (list_store), (HdyComboRowGetNameFunc) hdy_value_object_dup_string, NULL, NULL);
+}
+
 static void
 vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
 {
@@ -319,45 +472,46 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
 
   gtk_widget_class_set_template_from_resource (widget_class, "/org/kop316/vvmplayer/vvmplayer-preferences-window.ui");
 
-  //Whether or not VVM is enabled
-/*
-  int    enable_vvm;
-*/
-  gtk_widget_class_bind_template_callback (widget_class, enable_vvm_switch_flipped_cb);
-
   //Refresh Page
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, refresh_settings_button);
+
   gtk_widget_class_bind_template_callback (widget_class, refresh_settings_button_clicked_cb);
 
-  //Modem Manager Settings
-  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, destination_number_text);
-  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, modem_number_text);
-  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, carrier_prefix_text);
+  //Whether or not VVM is enabled
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, enable_vvm_text);
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, enable_vvm_switch);
 
-
-  gtk_widget_class_bind_template_callback (widget_class, destination_number_button_clicked_cb);
-  gtk_widget_class_bind_template_callback (widget_class, default_modem_number_button_clicked_cb);
-  gtk_widget_class_bind_template_callback (widget_class, carrier_prefix_button_clicked_cb);
-/*
-  char  *vvm_type;
-*/
-
-  //Activate VVM
-  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, refresh_settings_button);
-  gtk_widget_class_bind_template_callback (widget_class, activate_vvm_button_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, enable_vvm_switch_flipped_cb);
 
   //Status Settings
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, vvmd_enabled_image);
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, mailbox_active_image);
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, provision_status_text);
 
+  //Activate VVM
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, activate_vvm_button);
+  gtk_widget_class_bind_template_callback (widget_class, activate_vvm_button_clicked_cb);
+
+  //Modem Manager Settings
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, destination_number_text);
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, modem_number_text);
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, carrier_prefix_text);
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, vvm_type_combo_row);
+
+  gtk_widget_class_bind_template_callback (widget_class, destination_number_button_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, default_modem_number_button_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, carrier_prefix_button_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, vvm_type_selected_cb);
+
 }
 
 static void
 vvm_preferences_window_init (VvmPreferencesWindow *self)
 {
-  vvm_preferences_refresh_settings ();
   gtk_widget_init_template (GTK_WIDGET (self));
+  lists_page_init (self);
+  vvm_preferences_refresh_settings ();
   vvm_preferences_window_populate (self);
+
 
 }

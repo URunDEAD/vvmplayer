@@ -44,6 +44,53 @@ struct _VvmVvmd
 G_DEFINE_TYPE (VvmVvmd, vvm_vvmd, G_TYPE_OBJECT)
 
 int
+vvmplayer_vvmd_encode_vvm_type (const char *vvm_type)
+{
+
+ if (g_strcmp0(vvm_type, "Unknown") == 0) {
+   return VVM_TYPE_UNKNOWN;
+ } else if (g_strcmp0(vvm_type, "cvvm") == 0) {
+   return VVM_TYPE_CVVM;
+ } else if (g_strcmp0(vvm_type, "AT&TUSAProprietary") == 0) {
+   return VVM_TYPE_ATTUSA;
+ } else if (g_strcmp0(vvm_type, "otmp") == 0) {
+   return VVM_TYPE_OTMP;
+ } else if (g_strcmp0(vvm_type, "vvm3") == 0) {
+   return VVM_TYPE_VVM_THREE;
+ } else {
+   return VVM_TYPE_UNKNOWN;
+ }
+ return VVM_TYPE_UNKNOWN;
+}
+
+char
+*vvmplayer_vvmd_decode_vvm_type (int vvm_type)
+{
+
+  switch(vvm_type) {
+    case VVM_TYPE_UNKNOWN:
+      return g_strdup("Unknown");
+
+    case VVM_TYPE_CVVM:
+      return g_strdup("cvvm");
+
+    case VVM_TYPE_ATTUSA:
+      return g_strdup("AT&TUSAProprietary");
+
+    case VVM_TYPE_OTMP:
+      return g_strdup("otmp");
+
+    case VVM_TYPE_VVM_THREE:
+      return g_strdup("vvm3");
+
+    default:
+      return g_strdup("Unknown");
+
+  }
+  return g_strdup("Unknown");
+}
+
+int
 vvmplayer_vvmd_set_mm_setting (VvmVvmd *self,
                                const char *setting_to_change,
                                const char *updated_setting)
@@ -69,6 +116,56 @@ vvmplayer_vvmd_set_mm_setting (VvmVvmd *self,
                setting_to_change,
                updated_setting,
                error->message);
+    return FALSE;
+  }
+  return TRUE;
+
+}
+
+int
+vvmplayer_vvmd_set_mm_vvm_enabled (VvmVvmd *self,
+                                   int enabled)
+{
+
+  g_autoptr (GError) error = NULL;
+  GVariant		*new_setting;
+
+  new_setting = g_variant_new_parsed("(%s, <%b>)",
+                                     "VVMEnabled",
+                                     enabled);
+
+  g_dbus_proxy_call_sync (self->modemmanager_proxy,
+                          "ChangeSettings",
+                           new_setting,
+                           G_DBUS_CALL_FLAGS_NONE,
+                           -1,
+                           NULL,
+                           &error);
+
+  if (error != NULL) {
+    g_warning ("Error Enabling or disabling VVM!");
+    return FALSE;
+  }
+  return TRUE;
+
+}
+
+int
+vvmplayer_vvmd_check_subscription_status (VvmVvmd *self)
+{
+
+  g_autoptr (GError) error = NULL;
+
+  g_dbus_proxy_call_sync (self->modemmanager_proxy,
+                          "CheckSubscriptonStatus",
+                           NULL,
+                           G_DBUS_CALL_FLAGS_NONE,
+                           -1,
+                           NULL,
+                           &error);
+
+  if (error != NULL) {
+    g_warning ("Error Checking Subscription Status!");
     return FALSE;
   }
   return TRUE;
@@ -313,6 +410,7 @@ vvmplayer_vvmd_get_mm_settings (VvmVvmd *self)
 	    vvm_settings_set_vvm_enabled (settings, VVMEnabled);
 	  }
 	  if (g_variant_dict_lookup (&dict, "VVMType", "s", &VVMType)) {
+	    g_debug("VVMType is:%s", VVMType);
 	    vvm_settings_set_vvm_type (settings, VVMType);
 	  }
 	  if (g_variant_dict_lookup (&dict, "VVMDestinationNumber", "s", &VVMDestinationNumber)) {

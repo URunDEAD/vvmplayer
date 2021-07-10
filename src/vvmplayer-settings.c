@@ -57,6 +57,12 @@ vvm_settings_set_vvm_enabled (VvmSettings *self, int VVMEnabled)
 
 }
 
+int
+vvm_settings_get_vvm_enabled (VvmSettings *self)
+{
+  return self->enable_vvm;
+}
+
 void
 vvm_settings_set_mm_available (VvmSettings *self, int ModemManagerAvailable)
 {
@@ -81,6 +87,12 @@ vvm_settings_set_vvm_type (VvmSettings *self, const char *VVMType)
   self->vvm_type = g_strdup(VVMType);
   g_debug ("VVM Type is set to %s", self->vvm_type);
 
+}
+
+char
+*vvm_settings_get_vvm_type (VvmSettings *self)
+{
+  return g_strdup(self->vvm_type);
 }
 
 void
@@ -235,7 +247,7 @@ vvm_settings_load_mm_defaults (VvmSettings *self)
   g_free(self->vvm_destination_number);
   self->vvm_destination_number = g_strdup("Destination Number invalid");
   g_free(self->vvm_type);
-  self->vvm_type = g_strdup("Type invalid");
+  self->vvm_type = g_strdup("Unknown");
   g_free(self->default_number);
   self->default_number = g_strdup("NULL");
   g_free(self->provision_status);

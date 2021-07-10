@@ -14,8 +14,10 @@ void vvm_settings_load_mm_defaults (VvmSettings *self);
 void vvm_settings_load_service_defaults (VvmSettings *self);
 
 void vvm_settings_set_vvm_enabled (VvmSettings *self, int VVMEnabled);
+int vvm_settings_get_vvm_enabled (VvmSettings *self);
 
 void vvm_settings_set_vvm_type (VvmSettings *self, const char *VVMType);
+char *vvm_settings_get_vvm_type (VvmSettings *self);
 
 void vvm_settings_set_vvm_destination_number (VvmSettings *self,
                                               const char *VVMDestinationNumber);
