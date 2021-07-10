@@ -20,12 +20,18 @@
 #include "vvmplayer-settings.h"
 #include "vvmplayer-vvmd.h"
 
+#define STATUS_GOOD "gtk-apply"
+#define STATUS_BAD "gtk-no"
+
 struct _VvmPreferencesWindow
 {
   HdyPreferencesWindow parent_instance;
 
   //Modem Manager Settings
   GtkEntry *destination_number_text;
+
+  //Status
+  GtkImage *vvmd_enabled_image;
 
   //Demos
   GtkEntry *demo_text;
@@ -42,15 +48,33 @@ vvm_preferences_window_new (void)
 }
 
 static void
+vvm_preferences_set_gtkimage_icon (GtkImage *image_to_set, const char *icon) {
+  GValue a = G_VALUE_INIT;
+
+  g_value_init (&a, G_TYPE_STRING);
+  g_assert (G_VALUE_HOLDS_STRING (&a));
+  g_value_set_static_string (&a, icon);
+  g_object_set_property (G_OBJECT (image_to_set), "icon-name", &a);
+}
+
+static void
 vvm_preferences_window_populate (VvmPreferencesWindow *self)
 {
   g_autofree char     *VVMDestinationNumber = NULL;
   VvmSettings *settings = vvm_settings_get_default ();
 
+
   //Modem Manager settings
   VVMDestinationNumber = vvm_settings_get_vvm_destination_number (settings);
   if (strstr (VVMDestinationNumber, "invalid") == NULL) { //Don't populate invalid settings
     gtk_entry_set_text (self->destination_number_text, VVMDestinationNumber);
+  }
+
+  if(vvm_settings_get_mm_available (settings) &&
+     vvm_settings_get_service_available (settings)) {
+    vvm_preferences_set_gtkimage_icon (self->vvmd_enabled_image, STATUS_GOOD);
+  } else {
+    vvm_preferences_set_gtkimage_icon (self->vvmd_enabled_image, STATUS_BAD);
   }
 
   //Demo
@@ -152,6 +176,7 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
 
 
   //Status Settings
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, vvmd_enabled_image);
 /*
   int    mm_available;
   int    service_available;
