@@ -50,7 +50,7 @@ vvmplayer_window_show_about_dialog (VvmplayerWindow *self)
 static void
 vvmplayer_window_show_settings_dialog (VvmplayerWindow *self)
 {
-  HdyVvmPreferencesWindow *preferences = hdy_vvm_preferences_window_new ();
+  VvmPreferencesWindow *preferences = vvm_preferences_window_new ();
 
   gtk_window_set_transient_for (GTK_WINDOW (preferences), GTK_WINDOW (self));
   gtk_widget_show (GTK_WIDGET (preferences));
