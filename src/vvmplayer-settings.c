@@ -31,6 +31,10 @@ struct _VvmSettings
   char  *default_number;
   char  *carrier_prefix;
   int    vvmd_connected;
+  int    mm_available;
+  int    service_available;
+  char  *country_code;
+  int    mailbox_active;
 };
 
 G_DEFINE_TYPE (VvmSettings, vvm_settings, G_TYPE_OBJECT)
@@ -43,6 +47,17 @@ vvm_settings_set_vvm_enabled (VvmSettings *self, int VVMEnabled)
     g_debug ("VVM Enabled is set to TRUE");
   else
     g_debug ("VVM Enabled is set to FALSE");
+
+}
+
+void
+vvm_settings_set_mm_available (VvmSettings *self, int ModemManagerAvailable)
+{
+  self->mm_available = ModemManagerAvailable;
+  if (self->mm_available)
+    g_debug ("Modem Manager available through VVMD");
+  else
+    g_debug ("Modem Manager not available through VVMD");
 
 }
 
@@ -97,6 +112,38 @@ vvm_settings_set_vvm_provision_status (VvmSettings *self,
 
 }
 
+void
+vvm_settings_set_service_available (VvmSettings *self, int ServiceAvailable)
+{
+  self->service_available = ServiceAvailable;
+  if (self->service_available)
+    g_debug ("VVMD Service available");
+  else
+    g_debug ("VVMD Service not available");
+
+}
+
+void
+vvm_settings_set_vvm_country_code (VvmSettings *self,
+                                   const char *CountryCode)
+{
+  g_free(self->country_code);
+  self->provision_status = g_strdup(CountryCode);
+  g_debug ("VVM Modem Country Code is set to %s", self->country_code);
+
+}
+
+void
+vvm_settings_set_mailbox_active (VvmSettings *self, int MailboxActive)
+{
+  self->mailbox_active = MailboxActive;
+  if (self->mailbox_active)
+    g_debug ("VVM Mailbox active");
+  else
+    g_debug ("VVM Mailbox not active");
+
+}
+
 static void
 vvm_settings_constructed (GObject *object)
 {
@@ -133,9 +180,11 @@ vvm_settings_class_init (VvmSettingsClass *klass)
 static void
 vvm_settings_load_defaults (VvmSettings *self)
 {
-
+  self->mm_available = FALSE;
   self->enable_vvm = FALSE;
   self->vvmd_connected = FALSE;
+  self->mailbox_active = FALSE;
+  self->country_code = g_strdup("Country Code Invalid");
   self->vvm_destination_number = g_strdup("Destination Number Invalid");
   self->vvm_type = g_strdup("Type Invalid");
   self->default_number = g_strdup("Default Number Invalid");

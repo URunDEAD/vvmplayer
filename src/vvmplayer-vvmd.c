@@ -44,6 +44,43 @@ struct _VvmVvmd
 G_DEFINE_TYPE (VvmVvmd, vvm_vvmd, G_TYPE_OBJECT)
 
 static void
+vvmplayer_vvmd_get_service_settings_cb (GObject      *service,
+                                             GAsyncResult *res,
+                                             gpointer      user_data)
+{
+  VvmVvmd *self = user_data;
+  g_autoptr (GError) error = NULL;
+  GVariant *ret;
+
+  g_debug ("%s", __func__);
+
+  ret = g_dbus_proxy_call_finish (self->service_proxy,
+                                  res,
+                                  &error);
+
+  if (error != NULL) {
+      g_warning ("Error in Proxy call: %s\n", error->message);
+  } else {
+    GVariantDict dict;
+    GVariant *all_settings;
+    int MailBoxActive;
+    g_autofree char     *ModemCountryCode = NULL;
+    VvmSettings *settings = vvm_settings_get_default ();
+
+    g_variant_get (ret, "(@a{?*})", &all_settings);
+    g_variant_dict_init (&dict, all_settings);
+    if (g_variant_dict_lookup (&dict, "ModemCountryCode", "s", &ModemCountryCode)) {
+      vvm_settings_set_vvm_country_code (settings, ModemCountryCode);
+    }
+    if (g_variant_dict_lookup (&dict, "MailBoxActive", "b", &MailBoxActive)) {
+      vvm_settings_set_mailbox_active (settings, MailBoxActive);
+    }
+
+    vvm_settings_set_service_available (settings, TRUE);
+  }
+}
+
+static void
 vvmplayer_vvmd_get_service_cb (GObject      *service,
                                GAsyncResult *res,
                                gpointer      user_data)
@@ -53,15 +90,22 @@ vvmplayer_vvmd_get_service_cb (GObject      *service,
 
   self->service_proxy = g_dbus_proxy_new_finish (res, &error);
   if (error != NULL) {
-    g_warning ("Error in MMSD Service Proxy call: %s\n", error->message);
+    g_warning ("Error in VVMD Service Proxy call: %s\n", error->message);
   } else {
-    g_debug ("Got MMSD Service");
+    g_debug ("Got VVMD Service");
 
     //TODO: Subscribe to MessageAdded
 
     //TODO: Get All Messages
 
-    //TODO: Get All Service Settings
+    g_dbus_proxy_call (self->service_proxy,
+                       "GetProperties",
+                       NULL,
+                       G_DBUS_CALL_FLAGS_NONE,
+                       -1,
+                       NULL,
+                       (GAsyncReadyCallback)vvmplayer_vvmd_get_service_settings_cb,
+                       self);
 
   }
 }
@@ -251,6 +295,7 @@ vvmplayer_vvmd_get_modemmanager_settings_cb (GObject      *service,
     if (g_variant_dict_lookup (&dict, "ProvisionStatus", "s", &ProvisionStatus)) {
       vvm_settings_set_vvm_provision_status (settings, ProvisionStatus);
     }
+      vvm_settings_set_mm_available (settings, TRUE);
   }
 
   g_dbus_proxy_new (self->connection,
@@ -329,7 +374,12 @@ vvmd_vanished_cb (GDBusConnection *connection,
 {
   VvmVvmd *self = user_data;
   g_assert (G_IS_DBUS_CONNECTION (connection));
-  g_debug ("MMSD vanished");
+  VvmSettings *settings = vvm_settings_get_default ();
+
+  g_debug ("VVMD vanished");
+  vvm_settings_set_mm_available (settings, FALSE);
+  vvm_settings_set_service_available (settings, FALSE);
+
   if (G_IS_OBJECT (self->service_proxy)) {
     vvmplayer_vvmd_remove_service (self);
   }
