@@ -67,7 +67,21 @@
               <object class="HdyActionRow">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="title" translatable="yes">An untitled group</property>
+                <property name="title" translatable="yes">Rows can have action widgets</property>
+                <property name="activatable-widget">frobnicate</property>
+                <child>
+                  <object class="GtkButton" id="frobnicate">
+                    <property name="label" translatable="yes">Frobnicate</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="halign">end</property>
+                    <property name="valign">center</property>
+                    <style>
+                      <class name="list-button"/>
+                    </style>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
@@ -75,6 +89,29 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="title" translatable="yes">Pages</property>
+                <child>
+                  <object class="GtkEntry" id="avatar_text">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="valign">center</property>
+                    <property name="placeholder-text" translatable="yes">Placeholder Test</property>
+
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="apply_test">
+                    <property name="label" translatable="yes">Apply</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="halign">end</property>
+                    <property name="valign">center</property>
+                    <signal name="clicked" handler="view_switcher_demo_clicked_cb" swapped="no"/>
+                    <style>
+                      <class name="list-button"/>
+                    </style>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
@@ -82,6 +119,14 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="title" translatable="yes">Groups</property>
+                <child>
+                  <object class="GtkSwitch" id="avatar_show_initials">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="valign">center</property>
+                    <signal name="state-set" handler="switch_signal_flipped_cb" swapped="no"/>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
@@ -96,4 +141,5 @@
       </object>
     </child>
   </template>
+  <object class="GtkEntryBuffer" id="entrybuffer1"/>
 </interface>
