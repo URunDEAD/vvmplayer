@@ -23,12 +23,15 @@ char *vvm_settings_get_vvm_destination_number (VvmSettings *self);
 
 void vvm_settings_set_vvm_default_number (VvmSettings *self,
                                           const char *DefaultModemNumber);
+char *vvm_settings_get_vvm_default_number (VvmSettings *self);
 
 void vvm_settings_set_vvm_provision_status (VvmSettings *self,
                                             const char *ProvisionStatus);
+char *vvm_settings_get_vvm_provision_status (VvmSettings *self);
 
 void vvm_settings_set_vvm_carrier_prefix (VvmSettings *self,
                                           const char *CarrierPrefix);
+char *vvm_settings_get_vvm_carrier_prefix (VvmSettings *self);
 
 void vvm_settings_set_mm_available  (VvmSettings *self,
                                      int ModemManagerAvailable);
@@ -42,5 +45,6 @@ void vvm_settings_set_vvm_country_code (VvmSettings *self,
                                         const char *CountryCode);
 
 void vvm_settings_set_mailbox_active (VvmSettings *self, int MailboxActive);
+int vvm_settings_get_mailbox_active (VvmSettings *self);
 
 G_END_DECLS

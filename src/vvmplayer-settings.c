@@ -109,6 +109,12 @@ vvm_settings_set_vvm_carrier_prefix (VvmSettings *self,
 
 }
 
+char
+*vvm_settings_get_vvm_carrier_prefix (VvmSettings *self)
+{
+  return g_strdup(self->carrier_prefix);
+}
+
 void
 vvm_settings_set_vvm_default_number (VvmSettings *self,
                                      const char *DefaultModemNumber)
@@ -121,6 +127,12 @@ vvm_settings_set_vvm_default_number (VvmSettings *self,
 
 }
 
+char
+*vvm_settings_get_vvm_default_number (VvmSettings *self)
+{
+  return g_strdup(self->default_number);
+}
+
 void
 vvm_settings_set_vvm_provision_status (VvmSettings *self,
                                        const char *ProvisionStatus)
@@ -129,6 +141,12 @@ vvm_settings_set_vvm_provision_status (VvmSettings *self,
   self->provision_status = g_strdup(ProvisionStatus);
   g_debug ("VVM ProvisionStatus is set to %s", self->provision_status);
 
+}
+
+char
+*vvm_settings_get_vvm_provision_status (VvmSettings *self)
+{
+  return g_strdup(self->provision_status);
 }
 
 void
@@ -153,7 +171,7 @@ vvm_settings_set_vvm_country_code (VvmSettings *self,
                                    const char *CountryCode)
 {
   g_free(self->country_code);
-  self->provision_status = g_strdup(CountryCode);
+  self->country_code = g_strdup(CountryCode);
   g_debug ("VVM Modem Country Code is set to %s", self->country_code);
 
 }
@@ -168,6 +186,13 @@ vvm_settings_set_mailbox_active (VvmSettings *self, int MailboxActive)
     g_debug ("VVM Mailbox not active");
 
 }
+
+int
+vvm_settings_get_mailbox_active (VvmSettings *self)
+{
+  return self->mailbox_active;
+}
+
 
 static void
 vvm_settings_constructed (GObject *object)
@@ -216,7 +241,7 @@ vvm_settings_load_mm_defaults (VvmSettings *self)
   g_free(self->provision_status);
   self->provision_status = g_strdup("Unknown");
   g_free(self->carrier_prefix);
-  self->carrier_prefix = g_strdup("//VVM");
+  self->carrier_prefix = g_strdup("Carrier Prefix invalid");
 }
 
 void
