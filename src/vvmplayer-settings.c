@@ -68,6 +68,12 @@ vvm_settings_set_mm_available (VvmSettings *self, int ModemManagerAvailable)
 
 }
 
+int
+vvm_settings_get_mm_available (VvmSettings *self)
+{
+  return self->mm_available;
+}
+
 void
 vvm_settings_set_vvm_type (VvmSettings *self, const char *VVMType)
 {
@@ -196,11 +202,11 @@ vvm_settings_load_defaults (VvmSettings *self)
   self->mm_available = FALSE;
   self->enable_vvm = FALSE;
   self->mailbox_active = FALSE;
-  self->country_code = g_strdup("Country Code Invalid");
-  self->vvm_destination_number = g_strdup("Destination Number Invalid");
-  self->vvm_type = g_strdup("Type Invalid");
-  self->default_number = g_strdup("Default Number Invalid");
-  self->provision_status = g_strdup("Provision Status Invalid");
+  self->country_code = g_strdup("Country Code invalid");
+  self->vvm_destination_number = g_strdup("Destination Number invalid");
+  self->vvm_type = g_strdup("Type invalid");
+  self->default_number = g_strdup("NULL");
+  self->provision_status = g_strdup("Unknown");
   self->carrier_prefix = g_strdup("//VVM");
 }
 

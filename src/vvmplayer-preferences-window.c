@@ -49,7 +49,9 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
 
   //Modem Manager settings
   VVMDestinationNumber = vvm_settings_get_vvm_destination_number (settings);
-  gtk_entry_set_text (self->destination_number_text, VVMDestinationNumber);
+  if (strstr (VVMDestinationNumber, "invalid") == NULL) { //Don't populate invalid settings
+    gtk_entry_set_text (self->destination_number_text, VVMDestinationNumber);
+  }
 
 
   //Demo
@@ -98,11 +100,30 @@ static void
 destination_number_button_clicked_cb (GtkButton     *btn,
                                       VvmPreferencesWindow *self)
 {
+  VvmVvmd *backend = vvm_vvmd_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
-  //VvmVvmd *backend = vvm_vvmd_get_default ();
-  vvm_settings_set_vvm_destination_number (settings,
-                           gtk_entry_get_text (self->destination_number_text));
-  //TODO: Send dbus message!
+
+  if(vvm_settings_get_mm_available (settings)) {
+    const char *dest_number = NULL;
+
+    dest_number = gtk_entry_get_text (self->destination_number_text);
+
+    vvm_settings_set_vvm_destination_number (settings, dest_number);
+    if(vvmplayer_vvmd_set_mm_setting (backend,
+                                      "VVMDestinationNumber",
+                                      dest_number) == FALSE) {
+
+      g_autofree char *result = g_strdup("Action Failed");
+
+      g_error("Error changing setting in vvmd!");
+      gtk_entry_set_text (self->destination_number_text, result);
+    }
+  } else {
+    g_autofree char *result = g_strdup("Action Failed");
+
+    g_warning("VVMD Modem Manager settings not available!");
+    gtk_entry_set_text (self->destination_number_text, result);
+  }
 }
 
 static void
