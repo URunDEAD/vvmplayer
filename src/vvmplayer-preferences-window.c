@@ -17,11 +17,17 @@
  */
 
 #include "vvmplayer-preferences-window.h"
+#include "vvmplayer-settings.h"
+#include "vvmplayer-vvmd.h"
 
 struct _VvmPreferencesWindow
 {
   HdyPreferencesWindow parent_instance;
 
+  //Modem Manager Settings
+  GtkEntry *destination_number_text;
+
+  //Demos
   GtkEntry *demo_text;
   GtkSwitch *demo_switch;
 
@@ -38,7 +44,15 @@ vvm_preferences_window_new (void)
 static void
 vvm_preferences_window_populate (VvmPreferencesWindow *self)
 {
+  g_autofree char     *VVMDestinationNumber = NULL;
+  VvmSettings *settings = vvm_settings_get_default ();
 
+  //Modem Manager settings
+  VVMDestinationNumber = vvm_settings_get_vvm_destination_number (settings);
+  gtk_entry_set_text (self->destination_number_text, VVMDestinationNumber);
+
+
+  //Demo
   g_autofree gchar *name = g_strdup("Hello!!!!");
 
   gtk_entry_set_text (self->demo_text, name);
@@ -81,6 +95,17 @@ demo_button_clicked_cb (GtkButton     *btn,
 }
 
 static void
+destination_number_button_clicked_cb (GtkButton     *btn,
+                                      VvmPreferencesWindow *self)
+{
+  VvmSettings *settings = vvm_settings_get_default ();
+  //VvmVvmd *backend = vvm_vvmd_get_default ();
+  vvm_settings_set_vvm_destination_number (settings,
+                           gtk_entry_get_text (self->destination_number_text));
+  //TODO: Send dbus message!
+}
+
+static void
 vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
@@ -88,6 +113,9 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
   gtk_widget_class_set_template_from_resource (widget_class, "/org/kop316/vvmplayer/vvmplayer-preferences-window.ui");
 
   //Modem Manager Settings
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, destination_number_text);
+
+  gtk_widget_class_bind_template_callback (widget_class, destination_number_button_clicked_cb);
 /*
   char  *provision_status;
   char  *vvm_destination_number;

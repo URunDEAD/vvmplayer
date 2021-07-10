@@ -25,7 +25,6 @@ struct _VvmSettings
   GtkSettings *gtk_settings;
 
   //Modem Manager Settings
-  char  *provision_status;
   char  *vvm_destination_number;
   char  *vvm_type;
   char  *default_number;
@@ -35,9 +34,10 @@ struct _VvmSettings
   int    enable_vvm;
 
   //Status Settings
-  int    mm_available;
-  int    service_available;
-  int    mailbox_active;
+  char  *provision_status;
+  int    mm_available;       //Boolean
+  int    service_available;  //Boolean
+  int    mailbox_active;     //Boolean
 
   //Don't need to display this
   char  *country_code;
@@ -85,6 +85,12 @@ vvm_settings_set_vvm_destination_number (VvmSettings *self,
   self->vvm_destination_number = g_strdup(VVMDestinationNumber);
   g_debug ("VVM Destination Number is set to %s", self->vvm_destination_number);
 
+}
+
+char
+*vvm_settings_get_vvm_destination_number (VvmSettings *self)
+{
+  return self->vvm_destination_number = g_strdup(self->vvm_destination_number);
 }
 
 void
