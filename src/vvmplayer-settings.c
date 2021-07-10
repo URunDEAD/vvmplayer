@@ -24,17 +24,24 @@ struct _VvmSettings
 
   GtkSettings *gtk_settings;
 
+  //Modem Manager Settings
   char  *provision_status;
-  int    enable_vvm;
   char  *vvm_destination_number;
   char  *vvm_type;
   char  *default_number;
   char  *carrier_prefix;
-  int    vvmd_connected;
+
+  //Whether or not to activate VVM
+  int    enable_vvm;
+
+  //Status Settings
   int    mm_available;
   int    service_available;
-  char  *country_code;
   int    mailbox_active;
+
+  //Don't need to display this
+  char  *country_code;
+
 };
 
 G_DEFINE_TYPE (VvmSettings, vvm_settings, G_TYPE_OBJECT)
@@ -182,7 +189,6 @@ vvm_settings_load_defaults (VvmSettings *self)
 {
   self->mm_available = FALSE;
   self->enable_vvm = FALSE;
-  self->vvmd_connected = FALSE;
   self->mailbox_active = FALSE;
   self->country_code = g_strdup("Country Code Invalid");
   self->vvm_destination_number = g_strdup("Destination Number Invalid");
