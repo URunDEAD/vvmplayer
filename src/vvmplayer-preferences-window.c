@@ -53,7 +53,6 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
     gtk_entry_set_text (self->destination_number_text, VVMDestinationNumber);
   }
 
-
   //Demo
   g_autofree gchar *name = g_strdup("Hello!!!!");
 
@@ -169,8 +168,30 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
 static void
 vvm_preferences_window_init (VvmPreferencesWindow *self)
 {
-  gtk_widget_init_template (GTK_WIDGET (self));
+  VvmVvmd *backend = vvm_vvmd_get_default ();
+  VvmSettings *settings = vvm_settings_get_default ();
 
+  if(vvm_settings_get_mm_available (settings)) {
+    if (vvmplayer_vvmd_get_mm_settings(backend) == FALSE) {
+      g_error("Error getting VVMD Modem Manager Settings");
+      vvm_settings_load_mm_defaults (settings);
+    }
+  } else {
+    g_debug("Loading VVMD MM Defaults");
+    vvm_settings_load_mm_defaults (settings);
+  }
+
+  if(vvm_settings_get_service_available (settings)) {
+    if (vvmplayer_vvmd_get_service_settings (backend) == FALSE) {
+      g_error("Error getting VVMD Service Settings");
+      vvm_settings_load_service_defaults (settings);
+    }
+  } else {
+    g_debug("Loading VVMD service Defaults");
+    vvm_settings_load_service_defaults (settings);
+  }
+
+  gtk_widget_init_template (GTK_WIDGET (self));
   vvm_preferences_window_populate (self);
 
 }

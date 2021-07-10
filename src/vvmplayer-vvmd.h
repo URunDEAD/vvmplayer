@@ -9,8 +9,13 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (VvmVvmd, vvm_vvmd, VVM, VVMD, GObject)
 
 VvmVvmd *vvm_vvmd_get_default                  (void);
+
+int vvmplayer_vvmd_get_mm_settings (VvmVvmd *self);
+
 int vvmplayer_vvmd_set_mm_setting (VvmVvmd *self,
                                    const char *setting_to_change,
                                    const char *updated_setting);
+
+int vvmplayer_vvmd_get_service_settings (VvmVvmd *self);
 
 G_END_DECLS

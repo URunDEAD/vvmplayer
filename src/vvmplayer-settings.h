@@ -8,7 +8,11 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (VvmSettings, vvm_settings, VVM, SETTINGS, GObject)
 
-VvmSettings *vvm_settings_get_default                  (void);
+VvmSettings *vvm_settings_get_default (void);
+
+void vvm_settings_load_mm_defaults (VvmSettings *self);
+void vvm_settings_load_service_defaults (VvmSettings *self);
+
 void vvm_settings_set_vvm_enabled (VvmSettings *self, int VVMEnabled);
 
 void vvm_settings_set_vvm_type (VvmSettings *self, const char *VVMType);
@@ -32,6 +36,7 @@ int vvm_settings_get_mm_available (VvmSettings *self);
 
 void vvm_settings_set_service_available (VvmSettings *self,
                                          int ServiceAvailable);
+int vvm_settings_get_service_available (VvmSettings *self);
 
 void vvm_settings_set_vvm_country_code (VvmSettings *self,
                                         const char *CountryCode);

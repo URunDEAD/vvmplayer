@@ -96,7 +96,7 @@ vvm_settings_set_vvm_destination_number (VvmSettings *self,
 char
 *vvm_settings_get_vvm_destination_number (VvmSettings *self)
 {
-  return self->vvm_destination_number = g_strdup(self->vvm_destination_number);
+  return g_strdup(self->vvm_destination_number);
 }
 
 void
@@ -140,6 +140,12 @@ vvm_settings_set_service_available (VvmSettings *self, int ServiceAvailable)
   else
     g_debug ("VVMD Service not available");
 
+}
+
+int
+vvm_settings_get_service_available (VvmSettings *self)
+{
+  return self->service_available;
 }
 
 void
@@ -196,18 +202,29 @@ vvm_settings_class_init (VvmSettingsClass *klass)
   object_class->finalize = vvm_settings_finalize;
 }
 
-static void
-vvm_settings_load_defaults (VvmSettings *self)
+void
+vvm_settings_load_mm_defaults (VvmSettings *self)
 {
   self->mm_available = FALSE;
   self->enable_vvm = FALSE;
-  self->mailbox_active = FALSE;
-  self->country_code = g_strdup("Country Code invalid");
+  g_free(self->vvm_destination_number);
   self->vvm_destination_number = g_strdup("Destination Number invalid");
+  g_free(self->vvm_type);
   self->vvm_type = g_strdup("Type invalid");
+  g_free(self->default_number);
   self->default_number = g_strdup("NULL");
+  g_free(self->provision_status);
   self->provision_status = g_strdup("Unknown");
+  g_free(self->carrier_prefix);
   self->carrier_prefix = g_strdup("//VVM");
+}
+
+void
+vvm_settings_load_service_defaults (VvmSettings *self)
+{
+  self->mailbox_active = FALSE;
+  g_free(self->country_code);
+  self->country_code = g_strdup("Country Code invalid");
 }
 
 static void
@@ -225,7 +242,8 @@ vvm_settings_get_default (void)
     {
       self = g_object_new (VVM_TYPE_SETTINGS, NULL);
       g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&self);
-      vvm_settings_load_defaults (self);
+      vvm_settings_load_mm_defaults (self);
+      vvm_settings_load_service_defaults (self);
     }
   return self;
 }

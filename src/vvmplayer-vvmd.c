@@ -75,23 +75,23 @@ vvmplayer_vvmd_set_mm_setting (VvmVvmd *self,
 
 }
 
-static void
-vvmplayer_vvmd_get_service_settings_cb (GObject      *service,
-                                             GAsyncResult *res,
-                                             gpointer      user_data)
+int
+vvmplayer_vvmd_get_service_settings (VvmVvmd *self)
 {
-  VvmVvmd *self = user_data;
   g_autoptr (GError) error = NULL;
   GVariant *ret;
 
-  g_debug ("%s", __func__);
-
-  ret = g_dbus_proxy_call_finish (self->service_proxy,
-                                  res,
-                                  &error);
+  ret = g_dbus_proxy_call_sync (self->service_proxy,
+                                "GetProperties",
+                                NULL,
+                                G_DBUS_CALL_FLAGS_NONE,
+                                -1,
+                                NULL,
+                                &error);
 
   if (error != NULL) {
       g_warning ("Error in Proxy call: %s\n", error->message);
+      return FALSE;
   } else {
     GVariantDict dict;
     GVariant *all_settings;
@@ -108,8 +108,8 @@ vvmplayer_vvmd_get_service_settings_cb (GObject      *service,
       vvm_settings_set_mailbox_active (settings, MailBoxActive);
     }
 
-    vvm_settings_set_service_available (settings, TRUE);
   }
+    return TRUE;
 }
 
 static void
@@ -126,18 +126,16 @@ vvmplayer_vvmd_get_service_cb (GObject      *service,
   } else {
     g_debug ("Got VVMD Service");
 
+    if (vvmplayer_vvmd_get_service_settings (self) == FALSE) {
+      g_error("Error getting VVMD Service Settings");
+
+    } else {
+      VvmSettings *settings = vvm_settings_get_default ();
+      vvm_settings_set_service_available (settings, TRUE);
+    }
     //TODO: Subscribe to MessageAdded
 
     //TODO: Get All Messages
-
-    g_dbus_proxy_call (self->service_proxy,
-                       "GetProperties",
-                       NULL,
-                       G_DBUS_CALL_FLAGS_NONE,
-                       -1,
-                       NULL,
-                       (GAsyncReadyCallback)vvmplayer_vvmd_get_service_settings_cb,
-                       self);
 
   }
 }
@@ -279,67 +277,58 @@ vvmplayer_vvmd_get_manager_cb (GObject      *manager,
   }
 }
 
-static void
-vvmplayer_vvmd_get_modemmanager_settings_cb (GObject      *service,
-                                             GAsyncResult *res,
-                                             gpointer      user_data)
+int
+vvmplayer_vvmd_get_mm_settings (VvmVvmd *self)
 {
-  VvmVvmd *self = user_data;
   g_autoptr (GError) error = NULL;
   GVariant *ret;
+  g_debug ("Got VVMD Modem Manager");
 
-  g_debug ("%s", __func__);
 
-  ret = g_dbus_proxy_call_finish (self->modemmanager_proxy,
-                                  res,
-                                  &error);
+  ret = g_dbus_proxy_call_sync (self->modemmanager_proxy,
+                                "ViewSettings",
+                                NULL,
+                                G_DBUS_CALL_FLAGS_NONE,
+                                -1,
+                                NULL,
+                                &error);
 
   if (error != NULL) {
-      g_warning ("Error in Proxy call: %s\n", error->message);
+    g_warning ("Error in Proxy call: %s\n", error->message);
+    return FALSE;
   } else {
     VvmSettings *settings = vvm_settings_get_default ();
-    GVariantDict dict;
-    GVariant *all_settings;
-    int VVMEnabled;
-    g_autofree char     *VVMType = NULL;
-    g_autofree char     *VVMDestinationNumber = NULL;
-    g_autofree char     *CarrierPrefix = NULL;
-    g_autofree char     *DefaultModemNumber = NULL;
-    g_autofree char     *ProvisionStatus = NULL;
+	  GVariantDict dict;
+	  GVariant *all_settings;
+	  int VVMEnabled;
+	  g_autofree char     *VVMType = NULL;
+	  g_autofree char     *VVMDestinationNumber = NULL;
+	  g_autofree char     *CarrierPrefix = NULL;
+	  g_autofree char     *DefaultModemNumber = NULL;
+	  g_autofree char     *ProvisionStatus = NULL;
 
-    g_variant_get (ret, "(@a{?*})", &all_settings);
-    g_variant_dict_init (&dict, all_settings);
-    if (g_variant_dict_lookup (&dict, "VVMEnabled", "b", &VVMEnabled)) {
-      vvm_settings_set_vvm_enabled (settings, VVMEnabled);
-    }
-    if (g_variant_dict_lookup (&dict, "VVMType", "s", &VVMType)) {
-      vvm_settings_set_vvm_type (settings, VVMType);
-    }
-    if (g_variant_dict_lookup (&dict, "VVMDestinationNumber", "s", &VVMDestinationNumber)) {
-      vvm_settings_set_vvm_destination_number (settings, VVMDestinationNumber);
-    }
-    if (g_variant_dict_lookup (&dict, "CarrierPrefix", "s", &CarrierPrefix)) {
-      vvm_settings_set_vvm_carrier_prefix (settings, CarrierPrefix);
-    }
-    if (g_variant_dict_lookup (&dict, "DefaultModemNumber", "s", &DefaultModemNumber)) {
-      vvm_settings_set_vvm_default_number (settings, DefaultModemNumber);
-    }
-    if (g_variant_dict_lookup (&dict, "ProvisionStatus", "s", &ProvisionStatus)) {
-      vvm_settings_set_vvm_provision_status (settings, ProvisionStatus);
-    }
-      vvm_settings_set_mm_available (settings, TRUE);
-  }
-
-  g_dbus_proxy_new (self->connection,
-                    G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
-                    NULL,
-                    VVMD_SERVICE,
-                    VVMD_PATH,
-                    VVMD_MANAGER_INTERFACE,
-                    NULL,
-                    vvmplayer_vvmd_get_manager_cb,
-                    self);
-
+	  g_variant_get (ret, "(@a{?*})", &all_settings);
+	  g_variant_dict_init (&dict, all_settings);
+	  if (g_variant_dict_lookup (&dict, "VVMEnabled", "b", &VVMEnabled)) {
+	    vvm_settings_set_vvm_enabled (settings, VVMEnabled);
+	  }
+	  if (g_variant_dict_lookup (&dict, "VVMType", "s", &VVMType)) {
+	    vvm_settings_set_vvm_type (settings, VVMType);
+	  }
+	  if (g_variant_dict_lookup (&dict, "VVMDestinationNumber", "s", &VVMDestinationNumber)) {
+	    vvm_settings_set_vvm_destination_number (settings, VVMDestinationNumber);
+	  }
+	  if (g_variant_dict_lookup (&dict, "CarrierPrefix", "s", &CarrierPrefix)) {
+	    vvm_settings_set_vvm_carrier_prefix (settings, CarrierPrefix);
+	  }
+	  if (g_variant_dict_lookup (&dict, "DefaultModemNumber", "s", &DefaultModemNumber)) {
+	    vvm_settings_set_vvm_default_number (settings, DefaultModemNumber);
+	  }
+	  if (g_variant_dict_lookup (&dict, "ProvisionStatus", "s", &ProvisionStatus)) {
+	    vvm_settings_set_vvm_provision_status (settings, ProvisionStatus);
+	  }
+	}
+  return TRUE;
 }
 
 static void
@@ -362,17 +351,25 @@ vvmplayer_vvmd_get_modemmanager_cb (GObject      *simple,
   if (error != NULL) {
     g_warning ("Error in VVMD Modem Manager Proxy call: %s\n", error->message);
   } else {
-    g_debug ("Got VVMD Modem Manager");
 
-    g_dbus_proxy_call (self->modemmanager_proxy,
-                       "ViewSettings",
-                       NULL,
-                       G_DBUS_CALL_FLAGS_NONE,
-                       -1,
-                       NULL,
-                       (GAsyncReadyCallback)vvmplayer_vvmd_get_modemmanager_settings_cb,
-                       self);
+    if (vvmplayer_vvmd_get_mm_settings(self) == FALSE) {
+      g_error("Error getting VVMD Modem Manager Settings");
 
+    } else {
+      VvmSettings *settings = vvm_settings_get_default ();
+	    vvm_settings_set_mm_available (settings, TRUE);
+
+  		g_dbus_proxy_new (self->connection,
+  		                  G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
+	  	                  NULL,
+	  	                  VVMD_SERVICE,
+	  	                  VVMD_PATH,
+	  	                  VVMD_MANAGER_INTERFACE,
+	  	                  NULL,
+	  	                  vvmplayer_vvmd_get_manager_cb,
+	  	                  self);
+
+    }
   }
 }
 
