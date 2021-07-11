@@ -3,7 +3,8 @@ vvmplayer_sources = [
   'vvmplayer-window.c',
   'vvmplayer-preferences-window.c',
   'vvmplayer-settings.c',
-  'vvmplayer-vvmd.c'
+  'vvmplayer-vvmd.c',
+  'vvmplayer-voicemail-window.c'
 ]
 
 vvmplayer_deps = [

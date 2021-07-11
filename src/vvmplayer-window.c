@@ -20,6 +20,7 @@
 #include "vvmplayer-window.h"
 #include "vvmplayer-preferences-window.h"
 #include "vvmplayer-vvmd.h"
+#include "vvmplayer-voicemail-window.h"
 
 struct _VvmplayerWindow
 {
@@ -29,6 +30,8 @@ struct _VvmplayerWindow
   HdyHeaderBar  *header_bar;
   GtkListBox     *visual_voicemail;
   GtkLabel      *no_visual_voicemail_label;
+
+  GListModel *voicemails;
 
   GtkWidget  *add_row;
   GtkWidget  *add_row_row;
@@ -65,10 +68,12 @@ void
 vvmplayer_window_add_row (VvmplayerWindow *self)
 {
 
+ // GtkWidget *voicemail = voicemail_window_new ();
 
-  gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
-                        GTK_WIDGET (self->add_row));
+  //gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
+  //                      GTK_WIDGET (voicemail));
 
+// works only when everything else is commented out
   gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
                         GTK_WIDGET (self->add_row_row));
 
@@ -97,5 +102,17 @@ vvmplayer_window_init (VvmplayerWindow *self)
   VvmVvmd *backend = vvm_vvmd_get_default ();
   gtk_widget_init_template (GTK_WIDGET (self));
   vvmplayer_vvmd_set_mm_vvm_list_box (backend, self);
+
+  gtk_list_box_bind_model (GTK_LIST_BOX (self->visual_voicemail),
+                           self->voicemails,
+                           (GtkListBoxCreateWidgetFunc)voicemail_window_new,
+                           self, NULL);
+
+ /*****DEBUG***/
+  gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
+                        GTK_WIDGET (self->add_row));
+
+  /*****DEBUG***/
+
 
 }
