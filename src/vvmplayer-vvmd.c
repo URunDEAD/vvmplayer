@@ -31,6 +31,8 @@ struct _VvmVvmd
 {
   GObject     parent_instance;
 
+  VvmplayerWindow    *visual_voicemail;
+
   GDBusConnection  *connection;
   unsigned int      vvmd_watch_id;
   GDBusProxy       *modemmanager_proxy;
@@ -88,6 +90,13 @@ char
 
   }
   return g_strdup("Unknown");
+}
+
+void
+vvmplayer_vvmd_set_mm_vvm_list_box (VvmVvmd *self,
+                                    VvmplayerWindow    *visual_voicemail)
+{
+  self->visual_voicemail = visual_voicemail;
 }
 
 int
@@ -244,8 +253,13 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
   if (Attachments)
     Attachment_list = g_strsplit(Attachments, ";", -1);
 
-  //TODO: Do something with these?
+   vvmplayer_window_add_row (self->visual_voicemail);
 
+/*
+  GtkWidget *widget = gtk_widget_new (GTK_TYPE_LABEL, "label", "Hello World", "xalign", 0.0, NULL);
+
+  gtk_list_box_prepend (self->visual_voicemail, widget);
+*/
 }
 
 static void

@@ -59,10 +59,16 @@
     <property name="default-width">600</property>
     <property name="default-height">300</property>
     <child>
-      <object class="GtkLabel" id="label">
+      <object class="GtkListBox" id="visual_voicemail">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Hello!</property>
+        <child type="placeholder">
+          <object class="GtkLabel" id="no_visual_voicemail_label">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">No Voicemails!</property>
+          </object>
+        </child>
       </object>
     </child>
     <child type="titlebar">
@@ -95,4 +101,26 @@
       </object>
     </child>
   </template>
+
+   <object class="HdyActionRow" id="add_row">
+    <property name="visible">True</property>
+    <property name="use-underline">True</property>
+    <property name="activatable">True</property>
+    <property name="title" translatable="yes">_Add Account</property>
+  </object>
+
+   <object class="HdyActionRow" id="add_row_row">
+    <property name="visible">True</property>
+    <property name="use-underline">True</property>
+    <property name="activatable">True</property>
+    <property name="title" translatable="yes">_Add Account Accountttt</property>
+  </object>
+
+   <object class="HdyActionRow" id="VoicemailWindow">
+    <property name="visible">True</property>
+    <property name="use-underline">True</property>
+    <property name="activatable">True</property>
+    <property name="title" translatable="yes">_Voicemaillll</property>
+  </object>
+
 </interface>

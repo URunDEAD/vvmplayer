@@ -19,14 +19,19 @@
 #include "vvmplayer-config.h"
 #include "vvmplayer-window.h"
 #include "vvmplayer-preferences-window.h"
+#include "vvmplayer-vvmd.h"
 
 struct _VvmplayerWindow
 {
   GtkApplicationWindow  parent_instance;
 
   /* Template widgets */
-  HdyHeaderBar        *header_bar;
-  GtkLabel            *label;
+  HdyHeaderBar  *header_bar;
+  GtkListBox     *visual_voicemail;
+  GtkLabel      *no_visual_voicemail_label;
+
+  GtkWidget  *add_row;
+  GtkWidget  *add_row_row;
 };
 
 G_DEFINE_TYPE (VvmplayerWindow, vvmplayer_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -56,6 +61,20 @@ vvmplayer_window_show_settings_dialog (VvmplayerWindow *self)
   gtk_widget_show (GTK_WIDGET (preferences));
 }
 
+void
+vvmplayer_window_add_row (VvmplayerWindow *self)
+{
+
+
+  gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
+                        GTK_WIDGET (self->add_row));
+
+  gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
+                        GTK_WIDGET (self->add_row_row));
+
+}
+
+
 static void
 vvmplayer_window_class_init (VvmplayerWindowClass *klass)
 {
@@ -63,7 +82,11 @@ vvmplayer_window_class_init (VvmplayerWindowClass *klass)
 
   gtk_widget_class_set_template_from_resource (widget_class, "/org/kop316/vvmplayer/vvmplayer-window.ui");
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, header_bar);
-  gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, label);
+  gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, visual_voicemail);
+  gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, no_visual_voicemail_label);
+  gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, add_row);
+  gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, add_row_row);
+
   gtk_widget_class_bind_template_callback (widget_class, vvmplayer_window_show_about_dialog);
   gtk_widget_class_bind_template_callback (widget_class, vvmplayer_window_show_settings_dialog);
 }
@@ -71,5 +94,8 @@ vvmplayer_window_class_init (VvmplayerWindowClass *klass)
 static void
 vvmplayer_window_init (VvmplayerWindow *self)
 {
+  VvmVvmd *backend = vvm_vvmd_get_default ();
   gtk_widget_init_template (GTK_WIDGET (self));
+  vvmplayer_vvmd_set_mm_vvm_list_box (backend, self);
+
 }
