@@ -109,18 +109,4 @@
     <property name="title" translatable="yes">_Add Account</property>
   </object>
 
-   <object class="HdyActionRow" id="add_row_row">
-    <property name="visible">True</property>
-    <property name="use-underline">True</property>
-    <property name="activatable">True</property>
-    <property name="title" translatable="yes">_Add Account Accountttt</property>
-  </object>
-
-   <object class="HdyActionRow" id="VoicemailWindow">
-    <property name="visible">True</property>
-    <property name="use-underline">True</property>
-    <property name="activatable">True</property>
-    <property name="title" translatable="yes">_Voicemaillll</property>
-  </object>
-
 </interface>

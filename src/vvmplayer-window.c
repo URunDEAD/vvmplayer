@@ -34,7 +34,6 @@ struct _VvmplayerWindow
   GListModel *voicemails;
 
   GtkWidget  *add_row;
-  GtkWidget  *add_row_row;
 };
 
 G_DEFINE_TYPE (VvmplayerWindow, vvmplayer_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -68,14 +67,14 @@ void
 vvmplayer_window_add_row (VvmplayerWindow *self)
 {
 
- // GtkWidget *voicemail = voicemail_window_new ();
+ GtkWidget *voicemail = voicemail_window_new ();
 
-  //gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
-  //                      GTK_WIDGET (voicemail));
+  gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
+                        GTK_WIDGET (voicemail));
 
 // works only when everything else is commented out
   gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
-                        GTK_WIDGET (self->add_row_row));
+                        GTK_WIDGET (self->add_row));
 
 }
 
@@ -90,7 +89,6 @@ vvmplayer_window_class_init (VvmplayerWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, visual_voicemail);
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, no_visual_voicemail_label);
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, add_row);
-  gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, add_row_row);
 
   gtk_widget_class_bind_template_callback (widget_class, vvmplayer_window_show_about_dialog);
   gtk_widget_class_bind_template_callback (widget_class, vvmplayer_window_show_settings_dialog);
@@ -109,9 +107,7 @@ vvmplayer_window_init (VvmplayerWindow *self)
                            self, NULL);
 
  /*****DEBUG***/
-  gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
-                        GTK_WIDGET (self->add_row));
-
+  vvmplayer_window_add_row (self);
   /*****DEBUG***/
 
 
