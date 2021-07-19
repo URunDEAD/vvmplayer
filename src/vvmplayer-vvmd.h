@@ -40,4 +40,7 @@ int vvmplayer_vvmd_encode_vvm_type (const char *vvm_type);
 
 char *vvmplayer_vvmd_decode_vvm_type (int vvm_type);
 
+int vvmplayer_vvmd_delete_vvm (VvmVvmd  *self,
+                               char *objectpath);
+
 G_END_DECLS

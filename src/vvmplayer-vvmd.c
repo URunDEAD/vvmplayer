@@ -40,6 +40,8 @@ struct _VvmVvmd
   unsigned int      vvmd_service_proxy_watch_id;
   GDBusProxy       *manager_proxy;
   GDBusProxy       *service_proxy;
+
+  GPtrArray        *vvm_arr;
 };
 
 G_DEFINE_TYPE (VvmVvmd, vvm_vvmd, G_TYPE_OBJECT)
@@ -217,17 +219,66 @@ vvmplayer_vvmd_get_service_settings (VvmVvmd *self)
     return TRUE;
 }
 
+int
+vvmplayer_vvmd_delete_vvm (VvmVvmd  *self,
+                           char *objectpath)
+{
+  if (g_ptr_array_remove (self->vvm_arr, objectpath)) {
+    g_debug ("Deleted VVM from pointer array, new length: %d", self->vvm_arr->len);
+  } else {
+    g_debug ("Could not find MMS in pointer array");
+    return FALSE;
+  }
+  //TODO: Delete the VVM!
+
+  return TRUE;
+
+}
+
+static int
+vvm_props_match_by_obj_path (char *old_objectpath,
+                             gconstpointer  objectpath)
+{
+  g_debug ("Payload Objectpath: %s", old_objectpath);
+  g_debug ("New Objectpath: %s", (char *)objectpath);
+  return g_strcmp0 (old_objectpath, (char *)objectpath) == 0;
+}
+
 static void
 vvmplayer_vvmd_receive_message (VvmVvmd   *self,
                                 GVariant *message_t)
 {
-  GtkWidget            *voicemail;
+  GtkWidget *voicemail;
+  GVariant  *properties;
+  char      *objectpath;
 
-  //TODO: Make a hash table to not double add VVMs
+  g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
+  g_debug ("VVM Object Path: %s", objectpath);
+
+  if (self->vvm_arr->len != 0) {
+    guint index;
+
+    if (g_ptr_array_find_with_equal_func (self->vvm_arr,
+                                          objectpath,
+                                          (GEqualFunc)vvm_props_match_by_obj_path,
+                                          &index)) {
+      g_debug ("MMS Already exists! skipping...");
+      return;
+    } else {
+      g_debug ("MMS Does not exist yet! adding...");
+    }
+  } else {
+    g_debug ("No stored MMSes exists yet!");
+  }
+
   voicemail = voicemail_window_new (message_t);
-
-  vvmplayer_window_add_row (self->visual_voicemail, voicemail);
-
+  if (voicemail == NULL) {
+    g_warning ("There was an error with making the VVM!");
+  } else {
+    g_ptr_array_add (self->vvm_arr, objectpath);
+    g_debug ("Adding VVM to pointer array, new length: %d", self->vvm_arr->len);
+    vvmplayer_window_add_row (self->visual_voicemail, voicemail);
+  }
 }
 
 static void
@@ -632,8 +683,10 @@ vvm_vvmd_constructed (GObject *object)
 static void
 vvm_vvmd_finalize (GObject *object)
 {
- //VvmVvmd *self = (VvmVvmd *)object;
-
+  VvmVvmd *self = (VvmVvmd *)object;
+  if (self->vvm_arr && self->vvm_arr->len) {
+    g_ptr_array_unref (self->vvm_arr);
+  }
   G_OBJECT_CLASS (vvm_vvmd_parent_class)->finalize (object);
 }
 
@@ -649,6 +702,7 @@ vvm_vvmd_class_init (VvmVvmdClass *klass)
 static void
 vvm_vvmd_init (VvmVvmd *self)
 {
+    self->vvm_arr = g_ptr_array_new ();
 }
 
 VvmVvmd *

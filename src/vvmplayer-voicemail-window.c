@@ -108,7 +108,7 @@ play_button_clicked_cb (GtkButton     *btn,
     g_debug("Playbin is NULL!");
     return;
   }
-
+  //TODO: Mark message read
   vvm_voicemail_set_gtkimage_icon (self->delete_button_icon, ICON_PLAYBACK_STOP);
 
   if (self->state != GST_STATE_PLAYING) { //We are not playing anything
