@@ -246,10 +246,9 @@ voicemail_window_new (GVariant *message_t)
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
 
   g_debug ("%s: New Voicemail at %s", __func__, objectpath);
-  g_debug ("%s", g_variant_print (properties, FALSE));
   g_variant_dict_init (&dict, properties);
   if (!g_variant_dict_lookup (&dict, "Date", "s", &Date))
-    Date = NULL;
+    Date = g_strdup("Invalid Date");
   if (!g_variant_dict_lookup (&dict, "Sender", "s", &Sender))
     Sender = g_strdup("Invalid Sender");
   if (!g_variant_dict_lookup (&dict, "To", "s", &To))
@@ -285,7 +284,7 @@ voicemail_window_new (GVariant *message_t)
 
     if (error != NULL) {
       g_warning ("Error getting file info: %s", error->message);
-      return NULL;
+      continue;
     }
     mime_type = g_content_type_get_mime_type (g_file_info_get_content_type (vvm_file_info));
     if (mime_type == NULL) {
@@ -327,7 +326,6 @@ voicemail_window_new (GVariant *message_t)
       self->minutes = (self->duration / (GST_SECOND * 60)) % 60;
       self->seconds = GST_TIME_AS_SECONDS (self->duration) - self->minutes * 60;
       self->duration_formatted = g_strdup_printf ("%02lu:%02lu", self->minutes, self->seconds);
-      g_print ("\nDuration: %" GST_TIME_FORMAT "\n", GST_TIME_ARGS (gst_discoverer_info_get_duration (info)));
     }
 
     self->minutes = 0;
@@ -352,29 +350,6 @@ voicemail_window_new (GVariant *message_t)
   //TODO: If the Sender is a contact, substitute that
   vvm_preferences_set_hdyexpanderrow_text(self->action_expander_row, Sender);
 
-  g_debug("Old Date: %s", Date);
-
-  if (Date) {
-    //TODO: Standardize date
-    //TODO: THis may be easier in vvmd: https://curl.se/libcurl/c/curl_getdate.html
-    // https://developer.gnome.org/glib/stable/glib-GDateTime.html#g-date-time-new-from-unix-utc
-/*
-    struct tm tm;
-    struct tm tm_new;
-    time_t time_to_display;
-    static char buf[128];
-    //Tue, 06 Jul 2021 13:25:39 +0000
-    strptime (Date, "%a, %d %b %Y %H:%M:%S %z", &tm);
-    time_to_display = mktime(&tm);
-    strftime (buf, 127, "%a, %d %b %Y %I:%M:%S %p", localtime_r (&time_to_display, &tm_new));
-    buf[127] = '\0';
-    g_free(Date);
-    Date = g_strdup(buf);
-*/
-  } else {
-    Date = g_strdup("Invalid Date");
-  }
-  g_debug("New Date: %s", Date);
   hdy_expander_row_set_subtitle(self->action_expander_row, Date);
 
   return GTK_WIDGET (self);
