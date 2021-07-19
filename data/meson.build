@@ -1,3 +1,6 @@
+datadir = get_option('datadir')
+sysconfdir = get_option('sysconfdir')
+
 desktop_file = i18n.merge_file(
   input: 'org.kop316.vvmplayer.desktop.in',
   output: 'org.kop316.vvmplayer.desktop',
@@ -5,6 +8,18 @@ desktop_file = i18n.merge_file(
   po_dir: '../po',
   install: true,
   install_dir: join_paths(get_option('datadir'), 'applications')
+)
+
+# Icons
+install_data(
+  'org.kop316.vvmplayer.svg',
+  install_dir: join_paths(
+    datadir,
+    'icons',
+    'hicolor',
+    'scalable',
+    'apps'
+  )
 )
 
 desktop_utils = find_program('desktop-file-validate', required: false)

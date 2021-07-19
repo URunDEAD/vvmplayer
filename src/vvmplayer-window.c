@@ -42,11 +42,18 @@ vvmplayer_window_show_about_dialog (VvmplayerWindow *self)
     NULL
   };
 
+  static const gchar *artists[] = {
+    "Asiya Morris <aitrisart@gmail.com>",
+    NULL
+  };
+
   gtk_show_about_dialog (GTK_WINDOW (self),
+                         "logo-icon-name", "org.kop316.vvmplayer",
                          "website", "https://gitlab.com/kop316/vvmplayer",
                          "copyright", "© 2021 Chris Talbot",
                          "license-type", GTK_LICENSE_GPL_3_0,
                          "authors", authors,
+                         "artists", artists,
                          NULL);
 }
 
