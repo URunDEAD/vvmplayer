@@ -235,6 +235,39 @@ vvmplayer_vvmd_delete_vvm (VvmVvmd  *self,
 
 }
 
+static void
+vvmplayer_vvmd_mark_message_read_cb (GObject      *interface,
+                                     GAsyncResult *result,
+                                     gpointer     *user_data)
+{
+  g_autoptr (GError) error = NULL;
+
+  if (g_dbus_proxy_call_finish (G_DBUS_PROXY (interface),
+                                result,
+                                &error)) {
+    g_debug ("VVM marked as read");
+  } else {
+    g_debug ("Couldn't mark VVM as read- error: %s", error ? error->message : "unknown");
+  }
+}
+
+void
+vvmplayer_vvmd_mark_message_read (GDBusProxy      *message_proxy,
+                                  char            *objectpath,
+                                  gpointer         user_data)
+{
+  g_debug ("Deleting MMS with Object Path: %s", objectpath);
+
+  g_dbus_proxy_call (message_proxy,
+                     "MarkRead",
+                     NULL,
+                     G_DBUS_CALL_FLAGS_NONE,
+                     -1,
+                     NULL,
+                     (GAsyncReadyCallback) vvmplayer_vvmd_mark_message_read_cb,
+                     user_data);
+}
+
 static int
 vvm_props_match_by_obj_path (char *old_objectpath,
                              gconstpointer  objectpath)
@@ -248,9 +281,10 @@ static void
 vvmplayer_vvmd_receive_message (VvmVvmd   *self,
                                 GVariant *message_t)
 {
-  GtkWidget *voicemail;
-  GVariant  *properties;
-  char      *objectpath;
+  GtkWidget  *voicemail;
+  GVariant   *properties;
+  char       *objectpath;
+  GDBusProxy *message_proxy;
 
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
   g_debug ("VVM Object Path: %s", objectpath);
@@ -271,7 +305,24 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
     g_debug ("No stored MMSes exists yet!");
   }
 
-  voicemail = voicemail_window_new (message_t);
+  message_proxy =
+    g_dbus_proxy_new_sync (self->connection,
+                           G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
+                           NULL,
+                           VVMD_SERVICE,
+                           objectpath,
+                           VVMD_MESSAGE_INTERFACE,
+                           NULL,
+                           NULL);
+
+  if (message_proxy == NULL) {
+    g_warning ("Error connecting to the message Proxy!");
+  }
+
+  voicemail = voicemail_window_new (message_t, message_proxy);
+
+
+
   if (voicemail == NULL) {
     g_warning ("There was an error with making the VVM!");
   } else {

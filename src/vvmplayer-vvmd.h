@@ -43,4 +43,8 @@ char *vvmplayer_vvmd_decode_vvm_type (int vvm_type);
 int vvmplayer_vvmd_delete_vvm (VvmVvmd  *self,
                                char *objectpath);
 
+void vvmplayer_vvmd_mark_message_read (GDBusProxy      *message_proxy,
+                                       char            *objectpath,
+                                       gpointer         user_data);
+
 G_END_DECLS

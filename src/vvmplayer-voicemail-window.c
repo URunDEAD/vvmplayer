@@ -43,6 +43,10 @@ struct _VoicemailWindow
   gint64 minutes;
   gint64 seconds;
   char *duration_formatted;
+  char *objectpath;
+  char *title;
+  int lifetime_status;
+  GDBusProxy *message_proxy;
 
 };
 
@@ -108,7 +112,24 @@ play_button_clicked_cb (GtkButton     *btn,
     g_debug("Playbin is NULL!");
     return;
   }
-  //TODO: Mark message read
+
+  switch(self->lifetime_status) {
+    case VVM_TYPE_UNKNOWN:
+    case VVM_LIFETIME_STATUS_NOT_READ:
+      g_debug("Marking as read....");
+      self->lifetime_status = VVM_LIFETIME_STATUS_READ;
+      vvm_preferences_set_hdyexpanderrow_text (self->action_expander_row, self->title);
+      vvmplayer_vvmd_mark_message_read (self->message_proxy, self->objectpath, self);
+      break;
+
+    case VVM_LIFETIME_STATUS_READ:
+      g_debug("VVM was read!");
+      break;
+
+    default:
+      g_debug("Something bad happened!");
+  }
+
   vvm_voicemail_set_gtkimage_icon (self->delete_button_icon, ICON_PLAYBACK_STOP);
 
   if (self->state != GST_STATE_PLAYING) { //We are not playing anything
@@ -145,6 +166,8 @@ delete_button_clicked_cb (GtkButton     *btn,
   }
 
   if (self->state == GST_STATE_READY) { //We are stopped
+    //TODO: Delete
+    //vvmplayer_vvmd_delete_vvm()
     g_debug("Need to delete!");
   } else { //We are playing or paused
     GstStateChangeReturn ret;
@@ -220,7 +243,7 @@ static void state_changed_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *sel
 }
 
 GtkWidget *
-voicemail_window_new (GVariant *message_t)
+voicemail_window_new (GVariant *message_t, GDBusProxy *message_proxy)
 {
   VoicemailWindow      *self;
 
@@ -231,6 +254,7 @@ voicemail_window_new (GVariant *message_t)
   g_autofree char      *MessageContext = NULL;
   g_autofree char      *Attachments = NULL;
   g_autofree char     **Attachment_list = NULL;
+  int lifetime_status;
 
   GVariant             *properties;
   GVariantDict          dict;
@@ -242,10 +266,13 @@ voicemail_window_new (GVariant *message_t)
   self = g_object_new (GTK_TYPE_VOICEMAIL_WINDOW, NULL);
   self->minutes = 0;
   self->seconds = 0;
+  self->message_proxy = message_proxy;
 
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
 
   g_debug ("%s: New Voicemail at %s", __func__, objectpath);
+  self->objectpath = g_strdup(objectpath);
+
   g_variant_dict_init (&dict, properties);
   if (!g_variant_dict_lookup (&dict, "Date", "s", &Date))
     Date = g_strdup("Invalid Date");
@@ -257,6 +284,10 @@ voicemail_window_new (GVariant *message_t)
     MessageContext = g_strdup("Invalid Message Context");
   if (!g_variant_dict_lookup (&dict, "Attachments", "s", &Attachments))
     Attachments = NULL;
+  if (!g_variant_dict_lookup (&dict, "LifetimeStatus", "i", &lifetime_status))
+    lifetime_status = VVM_LIFETIME_STATUS_UNKNOWN;
+
+  self->lifetime_status = lifetime_status;
 
   if (Attachments)
     Attachment_list = g_strsplit(Attachments, ";", -1);
@@ -348,6 +379,11 @@ voicemail_window_new (GVariant *message_t)
   }
 
   //TODO: If the Sender is a contact, substitute that
+  self->title = g_strdup(Sender);
+  if (self->lifetime_status == VVM_LIFETIME_STATUS_NOT_READ) {
+    g_debug("Marking as unread");
+    Sender = g_strdup_printf ("%s (Unread)", Sender);
+  }
   vvm_preferences_set_hdyexpanderrow_text(self->action_expander_row, Sender);
 
   hdy_expander_row_set_subtitle(self->action_expander_row, Date);
@@ -361,6 +397,8 @@ voicemail_window_finalize (GObject *object)
   VoicemailWindow *self = (VoicemailWindow *)object;
 
   g_free (self->duration_formatted);
+  g_free(self->objectpath);
+  g_free(self->title);
   G_OBJECT_CLASS (voicemail_window_parent_class)->finalize (object);
 
 }
