@@ -18,22 +18,55 @@
 
 #include "vvmplayer-voicemail-window.h"
 #include <gst/pbutils/pbutils.h>
+#include <time.h>
+
+#define _XOPEN_SOURCE 700
+
+#define ICON_PLAYBACK_STOP "media-playback-stop"
+#define ICON_PLAYBACK_START "media-playback-start"
+#define ICON_PLAYBACK_PAUSE "media-playback-pause"
+#define ICON_DELETE "edit-delete"
 
 struct _VoicemailWindow
 {
   HdyActionRow parent_instance;
 
   GstElement *playbin;
-  GstState state; //state of the pipeline
+  GstState state;
 
   GtkImage *play_button_icon;
+  GtkImage *delete_button_icon;
 
   HdyExpanderRow *action_expander_row;
+  HdyActionRow *second_row;
   gint64 duration;
+  gint64 minutes;
+  gint64 seconds;
+  char *duration_formatted;
 
 };
 
 G_DEFINE_TYPE (VoicemailWindow, voicemail_window, HDY_TYPE_ACTION_ROW)
+
+static void
+vvm_preferences_set_hdyexpanderrow_text (HdyExpanderRow *hdy_row, const char *text) {
+  GValue a = G_VALUE_INIT;
+
+  g_value_init (&a, G_TYPE_STRING);
+  g_assert (G_VALUE_HOLDS_STRING (&a));
+  g_value_set_static_string (&a, text);
+  g_object_set_property (G_OBJECT (hdy_row), "title", &a);
+}
+
+static void
+vvm_preferences_set_hdyactionrow_text (HdyActionRow *hdy_row, const char *text) {
+  GValue a = G_VALUE_INIT;
+
+  g_value_init (&a, G_TYPE_STRING);
+  g_assert (G_VALUE_HOLDS_STRING (&a));
+  g_value_set_static_string (&a, text);
+  g_object_set_property (G_OBJECT (hdy_row), "title", &a);
+}
 
 static gboolean refresh_ui (VoicemailWindow *self) {
 
@@ -43,19 +76,17 @@ static gboolean refresh_ui (VoicemailWindow *self) {
   }
 
   g_debug("Refreshing UI!");
+  g_autofree char *duration;
+  self->seconds = self->seconds + 1;
+  if (self->seconds == 60) {
+    self->seconds = 0;
+    self->minutes = self->minutes + 1;
+  }
+  duration = g_strdup_printf("%02lu:%02lu/%s", self->minutes, self->seconds, self->duration_formatted);
+  vvm_preferences_set_hdyactionrow_text(self->second_row, duration);
 
   return TRUE;
 
-}
-
-static void
-vvm_preferences_set_hdyactionrow_text (HdyExpanderRow *hdy_row, const char *text) {
-  GValue a = G_VALUE_INIT;
-
-  g_value_init (&a, G_TYPE_STRING);
-  g_assert (G_VALUE_HOLDS_STRING (&a));
-  g_value_set_static_string (&a, text);
-  g_object_set_property (G_OBJECT (hdy_row), "title", &a);
 }
 
 static void
@@ -78,13 +109,15 @@ play_button_clicked_cb (GtkButton     *btn,
     return;
   }
 
+  vvm_voicemail_set_gtkimage_icon (self->delete_button_icon, ICON_PLAYBACK_STOP);
+
   if (self->state != GST_STATE_PLAYING) { //We are not playing anything
     GstStateChangeReturn ret;
     ret = gst_element_set_state (self->playbin, GST_STATE_PLAYING);
     if (ret == GST_STATE_CHANGE_FAILURE) {
       g_printerr ("Unable to set the pipeline to the playing state.\n");
     } else {
-      vvm_voicemail_set_gtkimage_icon (self->play_button_icon, "media-playback-pause");
+      vvm_voicemail_set_gtkimage_icon (self->play_button_icon, ICON_PLAYBACK_PAUSE);
       /* Register a function that GLib will call every second */
       g_timeout_add_seconds (1, (GSourceFunc)refresh_ui, self);
       self->state = GST_STATE_PLAYING;
@@ -95,24 +128,80 @@ play_button_clicked_cb (GtkButton     *btn,
     if (ret == GST_STATE_CHANGE_FAILURE) {
       g_printerr ("Unable to set the pipeline to the playing state.\n");
     } else {
-      vvm_voicemail_set_gtkimage_icon (self->play_button_icon, "media-playback-start");
+      vvm_voicemail_set_gtkimage_icon (self->play_button_icon, ICON_PLAYBACK_START);
       self->state = GST_STATE_PAUSED;
+    }
+  }
+}
+
+static void
+delete_button_clicked_cb (GtkButton     *btn,
+                        VoicemailWindow *self)
+{
+  g_debug("Delete button clicked!");
+  if (!self->playbin) {
+    g_debug("Playbin is NULL!");
+    return;
+  }
+
+  if (self->state == GST_STATE_READY) { //We are stopped
+    g_debug("Need to delete!");
+  } else { //We are playing or paused
+    GstStateChangeReturn ret;
+    ret = gst_element_set_state (self->playbin, GST_STATE_READY);
+    if (ret == GST_STATE_CHANGE_FAILURE) {
+      g_printerr ("Unable to set the pipeline to the stopped state.\n");
+    } else {
+      g_autofree char *duration = NULL;
+      g_printerr ("Stopping playback\n");
+      gst_element_set_state (self->playbin, GST_STATE_READY);
+      vvm_voicemail_set_gtkimage_icon (self->delete_button_icon, ICON_DELETE);
+      vvm_voicemail_set_gtkimage_icon (self->play_button_icon, ICON_PLAYBACK_START);
+      self->state = GST_STATE_PAUSED;
+      self->minutes = 0;
+      self->seconds = 0;
+      duration = g_strdup_printf("%02lu:%02lu/%s", self->minutes, self->seconds, self->duration_formatted);
+      vvm_preferences_set_hdyactionrow_text(self->second_row, duration);
     }
   }
 }
 
 /* This function is called when an error message is posted on the bus */
 static void error_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *self) {
-  g_print ("Errorreached.\n");
+  GError *err;
+  gchar *debug_info;
+
+  /* Print error details on the screen */
+  gst_message_parse_error (msg, &err, &debug_info);
+  g_printerr ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg->src), err->message);
+  g_printerr ("Debugging information: %s\n", debug_info ? debug_info : "none");
+  g_clear_error (&err);
+  g_free (debug_info);
+
+  /* Set the pipeline to READY (which stops playback) */
+  gst_element_set_state (self->playbin, GST_STATE_READY);
+
+  vvm_voicemail_set_gtkimage_icon (self->play_button_icon, ICON_PLAYBACK_START);
+  self->state = GST_STATE_READY;
+  vvm_preferences_set_hdyactionrow_text(self->second_row, "Playback Error!");
 }
 
 /* This function is called when an End-Of-Stream message is posted on the bus.
  * We just set the pipeline to READY (which stops playback) */
 static void eos_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *self) {
-  g_print ("End-Of-Stream reached.\n");
+  g_autofree char *duration;
+  g_debug ("End-Of-Stream reached.");
   gst_element_set_state (self->playbin, GST_STATE_READY);
-  vvm_voicemail_set_gtkimage_icon (self->play_button_icon, "media-playback-start");
   self->state = GST_STATE_READY;
+
+  vvm_voicemail_set_gtkimage_icon (self->play_button_icon, ICON_PLAYBACK_START);
+
+
+  self->minutes = 0;
+  self->seconds = 0;
+  duration = g_strdup_printf("%02lu:%02lu/%s", self->minutes, self->seconds, self->duration_formatted);
+  vvm_preferences_set_hdyactionrow_text(self->second_row, duration);
+  vvm_voicemail_set_gtkimage_icon (self->delete_button_icon, ICON_DELETE);
 }
 
 /* This function is called when the pipeline changes states. We use it to
@@ -128,12 +217,6 @@ static void state_changed_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *sel
       refresh_ui (self);
     }
   }
-}
-
-/* This function is called when an "application" message is posted on the bus.
- * Here we retrieve the message posted by the tags_cb callback */
-static void application_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *self) {
-  g_debug("Application Callback!");
 }
 
 GtkWidget *
@@ -157,6 +240,8 @@ voicemail_window_new (GVariant *message_t)
   int number_of_attachments;
 
   self = g_object_new (GTK_TYPE_VOICEMAIL_WINDOW, NULL);
+  self->minutes = 0;
+  self->seconds = 0;
 
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
 
@@ -164,7 +249,7 @@ voicemail_window_new (GVariant *message_t)
   g_debug ("%s", g_variant_print (properties, FALSE));
   g_variant_dict_init (&dict, properties);
   if (!g_variant_dict_lookup (&dict, "Date", "s", &Date))
-    Date = g_strdup("Invalid Date");
+    Date = NULL;
   if (!g_variant_dict_lookup (&dict, "Sender", "s", &Sender))
     Sender = g_strdup("Invalid Sender");
   if (!g_variant_dict_lookup (&dict, "To", "s", &To))
@@ -186,6 +271,7 @@ voicemail_window_new (GVariant *message_t)
     g_autofree char *mime_type = NULL;
     g_autofree char *attachment_uri = NULL;
     g_autofree char *attachment_uri_playbin = NULL;
+    g_autofree char *duration;
     GstDiscoverer *discoverer;
     GstDiscovererInfo *info;
 
@@ -215,15 +301,13 @@ voicemail_window_new (GVariant *message_t)
     if (strstr (mime_type, "audio") == NULL) {
       g_debug("MIME Type is not audio! skipping....");
     }
-
-
     self->duration = GST_CLOCK_TIME_NONE;
+
     //TODO FIXME this does not work with amr?
-//  attachment_uri = g_strdup_printf("playbin file://%s", Attachment_list[i]);
+    attachment_uri = g_strdup_printf("file://%s", Attachment_list[i]);
     attachment_uri = g_strdup("file:///home/mobian/test.mp3");
     g_debug("file URI: %s", attachment_uri);
     attachment_uri_playbin = g_strdup_printf("playbin uri=%s", attachment_uri);
-    g_debug("file URI: %s", attachment_uri_playbin);
 
     discoverer = gst_discoverer_new (GST_SECOND, &error);
     if (!discoverer) {
@@ -235,10 +319,19 @@ voicemail_window_new (GVariant *message_t)
     info = gst_discoverer_discover_uri(discoverer, attachment_uri, &error);
     if (error != NULL) {
       g_warning ("Error discovering file: %s", error->message);
+      self->duration_formatted = g_strdup ("??:??");
     } else {
       self->duration = gst_discoverer_info_get_duration (info);
-      g_print ("\nDuration: %" GST_TIME_FORMAT "\n", GST_TIME_ARGS (self->duration));
+      self->minutes = (self->duration / (GST_SECOND * 60)) % 60;
+      self->seconds = GST_TIME_AS_SECONDS (self->duration) - self->minutes * 60;
+      self->duration_formatted = g_strdup_printf ("%02lu:%02lu", self->minutes, self->seconds);
+      g_print ("\nDuration: %" GST_TIME_FORMAT "\n", GST_TIME_ARGS (gst_discoverer_info_get_duration (info)));
     }
+
+    self->minutes = 0;
+    self->seconds = 0;
+    duration = g_strdup_printf("%02lu:%02lu/%s", self->minutes, self->seconds, self->duration_formatted);
+    vvm_preferences_set_hdyactionrow_text(self->second_row, duration);
 
     g_object_unref (discoverer);
 
@@ -250,13 +343,19 @@ voicemail_window_new (GVariant *message_t)
     g_signal_connect (G_OBJECT (bus), "message::error", (GCallback)error_cb, self);
     g_signal_connect (G_OBJECT (bus), "message::eos", (GCallback)eos_cb, self);
     g_signal_connect (G_OBJECT (bus), "message::state-changed", (GCallback)state_changed_cb, self);
-    g_signal_connect (G_OBJECT (bus), "message::application", (GCallback)application_cb, self);
     gst_object_unref (bus);
 
   }
 
   //TODO: If the Sender is a contact, substitute that
-  vvm_preferences_set_hdyactionrow_text(self->action_expander_row, Sender);
+  vvm_preferences_set_hdyexpanderrow_text(self->action_expander_row, Sender);
+
+  if (Date) {
+    //TODO: Standardize date
+
+  } else {
+    Date = g_strdup("Invalid Date");
+  }
   hdy_expander_row_set_subtitle(self->action_expander_row, Date);
 
   return GTK_WIDGET (self);
@@ -265,8 +364,9 @@ voicemail_window_new (GVariant *message_t)
 static void
 voicemail_window_finalize (GObject *object)
 {
-//  VoicemailWindow *self = (VoicemailWindow *)object;
+  VoicemailWindow *self = (VoicemailWindow *)object;
 
+  g_free (self->duration_formatted);
   G_OBJECT_CLASS (voicemail_window_parent_class)->finalize (object);
 
 }
@@ -282,8 +382,11 @@ voicemail_window_class_init (VoicemailWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, action_expander_row);
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, play_button_icon);
+  gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, delete_button_icon);
+  gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, second_row);
 
   gtk_widget_class_bind_template_callback (widget_class, play_button_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, delete_button_clicked_cb);
 
   object_class->finalize = voicemail_window_finalize;
 

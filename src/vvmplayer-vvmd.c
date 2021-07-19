@@ -223,6 +223,7 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
 {
   GtkWidget            *voicemail;
 
+  //TODO: Make a hash table to not double add VVMs
   voicemail = voicemail_window_new (message_t);
 
   vvmplayer_window_add_row (self->visual_voicemail, voicemail);

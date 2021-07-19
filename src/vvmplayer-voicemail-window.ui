@@ -26,9 +26,25 @@
           </object>
         </child>
         <child>
-          <object class="HdyActionRow">
-          <property name="title" translatable="yes">Delete</property>
+          <object class="HdyActionRow" id="second_row">
+          <property name="title" translatable="yes">00:00/??:??</property>
           <property name="visible">True</property>
+          <child type="prefix">
+            <object class="GtkButton">
+            <property name="visible">True</property>
+            <property name="valign">center</property>
+            <signal name="clicked" handler="delete_button_clicked_cb" swapped="no"/>
+            <style>
+              <class name="list-button"/>
+            </style>
+              <child>
+                <object class="GtkImage" id="delete_button_icon">
+                  <property name="visible">True</property>
+                  <property name="icon-name">edit-delete</property>
+                </object>
+              </child>
+            </object>
+          </child>
           </object>
         </child>
       </object>
