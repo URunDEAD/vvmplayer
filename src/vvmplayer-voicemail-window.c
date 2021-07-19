@@ -303,11 +303,13 @@ voicemail_window_new (GVariant *message_t)
     }
     self->duration = GST_CLOCK_TIME_NONE;
 
-    //TODO FIXME this does not work with amr?
+
+
     attachment_uri = g_strdup_printf("file://%s", Attachment_list[i]);
-    attachment_uri = g_strdup("file:///home/mobian/test.mp3");
     g_debug("file URI: %s", attachment_uri);
-    attachment_uri_playbin = g_strdup_printf("playbin uri=%s", attachment_uri);
+    // amr files have issues playing on Mobian, so I need to add `audio-sink='capsfilter caps=audio/x-raw,rate=48000 ! pulsesink'`
+    // gst-launch-1.0 playbin uri=file:///path/to/foo audio-sink='capsfilter caps=audio/x-raw,rate=48000 ! pulsesink'
+    attachment_uri_playbin = g_strdup_printf("playbin uri=%s audio-sink='capsfilter caps=audio/x-raw,rate=48000 ! pulsesink'", attachment_uri);
 
     discoverer = gst_discoverer_new (GST_SECOND, &error);
     if (!discoverer) {
@@ -350,12 +352,29 @@ voicemail_window_new (GVariant *message_t)
   //TODO: If the Sender is a contact, substitute that
   vvm_preferences_set_hdyexpanderrow_text(self->action_expander_row, Sender);
 
+  g_debug("Old Date: %s", Date);
+
   if (Date) {
     //TODO: Standardize date
-
+    //TODO: THis may be easier in vvmd: https://curl.se/libcurl/c/curl_getdate.html
+    // https://developer.gnome.org/glib/stable/glib-GDateTime.html#g-date-time-new-from-unix-utc
+/*
+    struct tm tm;
+    struct tm tm_new;
+    time_t time_to_display;
+    static char buf[128];
+    //Tue, 06 Jul 2021 13:25:39 +0000
+    strptime (Date, "%a, %d %b %Y %H:%M:%S %z", &tm);
+    time_to_display = mktime(&tm);
+    strftime (buf, 127, "%a, %d %b %Y %I:%M:%S %p", localtime_r (&time_to_display, &tm_new));
+    buf[127] = '\0';
+    g_free(Date);
+    Date = g_strdup(buf);
+*/
   } else {
     Date = g_strdup("Invalid Date");
   }
+  g_debug("New Date: %s", Date);
   hdy_expander_row_set_subtitle(self->action_expander_row, Date);
 
   return GTK_WIDGET (self);
