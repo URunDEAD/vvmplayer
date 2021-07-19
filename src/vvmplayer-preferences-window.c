@@ -117,13 +117,15 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   g_autofree char     *VVMProvisionStatus = NULL;
   g_autofree char     *VVMCarrierPrefix = NULL;
   g_autofree char     *VVMType = NULL;
-  int VVMEnabled;
-  int VVMType_encoded;
+  int VVMEnabled, enable_vvm_switch_state;
+  int VVMType_encoded, vvm_type_combo_row_state;
   VvmSettings *settings = vvm_settings_get_default ();
 
   //Enable VVM
   VVMEnabled = vvm_settings_get_vvm_enabled (settings);
-  gtk_switch_set_active (self->enable_vvm_switch, VVMEnabled);
+  enable_vvm_switch_state = gtk_switch_get_state (self->enable_vvm_switch);
+  if (VVMEnabled != enable_vvm_switch_state)
+    gtk_switch_set_active (self->enable_vvm_switch, VVMEnabled);
 
 
   //Modem Manager settings
@@ -151,7 +153,9 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   VVMType = vvm_settings_get_vvm_type (settings);
   VVMType_encoded = vvmplayer_vvmd_encode_vvm_type (VVMType);
   g_debug("VVMType: %s, VVMType_encoded: %d", VVMType, VVMType_encoded);
-  hdy_combo_row_set_selected_index (self->vvm_type_combo_row, VVMType_encoded);
+  vvm_type_combo_row_state = hdy_combo_row_get_selected_index (self->vvm_type_combo_row);
+  if (vvm_type_combo_row_state != VVMType_encoded)
+    hdy_combo_row_set_selected_index (self->vvm_type_combo_row, VVMType_encoded);
 
   //Status
   if(vvm_settings_get_mm_available (settings) &&

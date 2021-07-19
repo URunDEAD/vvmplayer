@@ -29,11 +29,7 @@ struct _VvmplayerWindow
   /* Template widgets */
   HdyHeaderBar  *header_bar;
   GtkListBox     *visual_voicemail;
-  GtkLabel      *no_visual_voicemail_label;
 
-  GListModel *voicemails;
-
-  GtkWidget  *add_row;
 };
 
 G_DEFINE_TYPE (VvmplayerWindow, vvmplayer_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -64,17 +60,10 @@ vvmplayer_window_show_settings_dialog (VvmplayerWindow *self)
 }
 
 void
-vvmplayer_window_add_row (VvmplayerWindow *self)
+vvmplayer_window_add_row (VvmplayerWindow *self, GtkWidget *voicemail)
 {
-
- GtkWidget *voicemail = voicemail_window_new ();
-
   gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
                         GTK_WIDGET (voicemail));
-
-// works only when everything else is commented out
-  gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
-                        GTK_WIDGET (self->add_row));
 
 }
 
@@ -87,8 +76,6 @@ vvmplayer_window_class_init (VvmplayerWindowClass *klass)
   gtk_widget_class_set_template_from_resource (widget_class, "/org/kop316/vvmplayer/vvmplayer-window.ui");
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, header_bar);
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, visual_voicemail);
-  gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, no_visual_voicemail_label);
-  gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, add_row);
 
   gtk_widget_class_bind_template_callback (widget_class, vvmplayer_window_show_about_dialog);
   gtk_widget_class_bind_template_callback (widget_class, vvmplayer_window_show_settings_dialog);
@@ -100,15 +87,4 @@ vvmplayer_window_init (VvmplayerWindow *self)
   VvmVvmd *backend = vvm_vvmd_get_default ();
   gtk_widget_init_template (GTK_WIDGET (self));
   vvmplayer_vvmd_set_mm_vvm_list_box (backend, self);
-
-  gtk_list_box_bind_model (GTK_LIST_BOX (self->visual_voicemail),
-                           self->voicemails,
-                           (GtkListBoxCreateWidgetFunc)voicemail_window_new,
-                           self, NULL);
-
- /*****DEBUG***/
-  vvmplayer_window_add_row (self);
-  /*****DEBUG***/
-
-
 }

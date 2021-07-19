@@ -22,6 +22,7 @@
 #include "vvmplayer-window.h"
 #include "vvmplayer-settings.h"
 #include "vvmplayer-vvmd.h"
+#include <gst/gst.h>
 
 typedef struct
 {
@@ -114,6 +115,9 @@ main (int   argc,
 {
 	VvmPlayer *vvm_player;
 	int ret;
+
+	  /* Initialize GStreamer */
+  gst_init (&argc, &argv);
 
 	bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");

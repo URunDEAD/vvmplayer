@@ -2,6 +2,8 @@
 
 #include <gtk/gtk.h>
 #include "vvmplayer-window.h"
+#include "vvmplayer-settings.h"
+#include "vvmplayer-voicemail-window.h"
 
 G_BEGIN_DECLS
 

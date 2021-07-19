@@ -17,7 +17,6 @@
  */
 
 #include "vvmplayer-vvmd.h"
-#include "vvmplayer-settings.h"
 
 #define VVMD_SERVICE	                "org.kop316.vvm"
 #define VVMD_PATH	                "/org/kop316/vvm"
@@ -222,44 +221,12 @@ static void
 vvmplayer_vvmd_receive_message (VvmVvmd   *self,
                                 GVariant *message_t)
 {
-  g_debug("Decoding Message!");
-  g_autofree char      *objectpath = NULL;
-  g_autofree char      *Date = NULL;
-  g_autofree char      *Sender = NULL;
-  g_autofree char      *To = NULL;
-  g_autofree char      *MessageContext = NULL;
-  g_autofree char      *Attachments = NULL;
-  g_autofree char      **Attachment_list = NULL;
+  GtkWidget            *voicemail;
 
-  GVariant  *properties;
-  GVariantDict        dict;
+  voicemail = voicemail_window_new (message_t);
 
-  g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
+  vvmplayer_window_add_row (self->visual_voicemail, voicemail);
 
-  g_debug ("%s: New MMS at %s", __func__, objectpath);
-  g_debug ("%s", g_variant_print (properties, FALSE));
-  g_variant_dict_init (&dict, properties);
-  if (!g_variant_dict_lookup (&dict, "Date", "s", &Date))
-    Date = NULL;
-  if (!g_variant_dict_lookup (&dict, "Sender", "s", &Sender))
-    Sender = NULL;
-  if (!g_variant_dict_lookup (&dict, "To", "s", &To))
-    To = NULL;
-  if (!g_variant_dict_lookup (&dict, "MessageContext", "s", &MessageContext))
-    MessageContext = NULL;
-  if (!g_variant_dict_lookup (&dict, "Sender", "s", &Attachments))
-    Attachments = NULL;
-
-  if (Attachments)
-    Attachment_list = g_strsplit(Attachments, ";", -1);
-
-   vvmplayer_window_add_row (self->visual_voicemail);
-
-/*
-  GtkWidget *widget = gtk_widget_new (GTK_TYPE_LABEL, "label", "Hello World", "xalign", 0.0, NULL);
-
-  gtk_list_box_prepend (self->visual_voicemail, widget);
-*/
 }
 
 static void

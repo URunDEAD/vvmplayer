@@ -27,6 +27,6 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (VvmplayerWindow, vvmplayer_window, VVMPLAYER, WINDOW, GtkApplicationWindow)
 
-void vvmplayer_window_add_row (VvmplayerWindow *self);
+void vvmplayer_window_add_row (VvmplayerWindow *self, GtkWidget *voicemail);
 
 G_END_DECLS
