@@ -26,11 +26,6 @@
           </object>
         </child>
         <child>
-          <object class="GtkScale" id="play_scale">
-          <property name="visible">True</property>
-          </object>
-        </child>
-        <child>
           <object class="HdyActionRow">
           <property name="title" translatable="yes">Delete</property>
           <property name="visible">True</property>

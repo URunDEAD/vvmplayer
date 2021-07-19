@@ -49,7 +49,7 @@
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "file:///home/chris/Projects/vvmplayer"
+                    "url" : "https://gitlab.com/kop316/vvmplayer/"
                 }
             ]
         }

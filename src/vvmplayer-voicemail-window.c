@@ -23,26 +23,19 @@ struct _VoicemailWindow
 {
   HdyActionRow parent_instance;
 
-  //GStreamer elements
-  GstElement *playbin;           /* Our one and only pipeline */
-
+  GstElement *playbin;
   GstState state; //state of the pipeline
 
   GtkImage *play_button_icon;
-  //Slider
-  GtkWidget *play_scale;
-  gulong slider_update_signal_id;
-
-  gint64 duration;                /* Duration of the clip, in nanoseconds */
 
   HdyExpanderRow *action_expander_row;
+  gint64 duration;
 
 };
 
 G_DEFINE_TYPE (VoicemailWindow, voicemail_window, HDY_TYPE_ACTION_ROW)
 
 static gboolean refresh_ui (VoicemailWindow *self) {
-  gint64 current = -1;
 
   if (self->state == GST_STATE_READY || self->state == GST_STATE_PAUSED) {
     /* For extra responsiveness, we refresh the GUI as soon as we reach the PAUSED state */
@@ -51,25 +44,6 @@ static gboolean refresh_ui (VoicemailWindow *self) {
 
   g_debug("Refreshing UI!");
 
-  /* If we didn't know it yet, query the stream duration */
-  if (!GST_CLOCK_TIME_IS_VALID (self->duration)) {
-    if (!gst_element_query_duration (self->playbin, GST_FORMAT_TIME, &self->duration)) {
-      g_printerr ("Could not query current duration.\n");
-    } else {
-      /* Set the range of the slider to the clip duration, in SECONDS */
-      gtk_range_set_range (GTK_RANGE (self->play_scale), 0, (gdouble)self->duration / GST_SECOND);
-    }
-  }
-
-  if (gst_element_query_position (self->playbin, GST_FORMAT_TIME, &current)) {
-    /* Block the "value-changed" signal, so the slider_cb function is not called
-     * (which would trigger a seek the user has not requested) */
-    g_signal_handler_block (self->play_scale, self->slider_update_signal_id);
-    /* Set the position of the slider to the current pipeline positoin, in SECONDS */
-    gtk_range_set_value (GTK_RANGE (self->play_scale), (gdouble)current / GST_SECOND);
-    /* Re-enable the signal */
-    g_signal_handler_unblock (self->play_scale, self->slider_update_signal_id);
-  }
   return TRUE;
 
 }
@@ -92,15 +66,6 @@ vvm_voicemail_set_gtkimage_icon (GtkImage *image_to_set, const char *icon) {
   g_assert (G_VALUE_HOLDS_STRING (&a));
   g_value_set_static_string (&a, icon);
   g_object_set_property (G_OBJECT (image_to_set), "icon-name", &a);
-}
-
-/* This function is called when the slider changes its position. We perform a seek to the
- * new position here. */
-static void slider_cb (GtkRange *range, VoicemailWindow *self) {
-  gdouble value = gtk_range_get_value (GTK_RANGE (self->play_scale));
-  g_debug("Slider is at %f", value);
-  gst_element_seek_simple (self->playbin, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT,
-      (gint64)(value * GST_SECOND));
 }
 
 static void
@@ -253,37 +218,30 @@ voicemail_window_new (GVariant *message_t)
 
 
     self->duration = GST_CLOCK_TIME_NONE;
-    /* Set the URI to play */
-    //TODO FIXME: amr is not working with gstreamer, need to fix
-//    attachment_uri = g_strdup_printf("playbin file://%s", Attachment_list[i]);
+    //TODO FIXME this does not work with amr?
+//  attachment_uri = g_strdup_printf("playbin file://%s", Attachment_list[i]);
     attachment_uri = g_strdup("file:///home/mobian/test.mp3");
     g_debug("file URI: %s", attachment_uri);
     attachment_uri_playbin = g_strdup_printf("playbin uri=%s", attachment_uri);
     g_debug("file URI: %s", attachment_uri_playbin);
 
-  discoverer = gst_discoverer_new (5 * GST_SECOND, &error);
-  if (!discoverer) {
-    g_print ("Error creating discoverer instance: %s\n", error->message);
-    error = NULL;
-    return NULL;
-  }
+    discoverer = gst_discoverer_new (GST_SECOND, &error);
+    if (!discoverer) {
+      g_print ("Error creating discoverer instance: %s\n", error->message);
+      error = NULL;
+      return NULL;
+    }
 
-    gst_discoverer_start (discoverer);
-    //TODO FIXME this doesn't work...why?
     info = gst_discoverer_discover_uri(discoverer, attachment_uri, &error);
     if (error != NULL) {
       g_warning ("Error discovering file: %s", error->message);
     } else {
-      g_print ("\nDuration: %" GST_TIME_FORMAT "\n", GST_TIME_ARGS (gst_discoverer_info_get_duration (info)));
+      self->duration = gst_discoverer_info_get_duration (info);
+      g_print ("\nDuration: %" GST_TIME_FORMAT "\n", GST_TIME_ARGS (self->duration));
     }
 
-    /* Stop the discoverer process */
-    gst_discoverer_stop (discoverer);
-
-    /* Free resources */
     g_object_unref (discoverer);
 
-    /* Build the pipeline */
     self->playbin = gst_parse_launch (attachment_uri_playbin, NULL);
 
     /* Instruct the bus to emit signals for each received message, and connect to the interesting signals */
@@ -300,22 +258,6 @@ voicemail_window_new (GVariant *message_t)
   //TODO: If the Sender is a contact, substitute that
   vvm_preferences_set_hdyactionrow_text(self->action_expander_row, Sender);
   hdy_expander_row_set_subtitle(self->action_expander_row, Date);
-
-  self->play_scale = gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 0, 100, 1);
-  gtk_scale_set_draw_value (GTK_SCALE (self->play_scale), 0);
-  self->slider_update_signal_id = g_signal_connect (G_OBJECT (self->play_scale), "value-changed", G_CALLBACK (slider_cb), self);
-  gtk_scale_add_mark (GTK_SCALE (self->play_scale), 0, GTK_POS_TOP, NULL);
-
-  //TODO FIXME This doesn't work the first couple of times....why?
-  if (!GST_CLOCK_TIME_IS_VALID (self->duration)) {
-      if (!gst_element_query_duration (self->playbin, GST_FORMAT_TIME, &self->duration)) {
-        g_printerr ("Could not query current duration.\n");
-    } else {
-      /* Set the range of the slider to the clip duration, in SECONDS */
-      gtk_range_set_range (GTK_RANGE (self->play_scale), 0, (gdouble)self->duration / GST_SECOND);
-    }
-  }
-  g_debug("Duration is: %ld", self->duration);
 
   return GTK_WIDGET (self);
 }
@@ -340,7 +282,6 @@ voicemail_window_class_init (VoicemailWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, action_expander_row);
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, play_button_icon);
-  gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, play_scale);
 
   gtk_widget_class_bind_template_callback (widget_class, play_button_clicked_cb);
 
