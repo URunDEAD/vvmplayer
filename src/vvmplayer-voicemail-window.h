@@ -17,6 +17,8 @@ enum vvmd_lifetime_status {
 
 G_DECLARE_FINAL_TYPE (VoicemailWindow, voicemail_window, VVM, VOICEMAIL_WINDOW, HdyExpanderRow)
 
-GtkWidget *voicemail_window_new (GVariant *message_t, GDBusProxy *message_proxy);
+GtkWidget *voicemail_window_new (GVariant   *message_t,
+                                 GDBusProxy *message_proxy,
+                                 gpointer    user_data);
 
 G_END_DECLS

@@ -219,19 +219,59 @@ vvmplayer_vvmd_get_service_settings (VvmVvmd *self)
     return TRUE;
 }
 
-int
-vvmplayer_vvmd_delete_vvm (VvmVvmd  *self,
-                           char *objectpath)
+static void
+vvmplayer_vvmd_delete_vvm_cb (GObject      *interface,
+                              GAsyncResult *result,
+                              gpointer     *user_data)
 {
-  if (g_ptr_array_remove (self->vvm_arr, objectpath)) {
-    g_debug ("Deleted VVM from pointer array, new length: %d", self->vvm_arr->len);
-  } else {
-    g_debug ("Could not find MMS in pointer array");
-    return FALSE;
-  }
-  //TODO: Delete the VVM!
+  g_autoptr (GError) error = NULL;
 
-  return TRUE;
+  if (g_dbus_proxy_call_finish (G_DBUS_PROXY (interface),
+                                result,
+                                &error)) {
+    g_debug ("VVM deleted");
+  } else {
+    g_debug ("Couldn't delete VVM as read- error: %s", error ? error->message : "unknown");
+  }
+}
+
+static int
+vvm_props_match_by_obj_path (char *old_objectpath,
+                             gconstpointer  objectpath)
+{
+  return g_strcmp0 (old_objectpath, (char *)objectpath) == 0;
+}
+
+void
+vvmplayer_vvmd_delete_vvm (VvmVvmd     *self,
+                           GDBusProxy  *message_proxy,
+                           char        *objectpath,
+                           gpointer     user_data)
+{
+    guint index;
+
+    if (g_ptr_array_find_with_equal_func (self->vvm_arr,
+                                          objectpath,
+                                          (GEqualFunc)vvm_props_match_by_obj_path,
+                                          &index)) {
+      g_ptr_array_remove_index (self->vvm_arr, index);
+      g_debug ("Deleted VVM from pointer array, new length: %d", self->vvm_arr->len);
+    } else {
+      g_debug ("Could not find MMS in pointer array");
+      return;
+    }
+  g_debug ("Deleting VVM with Object Path: %s", objectpath);
+
+  g_dbus_proxy_call (message_proxy,
+                     "Delete",
+                     NULL,
+                     G_DBUS_CALL_FLAGS_NONE,
+                     -1,
+                     NULL,
+                     (GAsyncReadyCallback) vvmplayer_vvmd_delete_vvm_cb,
+                     user_data);
+
+  return;
 
 }
 
@@ -256,7 +296,7 @@ vvmplayer_vvmd_mark_message_read (GDBusProxy      *message_proxy,
                                   char            *objectpath,
                                   gpointer         user_data)
 {
-  g_debug ("Deleting MMS with Object Path: %s", objectpath);
+  g_debug ("Marking VVM read with Object Path: %s", objectpath);
 
   g_dbus_proxy_call (message_proxy,
                      "MarkRead",
@@ -266,15 +306,6 @@ vvmplayer_vvmd_mark_message_read (GDBusProxy      *message_proxy,
                      NULL,
                      (GAsyncReadyCallback) vvmplayer_vvmd_mark_message_read_cb,
                      user_data);
-}
-
-static int
-vvm_props_match_by_obj_path (char *old_objectpath,
-                             gconstpointer  objectpath)
-{
-  g_debug ("Payload Objectpath: %s", old_objectpath);
-  g_debug ("New Objectpath: %s", (char *)objectpath);
-  return g_strcmp0 (old_objectpath, (char *)objectpath) == 0;
 }
 
 static void
@@ -319,7 +350,7 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
     g_warning ("Error connecting to the message Proxy!");
   }
 
-  voicemail = voicemail_window_new (message_t, message_proxy);
+  voicemail = voicemail_window_new (message_t, message_proxy, self);
 
 
 
@@ -327,7 +358,7 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
     g_warning ("There was an error with making the VVM!");
   } else {
     g_ptr_array_add (self->vvm_arr, objectpath);
-    g_debug ("Adding VVM to pointer array, new length: %d", self->vvm_arr->len);
+    g_debug ("Adding VVM to pointer array, new length: %d, objectpath: %s", self->vvm_arr->len, objectpath);
     vvmplayer_window_add_row (self->visual_voicemail, voicemail);
   }
 }
@@ -753,7 +784,7 @@ vvm_vvmd_class_init (VvmVvmdClass *klass)
 static void
 vvm_vvmd_init (VvmVvmd *self)
 {
-    self->vvm_arr = g_ptr_array_new ();
+    self->vvm_arr = g_ptr_array_new_with_free_func (g_free);
 }
 
 VvmVvmd *

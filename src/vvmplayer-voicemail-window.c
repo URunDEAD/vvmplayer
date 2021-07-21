@@ -47,6 +47,7 @@ struct _VoicemailWindow
   char *title;
   int lifetime_status;
   GDBusProxy *message_proxy;
+  VvmVvmd *vvmd_object;
 
 };
 
@@ -166,9 +167,10 @@ delete_button_clicked_cb (GtkButton     *btn,
   }
 
   if (self->state == GST_STATE_READY) { //We are stopped
-    //TODO: Delete
-    //vvmplayer_vvmd_delete_vvm()
-    g_debug("Need to delete!");
+      g_debug(" Object Path: %s", self->objectpath);
+      vvmplayer_vvmd_delete_vvm (self->vvmd_object, self->message_proxy, self->objectpath, self);
+      gtk_widget_destroy (GTK_WIDGET (self));
+      return;
   } else { //We are playing or paused
     GstStateChangeReturn ret;
     ret = gst_element_set_state (self->playbin, GST_STATE_READY);
@@ -243,7 +245,9 @@ static void state_changed_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *sel
 }
 
 GtkWidget *
-voicemail_window_new (GVariant *message_t, GDBusProxy *message_proxy)
+voicemail_window_new (GVariant *message_t,
+                      GDBusProxy *message_proxy,
+                      gpointer    user_data)
 {
   VoicemailWindow      *self;
 
@@ -267,6 +271,7 @@ voicemail_window_new (GVariant *message_t, GDBusProxy *message_proxy)
   self->minutes = 0;
   self->seconds = 0;
   self->message_proxy = message_proxy;
+  self->vvmd_object = user_data;
 
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
 
@@ -363,6 +368,7 @@ voicemail_window_new (GVariant *message_t, GDBusProxy *message_proxy)
     self->seconds = 0;
     duration = g_strdup_printf("%02lu:%02lu/%s", self->minutes, self->seconds, self->duration_formatted);
     vvm_preferences_set_hdyactionrow_text(self->second_row, duration);
+    self->state = GST_STATE_READY;
 
     g_object_unref (discoverer);
 
