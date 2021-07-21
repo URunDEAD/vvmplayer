@@ -359,9 +359,16 @@ voicemail_window_new (GVariant *message_t,
       self->duration_formatted = g_strdup ("??:??");
     } else {
       self->duration = gst_discoverer_info_get_duration (info);
-      self->minutes = (self->duration / (GST_SECOND * 60)) % 60;
-      self->seconds = GST_TIME_AS_SECONDS (self->duration) - self->minutes * 60;
-      self->duration_formatted = g_strdup_printf ("%02lu:%02lu", self->minutes, self->seconds);
+      if (self->duration == 0) {
+        /* There is a problem in gst-discoverer:
+         * https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/718 */
+        g_warning ("Error in gst_discoverer!");
+        self->duration_formatted = g_strdup ("??:??");
+      } else {
+        self->minutes = (self->duration / (GST_SECOND * 60)) % 60;
+        self->seconds = GST_TIME_AS_SECONDS (self->duration) - self->minutes * 60;
+        self->duration_formatted = g_strdup_printf ("%02lu:%02lu", self->minutes, self->seconds);
+      }
     }
 
     self->minutes = 0;
