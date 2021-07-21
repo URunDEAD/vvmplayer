@@ -17,6 +17,7 @@
  */
 
 #include "vvmplayer-vvmd.h"
+#include "vvmplayer-contact-provider.h"
 
 #define VVMD_SERVICE	                "org.kop316.vvm"
 #define VVMD_PATH	                "/org/kop316/vvm"
@@ -42,6 +43,7 @@ struct _VvmVvmd
   GDBusProxy       *service_proxy;
 
   GPtrArray        *vvm_arr;
+  VvmEds *contacts;
 };
 
 G_DEFINE_TYPE (VvmVvmd, vvm_vvmd, G_TYPE_OBJECT)
@@ -665,7 +667,7 @@ vvmplayer_vvmd_get_modemmanager_cb (GObject      *simple,
   g_autoptr (GError) error = NULL;
 
   /*
-   * There is a race condition where if vvmd loads after chatty,
+   * There is a race condition where if vvmd loads after VVM Player,
    * the dbus is not set up in time for it to do this proxy call. I am sleeping
    * for 1 second here to fix that.
    */
@@ -787,6 +789,25 @@ vvm_vvmd_init (VvmVvmd *self)
     self->vvm_arr = g_ptr_array_new_with_free_func (g_free);
 }
 
+static void
+vvm_vmd_eds_is_ready (VvmVvmd *self)
+{
+  g_debug("EDS IS READY!");
+  VvmContact *test;
+
+  //TODO: We have loaded contacts, now you need to load them into the window
+
+  test = vvm_eds_find_by_number(self->contacts, "+1XXXXXXXXXX");
+
+  if (test != NULL) {
+    g_debug("Found contact!");
+    g_debug("Contact: %s", vvm_contact_get_name (test));
+  } else {
+    g_debug("Did not find contact!");
+  }
+
+}
+
 VvmVvmd *
 vvm_vvmd_get_default (void)
 {
@@ -803,6 +824,10 @@ vvm_vvmd_get_default (void)
                                               (GBusNameVanishedCallback)vvmd_vanished_cb,
                                               self, NULL);
 
+      self->contacts = vvm_eds_get_default ();
+      g_signal_connect_object (self->contacts, "notify::is-ready",
+                               G_CALLBACK (vvm_vmd_eds_is_ready), self,
+                               G_CONNECT_SWAPPED);
 
     }
   return self;

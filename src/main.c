@@ -113,21 +113,21 @@ int
 main (int   argc,
       char *argv[])
 {
-	VvmPlayer *vvm_player;
-	int ret;
+  VvmPlayer *vvm_player;
+  int ret;
 
-	  /* Initialize GStreamer */
+  /* Initialize GStreamer */
   gst_init (&argc, &argv);
 
-	bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
-	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-	textdomain (GETTEXT_PACKAGE);
+  bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
+  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+  textdomain (GETTEXT_PACKAGE);
 
-	vvm_player = vvm_player_new ();
-	g_signal_connect (G_APPLICATION (vvm_player), "activate", G_CALLBACK (on_activate), NULL);
-	g_signal_connect (G_APPLICATION (vvm_player), "startup", G_CALLBACK (on_startup), NULL);
+  vvm_player = vvm_player_new ();
+  g_signal_connect (G_APPLICATION (vvm_player), "activate", G_CALLBACK (on_activate), NULL);
+  g_signal_connect (G_APPLICATION (vvm_player), "startup", G_CALLBACK (on_startup), NULL);
 
-	ret = g_application_run (G_APPLICATION (vvm_player), argc, argv);
+  ret = g_application_run (G_APPLICATION (vvm_player), argc, argv);
 
-	return ret;
+  return ret;
 }

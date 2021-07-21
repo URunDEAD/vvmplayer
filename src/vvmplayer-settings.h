@@ -45,6 +45,7 @@ int vvm_settings_get_service_available (VvmSettings *self);
 
 void vvm_settings_set_vvm_country_code (VvmSettings *self,
                                         const char *CountryCode);
+const char *vvm_settings_get_vvm_country_code (VvmSettings *self);
 
 void vvm_settings_set_mailbox_active (VvmSettings *self, int MailboxActive);
 int vvm_settings_get_mailbox_active (VvmSettings *self);

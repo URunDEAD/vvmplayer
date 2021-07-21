@@ -188,6 +188,12 @@ vvm_settings_set_vvm_country_code (VvmSettings *self,
 
 }
 
+const char
+*vvm_settings_get_vvm_country_code (VvmSettings *self)
+{
+  return self->country_code;
+}
+
 void
 vvm_settings_set_mailbox_active (VvmSettings *self, int MailboxActive)
 {
