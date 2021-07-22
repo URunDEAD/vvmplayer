@@ -338,6 +338,15 @@ vvmplayer_vvmd_add_contact_name (VvmVvmd     *self,
     }
 }
 
+static int
+compare_dates (VoicemailWindow  *old_voicemail,
+               VoicemailWindow  *voicemail,
+               gpointer user_data)
+{
+  return g_date_time_compare (voicemail_window_get_datetime (old_voicemail),
+                              voicemail_window_get_datetime (voicemail));
+}
+
 static void
 vvmplayer_vvmd_receive_message (VvmVvmd   *self,
                                 GVariant *message_t)
@@ -384,8 +393,10 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
   if (voicemail == NULL) {
     g_warning ("There was an error with making the VVM!");
   } else {
-    g_list_store_insert (self->vvm_list, 0, VVM_VOICEMAIL_WINDOW (voicemail));
-    vvmplayer_window_add_row (self->visual_voicemail, voicemail);
+    g_list_store_insert_sorted (self->vvm_list,
+                                VVM_VOICEMAIL_WINDOW (voicemail),
+                                (GCompareDataFunc) compare_dates,
+                                NULL);
   }
 }
 
@@ -399,9 +410,12 @@ vvmplayer_vvmd_get_new_vvm_cb (GDBusConnection   *connection,
                                gpointer       user_data)
 {
   VvmVvmd *self = user_data;
-
+  unsigned int last_position = g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list));
   g_debug ("%s", __func__);
   vvmplayer_vvmd_receive_message (self, parameters);
+  vvmplayer_window_add_row (self->visual_voicemail,
+                            g_list_model_get_item (G_LIST_MODEL (self->vvm_list),
+                            last_position));
 }
 
 static void
@@ -432,6 +446,13 @@ vvmplayer_vvmd_get_all_vvm_cb (GObject      *service,
 
       while ((message_t = g_variant_iter_next_value (&iter))) {
         vvmplayer_vvmd_receive_message (self, message_t);
+      }
+      if (g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list)) != 0) {
+        unsigned int i = 0;
+        while (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i) != NULL) {
+          vvmplayer_window_add_row (self->visual_voicemail, g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i));
+          i = i + 1;
+        }
       }
     }
   }

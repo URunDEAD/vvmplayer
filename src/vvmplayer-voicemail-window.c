@@ -89,6 +89,12 @@ char
   return g_strdup(self->number);
 }
 
+GDateTime
+*voicemail_window_get_datetime (VoicemailWindow *self)
+{
+  return self->time_local;
+}
+
 char
 *voicemail_window_get_objectpath (VoicemailWindow *self)
 {

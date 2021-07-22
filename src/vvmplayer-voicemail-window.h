@@ -25,5 +25,6 @@ void voicemail_window_set_contact_name (VoicemailWindow *self,
                                         const char *contact_name);
 char *voicemail_window_get_number (VoicemailWindow *self);
 char *voicemail_window_get_objectpath (VoicemailWindow *self);
+GDateTime *voicemail_window_get_datetime (VoicemailWindow *self);
 
 G_END_DECLS
