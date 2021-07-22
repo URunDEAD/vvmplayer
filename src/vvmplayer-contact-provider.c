@@ -343,6 +343,12 @@ vvm_eds_get_property (GObject    *object,
     }
 }
 
+int
+vvm_eds_get_is_ready (VvmEds *self)
+{
+  return self->is_ready;
+}
+
 static void
 vvm_eds_constructed (GObject *object)
 {

@@ -353,7 +353,12 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
   }
 
   voicemail = voicemail_window_new (message_t, message_proxy, self);
-
+  if (vvm_eds_get_is_ready (self->contacts)) {
+    //TODO: substitute contact here if it is ready!
+    g_debug ("I can look up contact!");
+  } else {
+    g_debug ("Cannot look up contact yet!");
+  }
 
 
   if (voicemail == NULL) {

@@ -16,5 +16,6 @@ gboolean       vvm_eds_is_ready       (VvmEds  *self);
 VvmContact *vvm_eds_find_by_number    (VvmEds  *self,
                                        const char *phone_number);
 GListModel *vvm_eds_get_model         (VvmEds *self);
+int vvm_eds_get_is_ready (VvmEds *self);
 
 G_END_DECLS

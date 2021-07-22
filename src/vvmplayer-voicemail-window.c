@@ -44,7 +44,8 @@ struct _VoicemailWindow
   gint64 seconds;
   char *duration_formatted;
   char *objectpath;
-  char *title;
+  char *contact_name;
+  char *number;
   int lifetime_status;
   GDBusProxy *message_proxy;
   VvmVvmd *vvmd_object;
@@ -61,6 +62,26 @@ vvm_preferences_set_hdyexpanderrow_text (HdyExpanderRow *hdy_row, const char *te
   g_assert (G_VALUE_HOLDS_STRING (&a));
   g_value_set_static_string (&a, text);
   g_object_set_property (G_OBJECT (hdy_row), "title", &a);
+}
+
+static void
+voicemail_window_set_title (VoicemailWindow *self)
+{
+  g_autofree char *title;
+
+  //TODO: If the Sender is a contact, substitute that
+  if (self->contact_name) {
+    title = g_strdup(self->contact_name);
+  } else {
+    title = g_strdup(self->number);
+  }
+
+  if (self->lifetime_status == VVM_LIFETIME_STATUS_NOT_READ) {
+    g_debug("Marking as unread");
+    title = g_strdup_printf ("%s (Unread)", title);
+  }
+  vvm_preferences_set_hdyexpanderrow_text(self->action_expander_row, title);
+
 }
 
 static void
@@ -119,22 +140,23 @@ play_button_clicked_cb (GtkButton     *btn,
     case VVM_LIFETIME_STATUS_NOT_READ:
       g_debug("Marking as read....");
       self->lifetime_status = VVM_LIFETIME_STATUS_READ;
-      vvm_preferences_set_hdyexpanderrow_text (self->action_expander_row, self->title);
+      voicemail_window_set_title (self);
       vvmplayer_vvmd_mark_message_read (self->message_proxy, self->objectpath, self);
       break;
 
     case VVM_LIFETIME_STATUS_READ:
-      g_debug("VVM was read!");
       break;
 
     default:
-      g_debug("Something bad happened!");
+      g_warning("Something bad happened!");
   }
 
-  vvm_voicemail_set_gtkimage_icon (self->delete_button_icon, ICON_PLAYBACK_STOP);
 
-  if (self->state != GST_STATE_PLAYING) { //We are not playing anything
+  // We are not playing anything
+  // Change it to Playing
+  if (self->state != GST_STATE_PLAYING) {
     GstStateChangeReturn ret;
+    vvm_voicemail_set_gtkimage_icon (self->delete_button_icon, ICON_PLAYBACK_STOP);
     ret = gst_element_set_state (self->playbin, GST_STATE_PLAYING);
     if (ret == GST_STATE_CHANGE_FAILURE) {
       g_printerr ("Unable to set the pipeline to the playing state.\n");
@@ -144,8 +166,11 @@ play_button_clicked_cb (GtkButton     *btn,
       g_timeout_add_seconds (1, (GSourceFunc)refresh_ui, self);
       self->state = GST_STATE_PLAYING;
     }
-  } else { //We are playing
+  // We are playing
+  // Change it to paused
+  } else {
     GstStateChangeReturn ret;
+    vvm_voicemail_set_gtkimage_icon (self->delete_button_icon, ICON_DELETE);
     ret = gst_element_set_state (self->playbin, GST_STATE_PAUSED);
     if (ret == GST_STATE_CHANGE_FAILURE) {
       g_printerr ("Unable to set the pipeline to the playing state.\n");
@@ -160,14 +185,13 @@ static void
 delete_button_clicked_cb (GtkButton     *btn,
                         VoicemailWindow *self)
 {
-  g_debug("Delete button clicked!");
   if (!self->playbin) {
     g_debug("Playbin is NULL!");
     return;
   }
 
-  if (self->state == GST_STATE_READY) { //We are stopped
-      g_debug(" Object Path: %s", self->objectpath);
+  if (self->state != GST_STATE_PLAYING) { //We are stopped
+      g_debug("Deleting: %s", self->objectpath);
       vvmplayer_vvmd_delete_vvm (self->vvmd_object, self->message_proxy, self->objectpath, self);
       gtk_widget_destroy (GTK_WIDGET (self));
       return;
@@ -178,7 +202,7 @@ delete_button_clicked_cb (GtkButton     *btn,
       g_printerr ("Unable to set the pipeline to the stopped state.\n");
     } else {
       g_autofree char *duration = NULL;
-      g_printerr ("Stopping playback\n");
+      g_debug ("Stopping playback\n");
       gst_element_set_state (self->playbin, GST_STATE_READY);
       vvm_voicemail_set_gtkimage_icon (self->delete_button_icon, ICON_DELETE);
       vvm_voicemail_set_gtkimage_icon (self->play_button_icon, ICON_PLAYBACK_START);
@@ -391,13 +415,10 @@ voicemail_window_new (GVariant *message_t,
 
   }
 
-  //TODO: If the Sender is a contact, substitute that
-  self->title = g_strdup(Sender);
-  if (self->lifetime_status == VVM_LIFETIME_STATUS_NOT_READ) {
-    g_debug("Marking as unread");
-    Sender = g_strdup_printf ("%s (Unread)", Sender);
-  }
-  vvm_preferences_set_hdyexpanderrow_text(self->action_expander_row, Sender);
+  self->number = g_strdup(Sender);
+  voicemail_window_set_title (self);
+
+
 
   hdy_expander_row_set_subtitle(self->action_expander_row, Date);
 
@@ -411,7 +432,7 @@ voicemail_window_finalize (GObject *object)
 
   g_free (self->duration_formatted);
   g_free(self->objectpath);
-  g_free(self->title);
+  g_free(self->number);
   G_OBJECT_CLASS (voicemail_window_parent_class)->finalize (object);
 
 }
