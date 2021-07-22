@@ -338,9 +338,13 @@ voicemail_window_new (GVariant *message_t,
   if (!g_variant_dict_lookup (&dict, "Date", "s", &Date)) {
     Date = g_strdup("Invalid Date");
   } else {
+    GDateTime *time_utc;
     GTimeZone *here = g_time_zone_new_local ();
 
-    self->time_local = g_date_time_new_from_iso8601(Date, here);
+    time_utc = g_date_time_new_from_iso8601(Date, here);
+    self->time_local = g_date_time_to_timezone (time_utc, here);
+    g_date_time_unref (time_utc);
+
     Date = g_date_time_format (self->time_local, "%a, %d %b %Y %I:%M:%S %p");
     g_time_zone_unref (here);
   }
