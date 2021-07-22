@@ -17,10 +17,6 @@
  */
 
 #include "vvmplayer-voicemail-window.h"
-#include <gst/pbutils/pbutils.h>
-#include <time.h>
-
-#define _XOPEN_SOURCE 700
 
 #define ICON_PLAYBACK_STOP "media-playback-stop"
 #define ICON_PLAYBACK_START "media-playback-start"
@@ -48,7 +44,6 @@ struct _VoicemailWindow
   char *number;
   int lifetime_status;
   GDBusProxy *message_proxy;
-  VvmVvmd *vvmd_object;
   GDateTime *time_local;
 
 };
@@ -216,8 +211,9 @@ delete_button_clicked_cb (GtkButton     *btn,
   }
 
   if (self->state != GST_STATE_PLAYING) { //We are stopped
+      VvmVvmd *vvmd_object = vvm_vvmd_get_default ();
       g_debug("Deleting: %s", self->objectpath);
-      vvmplayer_vvmd_delete_vvm (self->vvmd_object, self->message_proxy, self->objectpath, self);
+      vvmplayer_vvmd_delete_vvm (vvmd_object, self->message_proxy, self->objectpath, self);
       gtk_widget_destroy (GTK_WIDGET (self));
       return;
   } else { //We are playing or paused
@@ -296,7 +292,7 @@ static void state_changed_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *sel
 GtkWidget *
 voicemail_window_new (GVariant *message_t,
                       GDBusProxy *message_proxy,
-                      gpointer    user_data)
+                      GstDiscoverer    *discoverer)
 {
   VoicemailWindow      *self;
 
@@ -313,21 +309,17 @@ voicemail_window_new (GVariant *message_t,
   GVariant             *properties;
   GVariantDict          dict;
 
-  GstDiscoverer *discoverer;
+
   int number_of_attachments;
 
   self = g_object_new (GTK_TYPE_VOICEMAIL_WINDOW, NULL);
   self->minutes = 0;
   self->seconds = 0;
   self->message_proxy = message_proxy;
-  self->vvmd_object = user_data;
   self->contact_name = NULL;
 
-  discoverer = gst_discoverer_new (GST_SECOND, &error);
   if (!discoverer) {
-    g_print ("Error creating discoverer instance: %s\n", error->message);
     self->duration_formatted = g_strdup ("??:??");
-    error = NULL;
   }
 
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
@@ -456,7 +448,6 @@ voicemail_window_new (GVariant *message_t,
 
   hdy_expander_row_set_subtitle(self->action_expander_row, Date);
 
-  g_object_unref (discoverer);
   return GTK_WIDGET (self);
 }
 

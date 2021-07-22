@@ -3,6 +3,7 @@
 #include <gtk/gtk.h>
 #include <handy.h>
 #include <gst/gst.h>
+#include <gst/pbutils/pbutils.h>
 #include "vvmplayer-vvmd.h"
 
 G_BEGIN_DECLS
@@ -19,7 +20,7 @@ G_DECLARE_FINAL_TYPE (VoicemailWindow, voicemail_window, VVM, VOICEMAIL_WINDOW, 
 
 GtkWidget *voicemail_window_new (GVariant   *message_t,
                                  GDBusProxy *message_proxy,
-                                 gpointer    user_data);
+                                 GstDiscoverer    *discoverer);
 
 void voicemail_window_set_contact_name (VoicemailWindow *self,
                                         const char *contact_name);

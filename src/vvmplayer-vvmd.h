@@ -1,6 +1,8 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <gst/gst.h>
+#include <gst/pbutils/pbutils.h>
 #include "vvmplayer-window.h"
 #include "vvmplayer-settings.h"
 #include "vvmplayer-voicemail-window.h"

@@ -43,6 +43,7 @@ struct _VvmVvmd
   GDBusProxy       *service_proxy;
   GListStore       *vvm_list;
   VvmEds           *contacts;
+  GstDiscoverer    *discoverer;
 
 };
 
@@ -386,7 +387,7 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
     g_warning ("Error connecting to the message Proxy!");
   }
 
-  voicemail = voicemail_window_new (message_t, message_proxy, self);
+  voicemail = voicemail_window_new (message_t, message_proxy, self->discoverer);
   vvmplayer_vvmd_add_contact_name (self, VVM_VOICEMAIL_WINDOW (voicemail));
 
   if (voicemail == NULL) {
@@ -811,6 +812,7 @@ static void
 vvm_vvmd_finalize (GObject *object)
 {
   VvmVvmd *self = (VvmVvmd *)object;
+  g_object_unref (self->discoverer);
   g_clear_object (&self->vvm_list);
   G_OBJECT_CLASS (vvm_vvmd_parent_class)->finalize (object);
 }
@@ -846,11 +848,17 @@ VvmVvmd *
 vvm_vvmd_get_default (void)
 {
   static VvmVvmd *self;
+  g_autoptr (GError) error = NULL;
 
   if (!self)
     {
       self = g_object_new (VVM_TYPE_VVMD, NULL);
       g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&self);
+      self->discoverer = gst_discoverer_new (GST_SECOND, &error);
+      if (!self->discoverer) {
+        g_print ("Error creating discoverer instance: %s\n", error->message);
+        error = NULL;
+      }
       self->vvmd_watch_id = g_bus_watch_name (G_BUS_TYPE_SESSION,
                                               VVMD_SERVICE,
                                               G_BUS_NAME_WATCHER_FLAGS_AUTO_START,
