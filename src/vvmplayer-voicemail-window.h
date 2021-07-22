@@ -24,5 +24,6 @@ GtkWidget *voicemail_window_new (GVariant   *message_t,
 void voicemail_window_set_contact_name (VoicemailWindow *self,
                                         const char *contact_name);
 char *voicemail_window_get_number (VoicemailWindow *self);
+char *voicemail_window_get_objectpath (VoicemailWindow *self);
 
 G_END_DECLS

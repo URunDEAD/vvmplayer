@@ -4,6 +4,7 @@
 #include "vvmplayer-window.h"
 #include "vvmplayer-settings.h"
 #include "vvmplayer-voicemail-window.h"
+#include "vvmplayer-contact-provider.h"
 
 G_BEGIN_DECLS
 
@@ -40,13 +41,13 @@ int vvmplayer_vvmd_encode_vvm_type (const char *vvm_type);
 
 char *vvmplayer_vvmd_decode_vvm_type (int vvm_type);
 
-void vvmplayer_vvmd_delete_vvm (VvmVvmd     *self,
-                                GDBusProxy  *message_proxy,
-                                char        *objectpath,
-                                gpointer     user_data);
-
 void vvmplayer_vvmd_mark_message_read (GDBusProxy      *message_proxy,
                                        char            *objectpath,
                                        gpointer         user_data);
+
+void vvmplayer_vvmd_delete_vvm (VvmVvmd     *self,
+                           GDBusProxy  *message_proxy,
+                           char        *objectpath,
+                           gconstpointer user_data);
 
 G_END_DECLS

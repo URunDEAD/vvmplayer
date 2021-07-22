@@ -89,6 +89,12 @@ char
   return g_strdup(self->number);
 }
 
+char
+*voicemail_window_get_objectpath (VoicemailWindow *self)
+{
+  return g_strdup(self->objectpath);
+}
+
 void
 voicemail_window_set_contact_name (VoicemailWindow *self,
                                    const char *contact_name)
@@ -321,9 +327,8 @@ voicemail_window_new (GVariant *message_t,
 
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
 
-  g_debug ("%s: New Voicemail at %s", __func__, objectpath);
   self->objectpath = g_strdup(objectpath);
-
+  g_debug ("%s: New Voicemail at %s", __func__, self->objectpath);
   g_variant_dict_init (&dict, properties);
   if (!g_variant_dict_lookup (&dict, "Date", "s", &Date)) {
     Date = g_strdup("Invalid Date");

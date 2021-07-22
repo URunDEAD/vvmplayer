@@ -17,7 +17,7 @@
  */
 
 #include "vvmplayer-vvmd.h"
-#include "vvmplayer-contact-provider.h"
+
 
 #define VVMD_SERVICE	                "org.kop316.vvm"
 #define VVMD_PATH	                "/org/kop316/vvm"
@@ -41,9 +41,9 @@ struct _VvmVvmd
   unsigned int      vvmd_service_proxy_watch_id;
   GDBusProxy       *manager_proxy;
   GDBusProxy       *service_proxy;
+  GListStore       *vvm_list;
+  VvmEds           *contacts;
 
-  GPtrArray        *vvm_arr;
-  VvmEds *contacts;
 };
 
 G_DEFINE_TYPE (VvmVvmd, vvm_vvmd, G_TYPE_OBJECT)
@@ -238,30 +238,36 @@ vvmplayer_vvmd_delete_vvm_cb (GObject      *interface,
 }
 
 static int
-vvm_props_match_by_obj_path (char *old_objectpath,
-                             gconstpointer  objectpath)
+vvm_list_match_by_obj_path (VoicemailWindow  *old_voicemail,
+                             gconstpointer  voicemail)
 {
-  return g_strcmp0 (old_objectpath, (char *)objectpath) == 0;
+  g_autofree char *old_objectpath = NULL;
+  g_autofree char *objectpath = NULL;
+  old_objectpath = voicemail_window_get_objectpath (old_voicemail);
+  objectpath = voicemail_window_get_objectpath ((VoicemailWindow  *) voicemail);
+  return g_strcmp0 (old_objectpath, objectpath) == 0;
 }
 
 void
 vvmplayer_vvmd_delete_vvm (VvmVvmd     *self,
                            GDBusProxy  *message_proxy,
                            char        *objectpath,
-                           gpointer     user_data)
+                           gconstpointer user_data)
 {
-    guint index;
+    guint position;
+    VoicemailWindow  *voicemail = (VoicemailWindow  *) user_data;
 
-    if (g_ptr_array_find_with_equal_func (self->vvm_arr,
-                                          objectpath,
-                                          (GEqualFunc)vvm_props_match_by_obj_path,
-                                          &index)) {
-      g_ptr_array_remove_index (self->vvm_arr, index);
-      g_debug ("Deleted VVM from pointer array, new length: %d", self->vvm_arr->len);
+    if (g_list_store_find_with_equal_func (self->vvm_list,
+                                           voicemail,
+                                           (GEqualFunc)vvm_list_match_by_obj_path,
+                                           &position)) {
+      g_list_store_remove (self->vvm_list, position);
+      g_debug ("Deleted VVM from g_list_store new length: %d", g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list)));
     } else {
       g_debug ("Could not find MMS in pointer array");
       return;
     }
+
   g_debug ("Deleting VVM with Object Path: %s", objectpath);
 
   g_dbus_proxy_call (message_proxy,
@@ -271,7 +277,7 @@ vvmplayer_vvmd_delete_vvm (VvmVvmd     *self,
                      -1,
                      NULL,
                      (GAsyncReadyCallback) vvmplayer_vvmd_delete_vvm_cb,
-                     user_data);
+                     voicemail);
 
   return;
 
@@ -310,6 +316,28 @@ vvmplayer_vvmd_mark_message_read (GDBusProxy      *message_proxy,
                      user_data);
 }
 
+void
+vvmplayer_vvmd_add_contact_name (VvmVvmd     *self,
+                                 VoicemailWindow  *voicemail)
+{
+    if (vvm_eds_get_is_ready (self->contacts)) {
+      char *contact_name;
+      char *phone_number;
+      VvmContact *contact;
+
+      phone_number = voicemail_window_get_number (VVM_VOICEMAIL_WINDOW (voicemail));
+      contact = vvm_eds_find_by_number (self->contacts, phone_number);
+
+      if (contact != NULL) {
+        contact_name = g_strdup (vvm_contact_get_name (contact));
+        voicemail_window_set_contact_name (VVM_VOICEMAIL_WINDOW (voicemail),
+                                         contact_name);
+        g_free (contact_name);
+      }
+      g_free (phone_number);
+    }
+}
+
 static void
 vvmplayer_vvmd_receive_message (VvmVvmd   *self,
                                 GVariant *message_t)
@@ -319,25 +347,23 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
   char       *objectpath;
   GDBusProxy *message_proxy;
 
+
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
   g_debug ("VVM Object Path: %s", objectpath);
 
-  if (self->vvm_arr->len != 0) {
-    guint index;
-
-    if (g_ptr_array_find_with_equal_func (self->vvm_arr,
-                                          objectpath,
-                                          (GEqualFunc)vvm_props_match_by_obj_path,
-                                          &index)) {
-      g_debug ("MMS Already exists! skipping...");
-      return;
-    } else {
-      g_debug ("MMS Does not exist yet! adding...");
+  if (g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list)) != 0) {
+    unsigned int i = 0;
+    while (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i) != NULL) {
+       g_autofree char *temp_objectpath = NULL;
+       temp_objectpath = voicemail_window_get_objectpath (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i));
+       g_debug("new voicemail %u: temp_objectpath %s objectpath: %s", i, temp_objectpath, objectpath);
+       if (g_strcmp0 (temp_objectpath, objectpath) == 0) {
+         g_debug("VVM Already exists!");
+         return;
+       }
+       i = i + 1;
     }
-  } else {
-    g_debug ("No stored MMSes exists yet!");
   }
-
   message_proxy =
     g_dbus_proxy_new_sync (self->connection,
                            G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
@@ -353,27 +379,12 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
   }
 
   voicemail = voicemail_window_new (message_t, message_proxy, self);
-  if (vvm_eds_get_is_ready (self->contacts)) {
-    g_autofree char *contact_name;
-    g_autofree char *phone_number;
-    VvmContact *contact;
-
-    phone_number = voicemail_window_get_number (VVM_VOICEMAIL_WINDOW (voicemail));
-    contact = vvm_eds_find_by_number (self->contacts, phone_number);
-
-    if (contact != NULL) {
-      contact_name = g_strdup (vvm_contact_get_name (contact));
-      voicemail_window_set_contact_name (VVM_VOICEMAIL_WINDOW (voicemail),
-                                         contact_name);
-    }
-
-  }
+  vvmplayer_vvmd_add_contact_name (self, VVM_VOICEMAIL_WINDOW (voicemail));
 
   if (voicemail == NULL) {
     g_warning ("There was an error with making the VVM!");
   } else {
-    g_ptr_array_add (self->vvm_arr, objectpath);
-    g_debug ("Adding VVM to pointer array, new length: %d, objectpath: %s", self->vvm_arr->len, objectpath);
+    g_list_store_insert (self->vvm_list, 0, VVM_VOICEMAIL_WINDOW (voicemail));
     vvmplayer_window_add_row (self->visual_voicemail, voicemail);
   }
 }
@@ -475,7 +486,6 @@ vvmplayer_vvmd_get_service_cb (GObject      *service,
                        self);
 
     }
-
   }
 }
 
@@ -781,9 +791,7 @@ static void
 vvm_vvmd_finalize (GObject *object)
 {
   VvmVvmd *self = (VvmVvmd *)object;
-  if (self->vvm_arr && self->vvm_arr->len) {
-    g_ptr_array_unref (self->vvm_arr);
-  }
+  g_clear_object (&self->vvm_list);
   G_OBJECT_CLASS (vvm_vvmd_parent_class)->finalize (object);
 }
 
@@ -799,16 +807,19 @@ vvm_vvmd_class_init (VvmVvmdClass *klass)
 static void
 vvm_vvmd_init (VvmVvmd *self)
 {
-    self->vvm_arr = g_ptr_array_new_with_free_func (g_free);
+    self->vvm_list = g_list_store_new (GTK_TYPE_VOICEMAIL_WINDOW);
 }
 
 static void
 vvm_vmd_eds_is_ready (VvmVvmd *self)
 {
   g_debug("EDS IS READY!");
-
-  //TODO: We have loaded contacts, now you need to load them into the window
-
+  unsigned int i = 0;
+  while (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i) != NULL) {\
+  g_autofree char *temp_objectpath;
+  vvmplayer_vvmd_add_contact_name (self, g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i));
+  i = i + 1;
+  }
 }
 
 VvmVvmd *
