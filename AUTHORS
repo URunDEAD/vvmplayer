@@ -1,6 +1,11 @@
 vvmplayer Authors
 Chris Talbot <chris@talbothome.com>
 
+Parts based on:
+https://source.puri.sm/Librem5/chatty/
+https://gitlab.gnome.org/GNOME/calls
+
 Contributors:
 Evangelos Ribeiro Tzaras
 Debian on Mobile Team
+Mohammed Sadiq
