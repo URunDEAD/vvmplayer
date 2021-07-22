@@ -49,6 +49,7 @@ struct _VoicemailWindow
   int lifetime_status;
   GDBusProxy *message_proxy;
   VvmVvmd *vvmd_object;
+  GDateTime *time_local;
 
 };
 
@@ -324,8 +325,16 @@ voicemail_window_new (GVariant *message_t,
   self->objectpath = g_strdup(objectpath);
 
   g_variant_dict_init (&dict, properties);
-  if (!g_variant_dict_lookup (&dict, "Date", "s", &Date))
+  if (!g_variant_dict_lookup (&dict, "Date", "s", &Date)) {
     Date = g_strdup("Invalid Date");
+  } else {
+    GTimeZone *here = g_time_zone_new_local ();
+
+    self->time_local = g_date_time_new_from_iso8601(Date, here);
+    Date = g_date_time_format (self->time_local, "%a, %d %b %Y %I:%M:%S %p");
+    g_time_zone_unref (here);
+  }
+
   if (!g_variant_dict_lookup (&dict, "Sender", "s", &Sender))
     Sender = g_strdup("Invalid Sender");
   if (!g_variant_dict_lookup (&dict, "To", "s", &To))
@@ -447,6 +456,7 @@ voicemail_window_finalize (GObject *object)
   g_free (self->objectpath);
   g_free (self->number);
   g_free (self->contact_name);
+  g_date_time_unref (self->time_local);
   G_OBJECT_CLASS (voicemail_window_parent_class)->finalize (object);
 
 }
