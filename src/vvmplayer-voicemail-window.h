@@ -21,4 +21,8 @@ GtkWidget *voicemail_window_new (GVariant   *message_t,
                                  GDBusProxy *message_proxy,
                                  gpointer    user_data);
 
+void voicemail_window_set_contact_name (VoicemailWindow *self,
+                                        const char *contact_name);
+char *voicemail_window_get_number (VoicemailWindow *self);
+
 G_END_DECLS

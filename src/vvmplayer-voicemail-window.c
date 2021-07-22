@@ -69,7 +69,6 @@ voicemail_window_set_title (VoicemailWindow *self)
 {
   g_autofree char *title;
 
-  //TODO: If the Sender is a contact, substitute that
   if (self->contact_name) {
     title = g_strdup(self->contact_name);
   } else {
@@ -81,7 +80,21 @@ voicemail_window_set_title (VoicemailWindow *self)
     title = g_strdup_printf ("%s (Unread)", title);
   }
   vvm_preferences_set_hdyexpanderrow_text(self->action_expander_row, title);
+}
 
+char
+*voicemail_window_get_number (VoicemailWindow *self)
+{
+  return g_strdup(self->number);
+}
+
+void
+voicemail_window_set_contact_name (VoicemailWindow *self,
+                                   const char *contact_name)
+{
+  g_free(self->contact_name);
+  self->contact_name = g_strdup(contact_name);
+  voicemail_window_set_title(self);
 }
 
 static void
@@ -296,6 +309,7 @@ voicemail_window_new (GVariant *message_t,
   self->seconds = 0;
   self->message_proxy = message_proxy;
   self->vvmd_object = user_data;
+  self->contact_name = NULL;
 
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
 
@@ -431,8 +445,9 @@ voicemail_window_finalize (GObject *object)
   VoicemailWindow *self = (VoicemailWindow *)object;
 
   g_free (self->duration_formatted);
-  g_free(self->objectpath);
-  g_free(self->number);
+  g_free (self->objectpath);
+  g_free (self->number);
+  g_free (self->contact_name);
   G_OBJECT_CLASS (voicemail_window_parent_class)->finalize (object);
 
 }

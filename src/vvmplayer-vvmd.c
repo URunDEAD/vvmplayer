@@ -354,12 +354,20 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
 
   voicemail = voicemail_window_new (message_t, message_proxy, self);
   if (vvm_eds_get_is_ready (self->contacts)) {
-    //TODO: substitute contact here if it is ready!
-    g_debug ("I can look up contact!");
-  } else {
-    g_debug ("Cannot look up contact yet!");
-  }
+    g_autofree char *contact_name;
+    g_autofree char *phone_number;
+    VvmContact *contact;
 
+    phone_number = voicemail_window_get_number (VVM_VOICEMAIL_WINDOW (voicemail));
+    contact = vvm_eds_find_by_number (self->contacts, phone_number);
+
+    if (contact != NULL) {
+      contact_name = g_strdup (vvm_contact_get_name (contact));
+      voicemail_window_set_contact_name (VVM_VOICEMAIL_WINDOW (voicemail),
+                                         contact_name);
+    }
+
+  }
 
   if (voicemail == NULL) {
     g_warning ("There was an error with making the VVM!");
@@ -798,18 +806,8 @@ static void
 vvm_vmd_eds_is_ready (VvmVvmd *self)
 {
   g_debug("EDS IS READY!");
-  VvmContact *test;
 
   //TODO: We have loaded contacts, now you need to load them into the window
-
-  test = vvm_eds_find_by_number(self->contacts, "+1XXXXXXXXXX");
-
-  if (test != NULL) {
-    g_debug("Found contact!");
-    g_debug("Contact: %s", vvm_contact_get_name (test));
-  } else {
-    g_debug("Did not find contact!");
-  }
 
 }
 
