@@ -1,3 +1,0 @@
-//TODO: Gnotifications to make a notification
-//TODO: From Mohammed: We load the complete contact list using libebook-contacts and for search, we just iterate over the items and compare for string (instead of going through libebook again and filtering)
-//TODO: Libfeedback handles audio/LED notifications
