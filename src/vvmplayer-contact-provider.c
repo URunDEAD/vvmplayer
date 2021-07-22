@@ -144,6 +144,8 @@ vvm_eds_objects_added_cb (VvmEds       *self,
     {
         vvm_eds_load_contact (self, l->data, E_CONTACT_TEL);
     }
+
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_IS_READY]);
 }
 
 static void
@@ -157,6 +159,8 @@ vvm_eds_objects_modified_cb (VvmEds       *self,
     vvm_eds_remove_contact (self, e_contact_get_const (l->data, E_CONTACT_UID));
 
   vvm_eds_objects_added_cb (self, objects, view);
+
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_IS_READY]);
 }
 
 static void
@@ -168,6 +172,8 @@ vvm_eds_objects_removed_cb (VvmEds       *self,
   g_assert (E_IS_BOOK_CLIENT_VIEW (view));
   for (GSList *node = (GSList *)objects; node; node = node->next)
     vvm_eds_remove_contact (self, node->data);
+
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_IS_READY]);
 }
 
 static void
