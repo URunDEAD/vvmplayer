@@ -154,11 +154,13 @@ play_button_clicked_cb (GtkButton     *btn,
     g_debug("Playbin is NULL!");
     return;
   }
+  VvmVvmd *vvmd_object = vvm_vvmd_get_default ();
 
   switch(self->lifetime_status) {
     case VVM_TYPE_UNKNOWN:
     case VVM_LIFETIME_STATUS_NOT_READ:
       g_debug("Marking as read....");
+      vvmplayer_vvmd_decrement_unread (vvmd_object);
       self->lifetime_status = VVM_LIFETIME_STATUS_READ;
       voicemail_window_set_title (self);
       vvmplayer_vvmd_mark_message_read (self->message_proxy, self->objectpath, self);
@@ -305,12 +307,9 @@ voicemail_window_new (GVariant *message_t,
   g_autofree char     **Attachment_list = NULL;
   g_autoptr (GError) error = NULL;
   int lifetime_status;
-
+  int number_of_attachments;
   GVariant             *properties;
   GVariantDict          dict;
-
-
-  int number_of_attachments;
 
   self = g_object_new (GTK_TYPE_VOICEMAIL_WINDOW, NULL);
   self->minutes = 0;
@@ -444,6 +443,12 @@ voicemail_window_new (GVariant *message_t,
   }
 
   self->number = g_strdup(Sender);
+
+  if (self->lifetime_status == VVM_LIFETIME_STATUS_NOT_READ) {
+    VvmVvmd *vvmd_object = vvm_vvmd_get_default ();
+    vvmplayer_vvmd_increment_unread (vvmd_object);
+  }
+
   voicemail_window_set_title (self);
 
   hdy_expander_row_set_subtitle(self->action_expander_row, Date);

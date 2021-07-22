@@ -52,4 +52,7 @@ void vvmplayer_vvmd_delete_vvm (VvmVvmd     *self,
                            char        *objectpath,
                            gconstpointer user_data);
 
+void vvmplayer_vvmd_decrement_unread (VvmVvmd *self);
+void vvmplayer_vvmd_increment_unread (VvmVvmd *self);
+
 G_END_DECLS
