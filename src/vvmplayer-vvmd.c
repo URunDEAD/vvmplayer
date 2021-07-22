@@ -358,14 +358,13 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
 
 
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
-  g_debug ("VVM Object Path: %s", objectpath);
+  g_debug ("Processing VVM: %s", objectpath);
 
   if (g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list)) != 0) {
     unsigned int i = 0;
     while (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i) != NULL) {
        g_autofree char *temp_objectpath = NULL;
        temp_objectpath = voicemail_window_get_objectpath (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i));
-       g_debug("new voicemail %u: temp_objectpath %s objectpath: %s", i, temp_objectpath, objectpath);
        if (g_strcmp0 (temp_objectpath, objectpath) == 0) {
          g_debug("VVM Already exists!");
          return;
@@ -834,7 +833,6 @@ vvm_vvmd_init (VvmVvmd *self)
 static void
 vvm_vmd_eds_is_ready (VvmVvmd *self)
 {
-  g_debug("EDS IS READY!");
   unsigned int i = 0;
   while (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i) != NULL) {\
   g_autofree char *temp_objectpath;

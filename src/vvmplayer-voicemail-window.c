@@ -77,7 +77,6 @@ voicemail_window_set_title (VoicemailWindow *self)
   }
 
   if (self->lifetime_status == VVM_LIFETIME_STATUS_NOT_READ) {
-    g_debug("Marking as unread");
     title = g_strdup_printf ("%s (Unread)", title);
   }
   vvm_preferences_set_hdyexpanderrow_text(self->action_expander_row, title);
@@ -334,7 +333,7 @@ voicemail_window_new (GVariant *message_t,
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
 
   self->objectpath = g_strdup(objectpath);
-  g_debug ("%s: New Voicemail at %s", __func__, self->objectpath);
+  g_debug ("%s: Making row for voicemail", __func__);
   g_variant_dict_init (&dict, properties);
   if (!g_variant_dict_lookup (&dict, "Date", "s", &Date)) {
     Date = g_strdup("Invalid Date");
@@ -408,7 +407,6 @@ voicemail_window_new (GVariant *message_t,
 
 
     attachment_uri = g_strdup_printf("file://%s", Attachment_list[i]);
-    g_debug("file URI: %s", attachment_uri);
     // amr files have issues playing on Mobian, so I need to add `audio-sink='capsfilter caps=audio/x-raw,rate=48000 ! pulsesink'`
     // gst-launch-1.0 playbin uri=file:///path/to/foo audio-sink='capsfilter caps=audio/x-raw,rate=48000 ! pulsesink'
     attachment_uri_playbin = g_strdup_printf("playbin uri=%s audio-sink='capsfilter caps=audio/x-raw,rate=48000 ! pulsesink'", attachment_uri);
