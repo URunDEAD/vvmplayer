@@ -295,13 +295,13 @@ voicemail_window_new (GVariant *message_t,
   g_autofree char      *MessageContext = NULL;
   g_autofree char      *Attachments = NULL;
   g_autofree char     **Attachment_list = NULL;
+  g_autoptr (GError) error = NULL;
   int lifetime_status;
 
   GVariant             *properties;
   GVariantDict          dict;
 
-  GstBus *bus;
-
+  GstDiscoverer *discoverer;
   int number_of_attachments;
 
   self = g_object_new (GTK_TYPE_VOICEMAIL_WINDOW, NULL);
@@ -310,6 +310,13 @@ voicemail_window_new (GVariant *message_t,
   self->message_proxy = message_proxy;
   self->vvmd_object = user_data;
   self->contact_name = NULL;
+
+  discoverer = gst_discoverer_new (GST_SECOND, &error);
+  if (!discoverer) {
+    g_print ("Error creating discoverer instance: %s\n", error->message);
+    self->duration_formatted = g_strdup ("??:??");
+    error = NULL;
+  }
 
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
 
@@ -340,13 +347,12 @@ voicemail_window_new (GVariant *message_t,
   for (int i = 0; i < (number_of_attachments); i++) {
     GFile *vvm_file;
     GFileInfo *vvm_file_info;
-    g_autoptr (GError) error = NULL;
     g_autofree char *mime_type = NULL;
     g_autofree char *attachment_uri = NULL;
     g_autofree char *attachment_uri_playbin = NULL;
     g_autofree char *duration;
-    GstDiscoverer *discoverer;
     GstDiscovererInfo *info;
+    GstBus *bus;
 
     g_debug("On Attachment: %s", Attachment_list[i]);
     vvm_file = g_file_new_for_path (Attachment_list[i]);
@@ -358,6 +364,7 @@ voicemail_window_new (GVariant *message_t,
 
     if (error != NULL) {
       g_warning ("Error getting file info: %s", error->message);
+      error = NULL;
       continue;
     }
     mime_type = g_content_type_get_mime_type (g_file_info_get_content_type (vvm_file_info));
@@ -373,6 +380,8 @@ voicemail_window_new (GVariant *message_t,
     g_debug("MIME Type: %s", mime_type);
     if (strstr (mime_type, "audio") == NULL) {
       g_debug("MIME Type is not audio! skipping....");
+      /* Will I get anything else here? */
+      continue;
     }
     self->duration = GST_CLOCK_TIME_NONE;
 
@@ -383,39 +392,30 @@ voicemail_window_new (GVariant *message_t,
     // amr files have issues playing on Mobian, so I need to add `audio-sink='capsfilter caps=audio/x-raw,rate=48000 ! pulsesink'`
     // gst-launch-1.0 playbin uri=file:///path/to/foo audio-sink='capsfilter caps=audio/x-raw,rate=48000 ! pulsesink'
     attachment_uri_playbin = g_strdup_printf("playbin uri=%s audio-sink='capsfilter caps=audio/x-raw,rate=48000 ! pulsesink'", attachment_uri);
-
-    discoverer = gst_discoverer_new (GST_SECOND, &error);
-    if (!discoverer) {
-      g_print ("Error creating discoverer instance: %s\n", error->message);
-      error = NULL;
-      return NULL;
-    }
-
-    info = gst_discoverer_discover_uri(discoverer, attachment_uri, &error);
-    if (error != NULL) {
-      g_warning ("Error discovering file: %s", error->message);
-      self->duration_formatted = g_strdup ("??:??");
-    } else {
-      self->duration = gst_discoverer_info_get_duration (info);
-      if (self->duration == 0) {
-        /* There is a problem in gst-discoverer:
-         * https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/718 */
-        g_warning ("Error in gst_discoverer!");
+    if (discoverer) {
+      info = gst_discoverer_discover_uri(discoverer, attachment_uri, &error);
+      if (error != NULL) {
+        g_warning ("Error discovering file: %s", error->message);
         self->duration_formatted = g_strdup ("??:??");
       } else {
-        self->minutes = (self->duration / (GST_SECOND * 60)) % 60;
-        self->seconds = GST_TIME_AS_SECONDS (self->duration) - self->minutes * 60;
-        self->duration_formatted = g_strdup_printf ("%02lu:%02lu", self->minutes, self->seconds);
+        self->duration = gst_discoverer_info_get_duration (info);
+        if (self->duration == 0) {
+          /* There is a problem in gst-discoverer:
+           * https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/718 */
+          g_warning ("Error in gst_discoverer!");
+          self->duration_formatted = g_strdup ("??:??");
+        } else {
+          self->minutes = (self->duration / (GST_SECOND * 60)) % 60;
+          self->seconds = GST_TIME_AS_SECONDS (self->duration) - self->minutes * 60;
+          self->duration_formatted = g_strdup_printf ("%02lu:%02lu", self->minutes, self->seconds);
+        }
       }
     }
-
     self->minutes = 0;
     self->seconds = 0;
     duration = g_strdup_printf("%02lu:%02lu/%s", self->minutes, self->seconds, self->duration_formatted);
     vvm_preferences_set_hdyactionrow_text(self->second_row, duration);
     self->state = GST_STATE_READY;
-
-    g_object_unref (discoverer);
 
     self->playbin = gst_parse_launch (attachment_uri_playbin, NULL);
 
@@ -432,10 +432,9 @@ voicemail_window_new (GVariant *message_t,
   self->number = g_strdup(Sender);
   voicemail_window_set_title (self);
 
-
-
   hdy_expander_row_set_subtitle(self->action_expander_row, Date);
 
+  g_object_unref (discoverer);
   return GTK_WIDGET (self);
 }
 
