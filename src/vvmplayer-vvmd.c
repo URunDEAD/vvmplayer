@@ -884,7 +884,6 @@ vvm_vmd_eds_is_ready (VvmVvmd *self)
   unsigned int i = 0;
 
   while (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i) != NULL) {
-    g_autofree char *temp_objectpath;
     vvmplayer_vvmd_add_contact_name (self, g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i));
     i = i + 1;
   }
