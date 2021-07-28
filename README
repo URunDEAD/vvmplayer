@@ -27,7 +27,7 @@ https://gitlab.com/kop316/vvmd/-/wikis/Carrier-Database
 Note: Default Modem Number can be left blank (whereas in vvmd, it must be
       set to NULL) if a default modem number is not needed
 
-Compiling vvmd
+Compiling VVM Player
 ============================
 In order to compile VVM Player you need following software packages:
 	- GCC compiler
@@ -36,7 +36,20 @@ In order to compile VVM Player you need following software packages:
 	- GStreamer
 	- GStreamer-pbutils
 
-Installing vvmd
+Running VVM Player
+============================
+VVM sound files are the generally of the Adaptive Multi-Rate (amr) audio codec.
+gstreamer supports this in the "GStreamer Ugly Plug-ins":
+https://gstreamer.freedesktop.org/modules/gst-plugins-ugly.html
+
+This plugin is not needed to build VVM player, but if the Ugly plugins are not
+installed, you will get a runtime error in attempting to playback your voicemail.
+
+Depending on your distribution, you may have to additionally manually check that
+support for amr is built into your distributions Ugly Plug-ins.
+
+
+Installing VVM Player
 ============================
 
 Build tools requirements
