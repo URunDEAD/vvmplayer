@@ -1,3 +1,10 @@
+vvmplayer (0.2~beta)
+
+  [ Chris Talbot ]
+  * Add preliminary support for notifications
+  * Add support for displaying contacts instead of numbers
+  * Sort voicemails as a function of the date received
+
 vvmplayer (0.1~beta)
 
   [ Chris Talbot ]
