@@ -420,7 +420,7 @@ vvm_type_selected_cb (GObject              *sender,
   }
 
   if(vvm_settings_get_mm_available (settings)) {
-    g_autofree char *vvm_type;
+    g_autofree char *vvm_type = NULL;
 
 
     vvm_type = vvmplayer_vvmd_decode_vvm_type (row_selected);

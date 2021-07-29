@@ -63,7 +63,7 @@ vvm_preferences_set_hdyexpanderrow_text (HdyExpanderRow *hdy_row, const char *te
 static void
 voicemail_window_set_title (VoicemailWindow *self)
 {
-  g_autofree char *title;
+  g_autofree char *title = NULL;
 
   if (self->contact_name) {
     title = g_strdup(self->contact_name);
@@ -122,7 +122,7 @@ static gboolean refresh_ui (VoicemailWindow *self) {
   }
 
   g_debug("Refreshing UI!");
-  g_autofree char *duration;
+  g_autofree char *duration = NULL;
   self->seconds = self->seconds + 1;
   if (self->seconds == 60) {
     self->seconds = 0;
@@ -261,7 +261,7 @@ static void error_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *self) {
 /* This function is called when an End-Of-Stream message is posted on the bus.
  * We just set the pipeline to READY (which stops playback) */
 static void eos_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *self) {
-  g_autofree char *duration;
+  g_autofree char *duration = NULL;
   g_debug ("End-Of-Stream reached.");
   gst_element_set_state (self->playbin, GST_STATE_READY);
   self->state = GST_STATE_READY;
@@ -364,7 +364,7 @@ voicemail_window_new (GVariant *message_t,
     g_autofree char *mime_type = NULL;
     g_autofree char *attachment_uri = NULL;
     g_autofree char *attachment_uri_playbin = NULL;
-    g_autofree char *duration;
+    g_autofree char *duration = NULL;
     GstDiscovererInfo *info;
     GstBus *bus;
 

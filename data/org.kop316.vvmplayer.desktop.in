@@ -5,7 +5,6 @@ Icon=org.kop316.vvmplayer
 Comment=Visaul Voicemail Management application
 Keywords=VVM;voicemail;modem
 Terminal=false
-Terminal=false
 Type=Application
 Categories=GTK;Network;GNOME;
 StartupNotify=true
