@@ -1,5 +1,5 @@
 project('vvmplayer', 'c',
-          version: '0.2~beta',
+          version: '0.3~beta',
     meson_version: '>= 0.50.0',
   default_options: [
                      'c_std=gnu11'

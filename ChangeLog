@@ -1,3 +1,10 @@
+vvmplayer (0.3~beta)
+
+  [ Chris Talbot ]
+  * Fix Appdata Schema
+  * Fix Desktop Schema
+  * Fix some g_autofree
+
 vvmplayer (0.2~beta)
 
   [ Chris Talbot ]
