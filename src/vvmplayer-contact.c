@@ -1,4 +1,4 @@
-/* vvm-contact-provider.c
+/* vvm-contact.c
  *
  * Copyright 2020 Purism SPC
  *           2021 Chris Talbot

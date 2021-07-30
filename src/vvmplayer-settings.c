@@ -1,4 +1,4 @@
-/* vvmplayer-window.c
+/* vvmplayer-settings.c
  *
  * Copyright 2021 Chris Talbot
  *
