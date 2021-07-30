@@ -17,25 +17,10 @@
  */
 
 #include <glib/gi18n.h>
-
-#include "vvmplayer-config.h"
 #include "vvmplayer-window.h"
-#include "vvmplayer-settings.h"
-#include "vvmplayer-vvmd.h"
+#include "vvmplayer-config.h"
+#include "vvmplayer-application.h"
 #include <gst/gst.h>
-
-typedef struct
-{
-  GtkApplication parent_instance;
-  VvmSettings *settings;
-  VvmVvmd *backend;
-
-} VvmPlayer;
-
-typedef GtkApplicationClass VvmPlayerClass;
-
-GType vvm_player_get_type (void);
-G_DEFINE_TYPE (VvmPlayer, vvm_player, GTK_TYPE_APPLICATION)
 
 static void
 on_startup (GtkApplication *app)
@@ -66,47 +51,6 @@ on_activate (GtkApplication *app)
 
 	/* Ask the window manager/compositor to present the window. */
 	gtk_window_present (window);
-}
-
-static void
-vvm_player_finalize (GObject *object)
-{
-  G_OBJECT_CLASS (vvm_player_parent_class)->finalize (object);
-}
-
-static void
-vvm_player_init (VvmPlayer *vvm_player)
-{
-}
-
-static void
-vvm_player_class_init (VvmPlayerClass *class)
-{
-  //GApplicationClass *application_class = G_APPLICATION_CLASS (class);
-  GObjectClass *object_class = G_OBJECT_CLASS (class);
-
-  object_class->finalize = vvm_player_finalize;
-
-}
-
-static VvmPlayer *
-vvm_player_new (void)
-{
-  VvmPlayer *vvm_player;
-
-  g_set_application_name ("VVM Player");
-
-  vvm_player = g_object_new (vvm_player_get_type (),
-                            "application-id", "org.kop316.vvmplayer",
-                            "flags", G_APPLICATION_FLAGS_NONE,
-                            "inactivity-timeout", 30000,
-                            "register-session", TRUE,
-                            NULL);
-
-  vvm_player->settings = vvm_settings_get_default ();
-  vvm_player->backend = vvm_vvmd_get_default ();
-
-  return vvm_player;
 }
 
 int
