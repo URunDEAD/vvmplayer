@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.kop316.vvmplayer
+Exec=@bindir@/vvmplayer --gapplication-service

@@ -1,0 +1,73 @@
+# Visual Voicemail Player (VVM Player)
+
+Copyright (C) 2021, Chris Talbot <chris@talbothome.com>
+
+## About
+
+VVM Player is a front end GUI to display, play, and delete visual voicemails (VVMs).
+
+VVM Player depends on vvmd for VVM functionality
+( https://gitlab.com/kop316/vvmd )
+
+## Notes
+VVM Player is configured in the "Settings" page. VVM Player has the same
+limitations as vvmd (e.g. carrier limitations, backend limitations)
+
+## Settings Notes
+VVM player will give you feedback on whether vvmd is functional. Both
+"VVMD Running" and "Mailbox Active" must be checked for VVM to work!
+
+Please look here for a databse of known good settings:
+https://gitlab.com/kop316/vvmd/-/wikis/Carrier-Database
+
+Note: Default Modem Number can be left blank (whereas in vvmd, it must be
+      set to NULL) if a default modem number is not needed
+
+## Compiling VVM Player
+In order to compile VVM Player you need following software packages:
+	- GCC compiler
+	- GTK3 library
+	- libhandy
+	- GStreamer
+	- GStreamer-pbutils
+
+## Running VVM Player
+VVM sound files are the generally of the Adaptive Multi-Rate (amr) audio codec.
+gstreamer supports this in the "GStreamer Ugly Plug-ins":
+https://gstreamer.freedesktop.org/modules/gst-plugins-ugly.html
+
+This plugin is not needed to build VVM player, but if the Ugly plugins are not
+installed, you will get a runtime error in attempting to playback your voicemail.
+
+Depending on your distribution, you may have to additionally manually check that
+support for amr is built into your distributions Ugly Plug-ins.
+
+
+## Installing VVM Player
+Build tools requirements
+
+When building and testing directly from the repository it is important to
+have at least meson version 0.56 or later installed. In addition, some
+supported Meson backend is required (e.g. ninja).
+
+To prepare/configure the project for compilation:
+
+    # meson _build
+
+To build the project:
+
+    # meson compile -C _build
+
+Install:
+
+    # meson install -C _build
+
+    (Install may require sudo or root privileges).
+
+
+## Running from within the source code repository
+Meson will build the binary in builddir (_build, using the examples above), and
+can be invoked directly.
+
+  Run with debugging
+    # G_MESSAGES_DEBUG=all ./_build/src/vvmplayer

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=Visual Voicemail
+Comment=Visaul Voicemail Management application
+Exec=@bindir@/vvmplayer
+# Translators: Do NOT translate. This is an icon file name.
+Icon=org.kop316.vvmplayer
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=GTK;Network;GNOME;
+# Translators: Do NOT translate the semicolon. keywords should
+# also end with a semicolon
+Keywords=Template;
+DBusActivatable=true

@@ -1,6 +1,7 @@
+/* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
 /* vvmplayer-settings.c
  *
- * Copyright 2021 Chris Talbot
+ * Copyright 2021 Chris Talbot <chris@talbothome.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,13 +15,38 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Author(s):
+ *   Chris Talbot <chris@talbothome.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#define G_LOG_DOMAIN "vvmplayer-settings"
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include "vvmplayer-settings.h"
+#include "vvmplayer-log.h"
+
+/**
+ * SECTION: vvmplayer-settings
+ * @title: VvmSettings
+ * @short_description: The Application settings
+ * @include: "vvmplayer-settings.h"
+ *
+ * A class that handles application specific settings, and
+ * to store them to disk.
+ */
 
 struct _VvmSettings
 {
-  GObject     parent_instance;
+  GObject    parent_instance;
+
+  GSettings *app_settings;
+  gboolean   first_run;
 
   GtkSettings *gtk_settings;
 
@@ -41,10 +67,9 @@ struct _VvmSettings
 
   //Don't need to display this
   char  *country_code;
-
 };
 
-G_DEFINE_TYPE (VvmSettings, vvm_settings, G_TYPE_OBJECT)
+G_DEFINE_TYPE (VvmSettings, vvmplayer_settings, G_TYPE_OBJECT)
 
 void
 vvm_settings_set_vvm_enabled (VvmSettings *self, int VVMEnabled)
@@ -211,40 +236,6 @@ vvm_settings_get_mailbox_active (VvmSettings *self)
   return self->mailbox_active;
 }
 
-
-static void
-vvm_settings_constructed (GObject *object)
-{
-  //VvmSettings *self = (VvmSettings *)object;
-
-  G_OBJECT_CLASS (vvm_settings_parent_class)->constructed (object);
-
-}
-
-static void
-vvm_settings_finalize (GObject *object)
-{
-  VvmSettings *self = (VvmSettings *)object;
-
-  g_object_unref (self->gtk_settings);
-  g_free(self->vvm_destination_number);
-  g_free(self->vvm_type);
-  g_free(self->default_number);
-  g_free(self->carrier_prefix);
-  g_free(self->provision_status);
-
-  G_OBJECT_CLASS (vvm_settings_parent_class)->finalize (object);
-}
-
-static void
-vvm_settings_class_init (VvmSettingsClass *klass)
-{
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-  object_class->constructed = vvm_settings_constructed;
-  object_class->finalize = vvm_settings_finalize;
-}
-
 void
 vvm_settings_load_mm_defaults (VvmSettings *self)
 {
@@ -271,11 +262,55 @@ vvm_settings_load_service_defaults (VvmSettings *self)
 }
 
 static void
-vvm_settings_init (VvmSettings *self)
+vvmplayer_settings_dispose (GObject *object)
 {
-  self->gtk_settings = gtk_settings_get_default ();
+  VvmSettings *self = (VvmSettings *)object;
+
+  VVMPLAYER_TRACE_MSG ("disposing settings");
+
+  g_settings_set_string (self->app_settings, "version", PACKAGE_VERSION);
+
+  g_settings_apply (self->app_settings);
+  g_object_unref (self->gtk_settings);
+  g_free(self->vvm_destination_number);
+  g_free(self->vvm_type);
+  g_free(self->default_number);
+  g_free(self->carrier_prefix);
+  g_free(self->provision_status);
+
+  G_OBJECT_CLASS (vvmplayer_settings_parent_class)->dispose (object);
 }
 
+static void
+vvmplayer_settings_class_init (VvmSettingsClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class->dispose = vvmplayer_settings_dispose;
+}
+
+static void
+vvmplayer_settings_init (VvmSettings *self)
+{
+  g_autofree char *version = NULL;
+
+  self->app_settings = g_settings_new (PACKAGE_ID);
+  version = g_settings_get_string (self->app_settings, "version");
+
+  if (!g_str_equal (version, PACKAGE_VERSION))
+    self->first_run = TRUE;
+
+  g_settings_delay (self->app_settings);
+}
+
+/**
+ * vvmplayer_settings_new:
+ *
+ * Create a new #VvmSettings
+ *
+ * Returns: (transfer full): A #VvmSettings.
+ * Free with g_object_unref().
+ */
 VvmSettings *
 vvm_settings_get_default (void)
 {
@@ -283,10 +318,114 @@ vvm_settings_get_default (void)
 
   if (!self)
     {
-      self = g_object_new (VVM_TYPE_SETTINGS, NULL);
+      self = g_object_new (VVMPLAYER_TYPE_SETTINGS, NULL);
       g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&self);
       vvm_settings_load_mm_defaults (self);
       vvm_settings_load_service_defaults (self);
     }
   return self;
+}
+
+/**
+ * vvmplayer_settings_save:
+ * @self: A #VvmSettings
+ *
+ * Save modified settings to disk.  By default,
+ * the modified settings are saved to disk only
+ * when #VvmSettings is disposed.  Use this
+ * to force save to disk.
+ */
+void
+vvmplayer_settings_save (VvmSettings *self)
+{
+  g_return_if_fail (VVMPLAYER_IS_SETTINGS (self));
+
+  g_settings_apply (self->app_settings);
+}
+
+/**
+ * vvmplayer_settings_get_is_first_run:
+ * @self: A #VvmSettings
+ *
+ * Get if the application has ever launched after install
+ * or update.
+ *
+ * Returns: %TRUE for the first launch of application after
+ * install or update.  %FALSE otherwise.
+ */
+gboolean
+vvmplayer_settings_get_is_first_run (VvmSettings *self)
+{
+  g_return_val_if_fail (VVMPLAYER_IS_SETTINGS (self), FALSE);
+
+  return self->first_run;
+}
+
+/**
+ * vvmplayer_settings_get_window_maximized:
+ * @self: A #VvmSettings
+ *
+ * Get the window maximized state as saved in @self.
+ *
+ * Returns: %TRUE if maximized.  %FALSE otherwise.
+ */
+gboolean
+vvmplayer_settings_get_window_maximized (VvmSettings *self)
+{
+  g_return_val_if_fail (VVMPLAYER_IS_SETTINGS (self), FALSE);
+
+  return g_settings_get_boolean (self->app_settings, "window-maximized");
+}
+
+/**
+ * vvmplayer_settings_set_window_maximized:
+ * @self: A #VvmSettings
+ * @maximized: The window state to save
+ *
+ * Set the window maximized state in @self.
+ */
+void
+vvmplayer_settings_set_window_maximized (VvmSettings *self,
+                                         gboolean     maximized)
+{
+  g_return_if_fail (VVMPLAYER_IS_SETTINGS (self));
+
+  g_settings_set_boolean (self->app_settings, "window-maximized", !!maximized);
+}
+
+/**
+ * vvmplayer_settings_get_window_geometry:
+ * @self: A #VvmSettings
+ * @geometry: (out): A #GdkRectangle
+ *
+ * Get the window geometry as saved in @self.
+ */
+void
+vvmplayer_settings_get_window_geometry (VvmSettings  *self,
+                                        GdkRectangle *geometry)
+{
+  g_return_if_fail (VVMPLAYER_IS_SETTINGS (self));
+  g_return_if_fail (geometry != NULL);
+
+  g_settings_get (self->app_settings, "window-size", "(ii)",
+                  &geometry->width, &geometry->height);
+  geometry->x = geometry->y = -1;
+}
+
+/**
+ * vvmplayer_settings_set_window_geometry:
+ * @self: A #VvmSettings
+ * @geometry: A #GdkRectangle
+ *
+ * Set the window geometry in @self.
+ */
+void
+vvmplayer_settings_set_window_geometry (VvmSettings  *self,
+                                        GdkRectangle *geometry)
+{
+  g_return_if_fail (VVMPLAYER_IS_SETTINGS (self));
+  g_return_if_fail (geometry != NULL);
+
+  g_settings_set (self->app_settings, "window-size", "(ii)",
+                  geometry->width, geometry->height);
 }

@@ -1,6 +1,7 @@
+/* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
 /* main.c
  *
- * Copyright 2021 Chris Talbot
+ * Copyright 2021 Chris Talbot <chris@talbothome.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,64 +15,41 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Author(s):
+ *   Chris Talbot <chris@talbothome.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#include <glib/gi18n.h>
-#include "vvmplayer-window.h"
-#include "vvmplayer-config.h"
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#include <gtk/gtk.h>
+#include <libintl.h>
+#include <locale.h>
+
+#include "vvmplayer-utils.h"
 #include "vvmplayer-application.h"
-#include <gst/gst.h>
-
-static void
-on_startup (GtkApplication *app)
-{
-  g_assert (GTK_IS_APPLICATION (app));
-  hdy_init();
-}
-
-static void
-on_activate (GtkApplication *app)
-{
-	GtkWindow *window;
-
-	/* It's good practice to check your parameters at the beginning of the
-	 * function. It helps catch errors early and in development instead of
-	 * by your users.
-	 */
-	g_assert (GTK_IS_APPLICATION (app));
-
-	/* Get the current window or create one if necessary. */
-	window = gtk_application_get_active_window (app);
-	if (window == NULL)
-		window = g_object_new (VVMPLAYER_TYPE_WINDOW,
-		                       "application", app,
-		                       "default-width", 600,
-		                       "default-height", 300,
-		                       NULL);
-
-	/* Ask the window manager/compositor to present the window. */
-	gtk_window_present (window);
-}
+#include "vvmplayer-log.h"
 
 int
 main (int   argc,
       char *argv[])
 {
-  VvmPlayer *vvm_player;
-  int ret;
+  g_autoptr(VvmApplication) application = NULL;
 
-  /* Initialize GStreamer */
-  gst_init (&argc, &argv);
+  g_assert (VVMPLAYER_IS_MAIN_THREAD ());
 
-  bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
+  vvmplayer_log_init ();
+
+  g_set_prgname (PACKAGE_ID);
+  application = vvmplayer_application_new ();
+  setlocale (LC_ALL, "");
+  bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
 
-  vvm_player = vvm_player_new ();
-  g_signal_connect (G_APPLICATION (vvm_player), "activate", G_CALLBACK (on_activate), NULL);
-  g_signal_connect (G_APPLICATION (vvm_player), "startup", G_CALLBACK (on_startup), NULL);
-
-  ret = g_application_run (G_APPLICATION (vvm_player), argc, argv);
-
-  return ret;
+  return g_application_run (G_APPLICATION (application), argc, argv);
 }

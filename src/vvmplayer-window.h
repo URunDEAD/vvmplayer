@@ -1,6 +1,7 @@
+/* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
 /* vvmplayer-window.h
  *
- * Copyright 2021 Chris Talbot
+ * Copyright 2021 Chris Talbot <chris@talbothome.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,19 +15,26 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Author(s):
+ *   Chris Talbot <chris@talbothome.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #pragma once
 
 #include <gtk/gtk.h>
-#include <handy.h>
+
+#include "vvmplayer-settings.h"
 
 G_BEGIN_DECLS
 
-#define VVMPLAYER_TYPE_WINDOW (vvmplayer_window_get_type())
+#define VVMPLAYER_TYPE_WINDOW (vvmplayer_window_get_type ())
 
-G_DECLARE_FINAL_TYPE (VvmplayerWindow, vvmplayer_window, VVMPLAYER, WINDOW, GtkApplicationWindow)
+G_DECLARE_FINAL_TYPE (VvmWindow, vvmplayer_window, VVMPLAYER, WINDOW, GtkApplicationWindow)
 
-void vvmplayer_window_add_row (VvmplayerWindow *self, GtkWidget *voicemail);
+GtkWidget *vvmplayer_window_new (GtkApplication *application,
+                                 VvmSettings    *settings);
 
 G_END_DECLS

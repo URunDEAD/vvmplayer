@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="vvmplayer">
-	<schema id="org.kop316.vvmplayer" path="/org/kop316/vvmplayer/">
-	</schema>
+  <schema id="org.kop316.vvmplayer" path="/org/kop316/vvmplayer/">
+
+    <key name="version" type="s">
+      <default>""</default>
+      <summary>Version of the application</summary>
+      <description>Version of the application</description>
+    </key>
+
+    <key name="window-maximized" type="b">
+      <default>false</default>
+      <summary>Window maximized</summary>
+      <description>Window maximized state</description>
+    </key>
+
+    <key name="window-size" type="(ii)">
+      <default>(600, 300)</default>
+      <summary>Window size</summary>
+      <description>Window size (width, height).</description>
+    </key>
+
+  </schema>
 </schemalist>

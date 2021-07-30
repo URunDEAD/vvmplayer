@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <requires lib="libhandy" version="0.0"/>
+  <template class="VvmWindow" parent="GtkApplicationWindow">
+    <property name="height-request">600</property>
+    <property name="width-request">300</property>
+    <!-- Visual Voicemail GtkListBox -->
+    <child>
+      <object class="GtkListBox" id="visual_voicemail">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <child type="placeholder">
+          <object class="GtkLabel" id="no_visual_voicemail_label">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">No Voicemails!</property>
+          </object>
+        </child>
+      </object>
+    </child> <!-- Visual Voicemail GtkListBox -->
+
+    <!-- Headerbar -->
+    <child type="titlebar">
+      <object class="HdyHeaderBar" id="header_bar">
+        <property name="visible">1</property>
+        <property name="title" translatable="yes">Visual Voicemail</property>
+        <property name="show-close-button">1</property>
+
+        <!-- Menu Button -->
+        <child>
+          <object class="GtkMenuButton" id="menu_button">
+            <property name="visible">1</property>
+            <property name="can-focus">0</property>
+            <property name="focus-on-click">0</property>
+            <property name="direction">none</property>
+            <property name="popover">main_menu</property>
+            <accelerator key="F10" signal="clicked" />
+          </object>
+          <packing>
+            <property name="pack-type">end</property>
+          </packing>
+        </child>
+
+      </object> <!-- ./GtkHeaderBar -->
+    </child>
+  </template>
+
+  <object class="GtkPopoverMenu" id="main_menu">
+    <child>
+      <object class="GtkBox">
+        <property name="visible">1</property>
+        <property name="orientation">vertical</property>
+        <property name="margin">12</property>
+
+        <child>
+          <object class="GtkModelButton">
+            <property name="visible">1</property>
+            <property name="text" translatable="yes">_Shortcuts</property>
+            <property name="action-name">win.show-help-overlay</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkModelButton">
+            <property name="visible">1</property>
+            <property name="text" translatable="yes">_Help</property>
+            <property name="action-name">app.help</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkModelButton">
+            <property name="visible">1</property>
+            <property name="text" translatable="yes">_Preferences</property>
+            <signal name="clicked" handler="vvmplayer_window_show_settings_dialog" swapped="1" />
+          </object>
+        </child>
+        <child>
+          <object class="GtkModelButton">
+            <property name="visible">1</property>
+            <property name="text" translatable="yes">_About VVM Player</property>
+            <signal name="clicked" handler="vvmplayer_window_show_about" swapped="1" />
+          </object>
+        </child>
+
+      </object> <!-- ./GtkBox -->
+    </child>
+  </object> <!-- ./GtkPopoverMenu main_menu -->
+
+</interface>

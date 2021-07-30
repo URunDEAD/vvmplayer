@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>org.kop316.vvmplayer</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0+</project_license>
+  <name>VVM Player</name>
+  <summary>Visual Voicemail Player</summary>
+  <developer_name>Chris Talbot</developer_name>
+  <launchable type="desktop-id">org.kop316.vvmplayer.desktop</launchable>
+
+  <description>
+    <p>
+      Visual Voicemail Player is a GUI app that plays and deletes Visual voicemails
+      retreived by Visual Voicemail Daemon (vvmd).
+
+    </p>
+  </description>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Main window</caption>
+      <image width="714" height="1299">
+        https://gitlab.com/kop316/vvmplayer/-/raw/main/data/screenshot.png?inline=false
+      </image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://gitlab.com/kop316/vvmplayer</url>
+  <url type="bugtracker">https://gitlab.com/kop316/vvmplayer/issues</url>
+  <url type="donation">https://liberapay.com/kop316/donate</url>
+  <url type="help">https://gitlab.com/kop316/vvmplayer/wikis/home</url>
+  <project_group>GNOME</project_group>
+
+  <kudos>
+    <kudo>ModernToolkit</kudo>
+    <kudo>UserDocs</kudo>
+  </kudos>
+
+  <update_contact>chris@talbothome.com</update_contact>
+  <translation type="gettext">vvmplayer</translation>
+
+  <!-- See https://hughsie.github.io/oars/ -->
+  <content_rating type="oars-1.1"/>
+
+</component>

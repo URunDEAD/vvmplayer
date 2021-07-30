@@ -31,7 +31,7 @@ struct _VvmVvmd
 {
   GObject     parent_instance;
 
-  VvmplayerWindow    *visual_voicemail;
+//  VvmplayerWindow    *visual_voicemail;
 
   GDBusConnection  *connection;
   unsigned int      vvmd_watch_id;
@@ -42,7 +42,7 @@ struct _VvmVvmd
   GDBusProxy       *manager_proxy;
   GDBusProxy       *service_proxy;
   GListStore       *vvm_list;
-  VvmEds           *contacts;
+//  VvmEds           *contacts;
   GstDiscoverer    *discoverer;
   unsigned int unread_vvms;
 
@@ -97,107 +97,6 @@ char
   return g_strdup("Unknown");
 }
 
-void
-vvmplayer_vvmd_set_mm_vvm_list_box (VvmVvmd *self,
-                                    VvmplayerWindow    *visual_voicemail)
-{
-  self->visual_voicemail = visual_voicemail;
-}
-
-void
-vvmplayer_vvmd_increment_unread (VvmVvmd *self)
-{
-  self->unread_vvms = self->unread_vvms + 1;
-}
-
-void
-vvmplayer_vvmd_decrement_unread (VvmVvmd *self)
-{
-  self->unread_vvms = self->unread_vvms - 1;
-}
-
-int
-vvmplayer_vvmd_set_mm_setting (VvmVvmd *self,
-                               const char *setting_to_change,
-                               const char *updated_setting)
-{
-
-  g_autoptr (GError) error = NULL;
-  GVariant		*new_setting;
-
-  new_setting = g_variant_new_parsed("(%s, <%s>)",
-                                     setting_to_change,
-                                     updated_setting);
-
-  g_dbus_proxy_call_sync (self->modemmanager_proxy,
-                          "ChangeSettings",
-                           new_setting,
-                           G_DBUS_CALL_FLAGS_NONE,
-                           -1,
-                           NULL,
-                           &error);
-
-  if (error != NULL) {
-    g_warning ("Error setting %s to %s: Error is %s",
-               setting_to_change,
-               updated_setting,
-               error->message);
-    return FALSE;
-  }
-  return TRUE;
-
-}
-
-int
-vvmplayer_vvmd_set_mm_vvm_enabled (VvmVvmd *self,
-                                   int enabled)
-{
-
-  g_autoptr (GError) error = NULL;
-  GVariant		*new_setting;
-
-  new_setting = g_variant_new_parsed("(%s, <%b>)",
-                                     "VVMEnabled",
-                                     enabled);
-
-  g_dbus_proxy_call_sync (self->modemmanager_proxy,
-                          "ChangeSettings",
-                           new_setting,
-                           G_DBUS_CALL_FLAGS_NONE,
-                           -1,
-                           NULL,
-                           &error);
-
-  if (error != NULL) {
-    g_warning ("Error Enabling or disabling VVM!");
-    return FALSE;
-  }
-  return TRUE;
-
-}
-
-int
-vvmplayer_vvmd_check_subscription_status (VvmVvmd *self)
-{
-
-  g_autoptr (GError) error = NULL;
-
-  g_dbus_proxy_call_sync (self->modemmanager_proxy,
-                          "CheckSubscriptonStatus",
-                           NULL,
-                           G_DBUS_CALL_FLAGS_NONE,
-                           -1,
-                           NULL,
-                           &error);
-
-  if (error != NULL) {
-    g_warning ("Error Checking Subscription Status!");
-    return FALSE;
-  }
-  return TRUE;
-
-}
-
 int
 vvmplayer_vvmd_get_service_settings (VvmVvmd *self)
 {
@@ -225,7 +124,7 @@ vvmplayer_vvmd_get_service_settings (VvmVvmd *self)
     g_variant_get (ret, "(@a{?*})", &all_settings);
     g_variant_dict_init (&dict, all_settings);
     if (g_variant_dict_lookup (&dict, "ModemCountryCode", "s", &ModemCountryCode)) {
-      vvm_settings_set_vvm_country_code (settings, ModemCountryCode);
+     vvm_settings_set_vvm_country_code (settings, ModemCountryCode);
     }
     if (g_variant_dict_lookup (&dict, "MailBoxActive", "b", &MailBoxActive)) {
       vvm_settings_set_mailbox_active (settings, MailBoxActive);
@@ -233,208 +132,6 @@ vvmplayer_vvmd_get_service_settings (VvmVvmd *self)
 
   }
     return TRUE;
-}
-
-static void
-vvmplayer_vvmd_delete_vvm_cb (GObject      *interface,
-                              GAsyncResult *result,
-                              gpointer     *user_data)
-{
-  g_autoptr (GError) error = NULL;
-
-  if (g_dbus_proxy_call_finish (G_DBUS_PROXY (interface),
-                                result,
-                                &error)) {
-    g_debug ("VVM deleted");
-  } else {
-    g_debug ("Couldn't delete VVM as read- error: %s", error ? error->message : "unknown");
-  }
-}
-
-static int
-vvm_list_match_by_obj_path (VoicemailWindow  *old_voicemail,
-                             gconstpointer  voicemail)
-{
-  g_autofree char *old_objectpath = NULL;
-  g_autofree char *objectpath = NULL;
-  old_objectpath = voicemail_window_get_objectpath (old_voicemail);
-  objectpath = voicemail_window_get_objectpath ((VoicemailWindow  *) voicemail);
-  return g_strcmp0 (old_objectpath, objectpath) == 0;
-}
-
-void
-vvmplayer_vvmd_delete_vvm (VvmVvmd     *self,
-                           GDBusProxy  *message_proxy,
-                           char        *objectpath,
-                           gconstpointer user_data)
-{
-    guint position;
-    VoicemailWindow  *voicemail = (VoicemailWindow  *) user_data;
-
-    if (g_list_store_find_with_equal_func (self->vvm_list,
-                                           voicemail,
-                                           (GEqualFunc)vvm_list_match_by_obj_path,
-                                           &position)) {
-      g_list_store_remove (self->vvm_list, position);
-      g_debug ("Deleted VVM from g_list_store new length: %d", g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list)));
-    } else {
-      g_debug ("Could not find MMS in pointer array");
-      return;
-    }
-
-  g_debug ("Deleting VVM with Object Path: %s", objectpath);
-
-  g_dbus_proxy_call (message_proxy,
-                     "Delete",
-                     NULL,
-                     G_DBUS_CALL_FLAGS_NONE,
-                     -1,
-                     NULL,
-                     (GAsyncReadyCallback) vvmplayer_vvmd_delete_vvm_cb,
-                     voicemail);
-
-  return;
-
-}
-
-static void
-vvmplayer_vvmd_mark_message_read_cb (GObject      *interface,
-                                     GAsyncResult *result,
-                                     gpointer     *user_data)
-{
-  g_autoptr (GError) error = NULL;
-
-  if (g_dbus_proxy_call_finish (G_DBUS_PROXY (interface),
-                                result,
-                                &error)) {
-    g_debug ("VVM marked as read");
-  } else {
-    g_debug ("Couldn't mark VVM as read- error: %s", error ? error->message : "unknown");
-  }
-}
-
-void
-vvmplayer_vvmd_mark_message_read (GDBusProxy      *message_proxy,
-                                  char            *objectpath,
-                                  gpointer         user_data)
-{
-  g_debug ("Marking VVM read with Object Path: %s", objectpath);
-
-  g_dbus_proxy_call (message_proxy,
-                     "MarkRead",
-                     NULL,
-                     G_DBUS_CALL_FLAGS_NONE,
-                     -1,
-                     NULL,
-                     (GAsyncReadyCallback) vvmplayer_vvmd_mark_message_read_cb,
-                     user_data);
-}
-
-void
-vvmplayer_vvmd_add_contact_name (VvmVvmd     *self,
-                                 VoicemailWindow  *voicemail)
-{
-    if (vvm_eds_get_is_ready (self->contacts)) {
-      char *contact_name;
-      char *phone_number;
-      VvmContact *contact;
-
-      phone_number = voicemail_window_get_number (VVM_VOICEMAIL_WINDOW (voicemail));
-      contact = vvm_eds_find_by_number (self->contacts, phone_number);
-
-      if (contact != NULL) {
-        contact_name = g_strdup (vvm_contact_get_name (contact));
-        voicemail_window_set_contact_name (VVM_VOICEMAIL_WINDOW (voicemail),
-                                         contact_name);
-        g_free (contact_name);
-      }
-      g_free (phone_number);
-    }
-}
-
-static int
-compare_dates (VoicemailWindow  *old_voicemail,
-               VoicemailWindow  *voicemail,
-               gpointer user_data)
-{
-  return g_date_time_compare (voicemail_window_get_datetime (old_voicemail),
-                              voicemail_window_get_datetime (voicemail));
-}
-
-static void
-vvmplayer_vvmd_receive_message (VvmVvmd   *self,
-                                GVariant *message_t)
-{
-  GtkWidget     *voicemail;
-  GVariant      *properties;
-  char          *objectpath;
-  GDBusProxy    *message_proxy;
-
-  g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
-  g_debug ("Processing VVM: %s", objectpath);
-
-  if (g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list)) != 0) {
-    unsigned int i = 0;
-    while (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i) != NULL) {
-       g_autofree char *temp_objectpath = NULL;
-       temp_objectpath = voicemail_window_get_objectpath (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i));
-       if (g_strcmp0 (temp_objectpath, objectpath) == 0) {
-         g_debug("VVM Already exists!");
-         return;
-       }
-       i = i + 1;
-    }
-  }
-  message_proxy =
-    g_dbus_proxy_new_sync (self->connection,
-                           G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
-                           NULL,
-                           VVMD_SERVICE,
-                           objectpath,
-                           VVMD_MESSAGE_INTERFACE,
-                           NULL,
-                           NULL);
-
-  if (message_proxy == NULL) {
-    g_warning ("Error connecting to the message Proxy!");
-  }
-
-  voicemail = voicemail_window_new (message_t, message_proxy, self->discoverer);
-  vvmplayer_vvmd_add_contact_name (self, VVM_VOICEMAIL_WINDOW (voicemail));
-
-  if (voicemail == NULL) {
-    g_warning ("There was an error with making the VVM!");
-  } else {
-    g_list_store_insert_sorted (self->vvm_list,
-                                VVM_VOICEMAIL_WINDOW (voicemail),
-                                (GCompareDataFunc) compare_dates,
-                                NULL);
-  }
-}
-
-static void
-vvmplayer_vvmd_send_notification (VvmVvmd *self)
-{
-  GNotification *notification;
-  gchar *title;
-  gchar *body;
-  GApplication *vvm_player = g_application_get_default ();
-
-  title = g_strdup("New Voicemail");
-  if (self->unread_vvms == 1) {
-    body = g_strdup_printf ("You have %d new voicemail", self->unread_vvms);
-  } else {
-    body = g_strdup_printf ("You have %d new voicemails", self->unread_vvms);
-  }
-  notification = g_notification_new (title);
-  g_notification_set_body (notification, body);
-  g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_HIGH);
-
-  g_application_send_notification (vvm_player, "unread-message", notification);
-
-  g_object_unref (notification);
-  g_free (title);
-  g_free (body);
 }
 
 static void
@@ -447,6 +144,9 @@ vvmplayer_vvmd_get_new_vvm_cb (GDBusConnection   *connection,
                                gpointer       user_data)
 {
   VvmVvmd *self = user_data;
+  g_debug ("%s", __func__);
+  //TODO FIXME
+/*
   unsigned int last_position = g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list));
   g_debug ("%s", __func__);
   int previous_unread = self->unread_vvms;
@@ -457,6 +157,7 @@ vvmplayer_vvmd_get_new_vvm_cb (GDBusConnection   *connection,
   if (previous_unread < self->unread_vvms) {
     vvmplayer_vvmd_send_notification (self);
   }
+*/
 }
 
 
@@ -468,6 +169,8 @@ vvmplayer_vvmd_get_all_vvm_cb (GObject      *service,
   VvmVvmd *self = user_data;
   g_autoptr (GError) error = NULL;
   GVariant *ret;
+  g_debug ("%s", __func__);
+
   int previous_unread = self->unread_vvms;
 
   g_debug ("%s", __func__);
@@ -479,6 +182,8 @@ vvmplayer_vvmd_get_all_vvm_cb (GObject      *service,
   if (error != NULL) {
       g_warning ("Error in Proxy call: %s\n", error->message);
   } else {
+  //TODO FIXME
+/*
     GVariant *msg_pack = g_variant_get_child_value (ret, 0);
     GVariantIter iter;
     unsigned long num;
@@ -498,10 +203,13 @@ vvmplayer_vvmd_get_all_vvm_cb (GObject      *service,
         }
       }
     }
+*/
   }
+/*
   if (previous_unread < self->unread_vvms) {
     vvmplayer_vvmd_send_notification (self);
   }
+*/
 }
 
 static void
@@ -714,37 +422,38 @@ vvmplayer_vvmd_get_mm_settings (VvmVvmd *self)
     return FALSE;
   } else {
     VvmSettings *settings = vvm_settings_get_default ();
-	  GVariantDict dict;
-	  GVariant *all_settings;
-	  int VVMEnabled;
-	  g_autofree char     *VVMType = NULL;
-	  g_autofree char     *VVMDestinationNumber = NULL;
-	  g_autofree char     *CarrierPrefix = NULL;
-	  g_autofree char     *DefaultModemNumber = NULL;
-	  g_autofree char     *ProvisionStatus = NULL;
+    GVariantDict dict;
+    GVariant *all_settings;
+    int VVMEnabled;
+    g_autofree char     *VVMType = NULL;
+    g_autofree char     *VVMDestinationNumber = NULL;
+    g_autofree char     *CarrierPrefix = NULL;
+    g_autofree char     *DefaultModemNumber = NULL;
+    g_autofree char     *ProvisionStatus = NULL;
 
-	  g_variant_get (ret, "(@a{?*})", &all_settings);
-	  g_variant_dict_init (&dict, all_settings);
-	  if (g_variant_dict_lookup (&dict, "VVMEnabled", "b", &VVMEnabled)) {
-	    vvm_settings_set_vvm_enabled (settings, VVMEnabled);
-	  }
-	  if (g_variant_dict_lookup (&dict, "VVMType", "s", &VVMType)) {
-	    g_debug("VVMType is:%s", VVMType);
-	    vvm_settings_set_vvm_type (settings, VVMType);
-	  }
-	  if (g_variant_dict_lookup (&dict, "VVMDestinationNumber", "s", &VVMDestinationNumber)) {
-	    vvm_settings_set_vvm_destination_number (settings, VVMDestinationNumber);
-	  }
-	  if (g_variant_dict_lookup (&dict, "CarrierPrefix", "s", &CarrierPrefix)) {
-	    vvm_settings_set_vvm_carrier_prefix (settings, CarrierPrefix);
-	  }
-	  if (g_variant_dict_lookup (&dict, "DefaultModemNumber", "s", &DefaultModemNumber)) {
-	    vvm_settings_set_vvm_default_number (settings, DefaultModemNumber);
-	  }
-	  if (g_variant_dict_lookup (&dict, "ProvisionStatus", "s", &ProvisionStatus)) {
-	    vvm_settings_set_vvm_provision_status (settings, ProvisionStatus);
-	  }
-	}
+    g_variant_get (ret, "(@a{?*})", &all_settings);
+    g_variant_dict_init (&dict, all_settings);
+    if (g_variant_dict_lookup (&dict, "VVMEnabled", "b", &VVMEnabled)) {
+      vvm_settings_set_vvm_enabled (settings, VVMEnabled);
+    }
+    if (g_variant_dict_lookup (&dict, "VVMType", "s", &VVMType)) {
+      g_debug("VVMType is:%s", VVMType);
+      vvm_settings_set_vvm_type (settings, VVMType);
+    }
+    if (g_variant_dict_lookup (&dict, "VVMDestinationNumber", "s", &VVMDestinationNumber)) {
+      vvm_settings_set_vvm_destination_number (settings, VVMDestinationNumber);
+    }
+    if (g_variant_dict_lookup (&dict, "CarrierPrefix", "s", &CarrierPrefix)) {
+      vvm_settings_set_vvm_carrier_prefix (settings, CarrierPrefix);
+    }
+    if (g_variant_dict_lookup (&dict, "DefaultModemNumber", "s", &DefaultModemNumber)) {
+      vvm_settings_set_vvm_default_number (settings, DefaultModemNumber);
+    }
+    if (g_variant_dict_lookup (&dict, "ProvisionStatus", "s", &ProvisionStatus)) {
+      vvm_settings_set_vvm_provision_status (settings, ProvisionStatus);
+    }
+  }
+
   return TRUE;
 }
 
@@ -773,18 +482,18 @@ vvmplayer_vvmd_get_modemmanager_cb (GObject      *simple,
       g_error("Error getting VVMD Modem Manager Settings");
 
     } else {
-      VvmSettings *settings = vvm_settings_get_default ();
-	    vvm_settings_set_mm_available (settings, TRUE);
+    VvmSettings *settings = vvm_settings_get_default ();
+    vvm_settings_set_mm_available (settings, TRUE);
 
-  		g_dbus_proxy_new (self->connection,
-  		                  G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
-	  	                  NULL,
-	  	                  VVMD_SERVICE,
-	  	                  VVMD_PATH,
-	  	                  VVMD_MANAGER_INTERFACE,
-	  	                  NULL,
-	  	                  vvmplayer_vvmd_get_manager_cb,
-	  	                  self);
+      g_dbus_proxy_new (self->connection,
+  	                G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
+	                NULL,
+	                VVMD_SERVICE,
+	                VVMD_PATH,
+	                VVMD_MANAGER_INTERFACE,
+	                NULL,
+	                vvmplayer_vvmd_get_manager_cb,
+	                self);
 
     }
   }
@@ -844,7 +553,6 @@ vvmd_vanished_cb (GDBusConnection *connection,
 
 }
 
-
 static void
 vvm_vvmd_constructed (GObject *object)
 {
@@ -875,18 +583,7 @@ vvm_vvmd_class_init (VvmVvmdClass *klass)
 static void
 vvm_vvmd_init (VvmVvmd *self)
 {
-    self->vvm_list = g_list_store_new (GTK_TYPE_VOICEMAIL_WINDOW);
-}
-
-static void
-vvm_vmd_eds_is_ready (VvmVvmd *self)
-{
-  unsigned int i = 0;
-
-  while (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i) != NULL) {
-    vvmplayer_vvmd_add_contact_name (self, g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i));
-    i = i + 1;
-  }
+//    self->vvm_list = g_list_store_new (GTK_TYPE_VOICEMAIL_WINDOW);
 }
 
 VvmVvmd *
@@ -905,17 +602,19 @@ vvm_vvmd_get_default (void)
         g_print ("Error creating discoverer instance: %s\n", error->message);
         error = NULL;
       }
+
       self->vvmd_watch_id = g_bus_watch_name (G_BUS_TYPE_SESSION,
                                               VVMD_SERVICE,
                                               G_BUS_NAME_WATCHER_FLAGS_AUTO_START,
                                               (GBusNameAppearedCallback)vvmd_appeared_cb,
                                               (GBusNameVanishedCallback)vvmd_vanished_cb,
                                               self, NULL);
-
+/*
       self->contacts = vvm_eds_get_default ();
       g_signal_connect_object (self->contacts, "notify::is-ready",
                                G_CALLBACK (vvm_vmd_eds_is_ready), self,
                                G_CONNECT_SWAPPED);
+*/
 
     }
   return self;
