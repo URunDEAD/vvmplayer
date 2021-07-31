@@ -126,12 +126,18 @@ vvmplayer_application_handle_local_options (GApplication *application,
   self->daemon = FALSE;
   if (g_variant_dict_contains (options, "daemon"))
     {
+      if (self->main_window) {
+        g_warning ("Cannot set application as a daemon"
+                   " because application is already started");
+        return -1;
+      }
+
       /* Hold application only the first time daemon mode is set */
-      if (!self->daemon)
+      if (!self->daemon_running) {
         g_application_hold (application);
+      }
 
       self->daemon = TRUE;
-      g_debug ("Application marked as daemon");
     }
   return -1;
 }
@@ -171,6 +177,7 @@ vvmplayer_application_startup (GApplication *application)
           PACKAGE_VERSION, PACKAGE_VCS_VERSION);
 
   G_APPLICATION_CLASS (vvmplayer_application_parent_class)->startup (application);
+  self->daemon_running = FALSE;
 
   hdy_init ();
 
@@ -214,6 +221,12 @@ vvmplayer_application_command_line (GApplication            *application,
   return 0;
 }
 
+gboolean
+on_widget_deleted(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+    return gtk_widget_hide_on_delete (widget);
+}
+
 static void
 vvmplayer_application_activate (GApplication *application)
 {
@@ -223,6 +236,12 @@ vvmplayer_application_activate (GApplication *application)
   if (!self->main_window) {
     self->main_window = GTK_WINDOW (vvmplayer_window_new (GTK_APPLICATION (self), self->settings));
     g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
+
+    /* If we are not running in daemon mode, quit the window */
+    if (self->daemon) {
+      g_signal_connect(G_OBJECT(self->main_window),
+          "delete-event", G_CALLBACK(on_widget_deleted), NULL);
+    }
   }
 
   if ((!self->daemon && !self->daemon_running) || (self->daemon_running)) {
@@ -270,7 +289,6 @@ vvmplayer_application_class_init (VvmApplicationClass *klass)
 static void
 vvmplayer_application_init (VvmApplication *self)
 {
-  self->daemon_running = FALSE;
   g_application_add_main_option_entries (G_APPLICATION (self), cmd_options);
 }
 
@@ -280,5 +298,6 @@ vvmplayer_application_new (void)
   return g_object_new (VVMPLAYER_TYPE_APPLICATION,
                        "application-id", PACKAGE_ID,
                        "flags", G_APPLICATION_HANDLES_COMMAND_LINE,
+                       "register-session", TRUE,
                        NULL);
 }
