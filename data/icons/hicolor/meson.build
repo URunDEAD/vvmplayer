@@ -1,5 +1,12 @@
 icon_sizes = [
-  'scalable'
+  '16x16',
+  '22x22',
+  '32x32',
+  '48x48',
+  '256x256',
+  '512x512',
+  'scalable',
+  'symbolic',
 ]
 
 foreach icon_size: icon_sizes
