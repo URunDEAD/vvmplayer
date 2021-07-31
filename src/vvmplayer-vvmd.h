@@ -31,6 +31,7 @@
 #include "vvmplayer-settings.h"
 #include "vvmplayer-voicemail-window.h"
 #include "vvmplayer-contact-provider.h"
+#include "vvmplayer-notification.h"
 
 G_BEGIN_DECLS
 

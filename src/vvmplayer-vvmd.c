@@ -419,31 +419,6 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
 }
 
 static void
-vvmplayer_vvmd_send_notification (VvmVvmd *self)
-{
-  GNotification *notification;
-  gchar *title;
-  gchar *body;
-  GApplication *vvm_player = g_application_get_default ();
-
-  title = g_strdup("New Voicemail");
-  if (self->unread_vvms == 1) {
-    body = g_strdup_printf ("You have %d new voicemail", self->unread_vvms);
-  } else {
-    body = g_strdup_printf ("You have %d new voicemails", self->unread_vvms);
-  }
-  notification = g_notification_new (title);
-  g_notification_set_body (notification, body);
-  g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_HIGH);
-
-  g_application_send_notification (vvm_player, "unread-message", notification);
-
-  g_object_unref (notification);
-  g_free (title);
-  g_free (body);
-}
-
-static void
 vvmplayer_vvmd_get_new_vvm_cb (GDBusConnection   *connection,
                                const char     *sender_name,
                                const char     *object_path,
@@ -462,7 +437,7 @@ vvmplayer_vvmd_get_new_vvm_cb (GDBusConnection   *connection,
                             g_list_model_get_item (G_LIST_MODEL (self->vvm_list),
                             last_position));
   if (previous_unread < self->unread_vvms) {
-    vvmplayer_vvmd_send_notification (self);
+    vvmplayer_notification_send_unread_vvm (self->unread_vvms);
   }
 
 }
@@ -511,7 +486,7 @@ vvmplayer_vvmd_get_all_vvm_cb (GObject      *service,
 
   }
   if (previous_unread < self->unread_vvms) {
-    vvmplayer_vvmd_send_notification (self);
+    vvmplayer_notification_send_unread_vvm (self->unread_vvms);
   }
 }
 

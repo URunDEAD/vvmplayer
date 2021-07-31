@@ -16,6 +16,7 @@ resources = gnome.compile_resources(
 libsrc = [
   'vvmplayer-log.c',
   'vvmplayer-utils.c',
+  'vvmplayer-notification.c',
   'vvmplayer-preferences-window.c',
   'vvmplayer-settings.c',
   'vvmplayer-window.c',
