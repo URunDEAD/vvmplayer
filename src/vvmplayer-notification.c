@@ -47,6 +47,9 @@ vvmplayer_notification_send_unread_vvm (int unread_vvms)
   gchar *body;
   GApplication *vvm_player = g_application_get_default ();
 
+  /* If the notification is already there, withdraw it */
+  g_application_withdraw_notification (vvm_player, "unread-message");
+
   title = g_strdup("New Voicemail");
   if (unread_vvms == 1) {
     body = g_strdup_printf ("You have %d new voicemail", unread_vvms);
