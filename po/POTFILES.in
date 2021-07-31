@@ -7,4 +7,5 @@ src/vvmplayer-application.c
 src/vvmplayer-window.c
 src/resources/gtk/help-overlay.ui
 src/resources/ui/vvmplayer-window.ui
-resources/ui/vvmplayer-preferences-window.ui
+src/resources/ui/vvmplayer-preferences-window.ui
+src/resources/ui/vvmplayer-voicemail-window.ui

@@ -5,6 +5,7 @@
 #include <gst/pbutils/pbutils.h>
 #include "vvmplayer-window.h"
 #include "vvmplayer-settings.h"
+#include "vvmplayer-voicemail-window.h"
 
 G_BEGIN_DECLS
 
@@ -22,8 +23,8 @@ enum vvm_type {
 
 VvmVvmd *vvm_vvmd_get_default                  (void);
 
-//void vvmplayer_vvmd_set_mm_vvm_list_box (VvmVvmd *self,
-//                                         VvmplayerWindow    *visual_voicemail);
+void vvmplayer_vvmd_set_mm_vvm_list_box (VvmVvmd *self,
+                                         VvmWindow    *visual_voicemail);
 
 int vvmplayer_vvmd_get_mm_settings (VvmVvmd *self);
 int vvmplayer_vvmd_set_mm_setting (VvmVvmd *self,

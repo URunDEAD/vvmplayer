@@ -29,6 +29,7 @@
 #include <gtk/gtk.h>
 #include <libintl.h>
 #include <locale.h>
+#include <gst/gst.h>
 
 #include "vvmplayer-utils.h"
 #include "vvmplayer-application.h"
@@ -41,6 +42,9 @@ main (int   argc,
   g_autoptr(VvmApplication) application = NULL;
 
   g_assert (VVMPLAYER_IS_MAIN_THREAD ());
+
+  /* Initialize GStreamer */
+  gst_init (&argc, &argv);
 
   vvmplayer_log_init ();
 

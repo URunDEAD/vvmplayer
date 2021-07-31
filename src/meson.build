@@ -19,6 +19,7 @@ libsrc = [
   'vvmplayer-preferences-window.c',
   'vvmplayer-settings.c',
   'vvmplayer-window.c',
+  'vvmplayer-voicemail-window.c',
   'vvmplayer-vvmd.c',
 ]
 
@@ -33,6 +34,7 @@ ui_files = files(
   'resources/gtk/help-overlay.ui',
   'resources/ui/vvmplayer-window.ui',
   'resources/ui/vvmplayer-preferences-window.ui',
+  'resources/ui/vvmplayer-voicemail-window.ui',
 )
 
 gtk_builder_tool = find_program('gtk-builder-tool', required: false)

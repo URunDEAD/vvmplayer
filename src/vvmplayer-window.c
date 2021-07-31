@@ -34,6 +34,7 @@
 #include "vvmplayer-window.h"
 #include "vvmplayer-log.h"
 #include "vvmplayer-preferences-window.h"
+#include "vvmplayer-vvmd.h"
 
 struct _VvmWindow
 {
@@ -135,6 +136,14 @@ vvmplayer_window_set_property (GObject      *object,
     }
 }
 
+void
+vvmplayer_window_add_row (VvmWindow *self, GtkWidget *voicemail)
+{
+  gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
+                        GTK_WIDGET (voicemail));
+
+}
+
 static void
 vvmplayer_window_constructed (GObject *object)
 {
@@ -203,7 +212,9 @@ vvmplayer_window_class_init (VvmWindowClass *klass)
 static void
 vvmplayer_window_init (VvmWindow *self)
 {
+  VvmVvmd *backend = vvm_vvmd_get_default ();
   gtk_widget_init_template (GTK_WIDGET (self));
+  vvmplayer_vvmd_set_mm_vvm_list_box (backend, self);
 }
 
 GtkWidget *
