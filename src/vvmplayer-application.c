@@ -48,12 +48,16 @@ struct _VvmApplication
 {
   GtkApplication  parent_instance;
 
-  VvmSettings *settings;
-  VvmVvmd *backend;
+  int           daemon;
+  int           daemon_running;
+
+  VvmSettings  *settings;
+  VvmVvmd      *backend;
+  GtkWindow    *main_window;
+
 };
 
 G_DEFINE_TYPE (VvmApplication, vvmplayer_application, GTK_TYPE_APPLICATION)
-
 
 static gboolean
 cmd_verbose_cb (const char *option_name,
@@ -65,6 +69,11 @@ static GOptionEntry cmd_options[] = {
   {
     "quit", 0, G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
     N_("Quit all running instances of the application"), NULL
+  },
+  {
+    "daemon", 0, G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
+    N_("Whether to present the main window on startup"),
+    NULL
   },
   {
     "verbose", 'v', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK, cmd_verbose_cb,
@@ -106,12 +115,24 @@ static int
 vvmplayer_application_handle_local_options (GApplication *application,
                                             GVariantDict *options)
 {
+  VvmApplication *self = (VvmApplication *)application;
+
   if (g_variant_dict_contains (options, "version"))
     {
       g_print ("%s %s\n", PACKAGE_NAME, PACKAGE_VCS_VERSION);
       return 0;
     }
 
+  self->daemon = FALSE;
+  if (g_variant_dict_contains (options, "daemon"))
+    {
+      /* Hold application only the first time daemon mode is set */
+      if (!self->daemon)
+        g_application_hold (application);
+
+      self->daemon = TRUE;
+      g_debug ("Application marked as daemon");
+    }
   return -1;
 }
 
@@ -197,20 +218,26 @@ static void
 vvmplayer_application_activate (GApplication *application)
 {
   VvmApplication *self = (VvmApplication *)application;
-  VvmSettings *settings = vvm_settings_get_default ();
-  GtkSettings *gtk_settings = gtk_settings_get_default ();
-  int prefer_dark_theme;
-  GtkWindow *window;
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (self));
 
-  if (window == NULL)
-    window = GTK_WINDOW (vvmplayer_window_new (GTK_APPLICATION (self), self->settings));
+  if (!self->main_window) {
+    self->main_window = GTK_WINDOW (vvmplayer_window_new (GTK_APPLICATION (self), self->settings));
+    g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
+  }
 
-  prefer_dark_theme = vvmplayer_settings_get_dark_theme (settings);
-  g_object_set (gtk_settings, "gtk-application-prefer-dark-theme", prefer_dark_theme, NULL);
+  if ((!self->daemon && !self->daemon_running) || (self->daemon_running)) {
+    GtkSettings *gtk_settings = gtk_settings_get_default ();
+    int prefer_dark_theme;
 
-  gtk_window_present (window);
+    self->main_window = gtk_application_get_active_window (GTK_APPLICATION (self));
+
+    prefer_dark_theme = vvmplayer_settings_get_dark_theme (self->settings);
+    g_object_set (gtk_settings, "gtk-application-prefer-dark-theme", prefer_dark_theme, NULL);
+
+    gtk_window_present (GTK_WINDOW (self->main_window));
+  } else {
+    self->daemon_running = TRUE;
+  }
 }
 
 static void
@@ -243,6 +270,7 @@ vvmplayer_application_class_init (VvmApplicationClass *klass)
 static void
 vvmplayer_application_init (VvmApplication *self)
 {
+  self->daemon_running = FALSE;
   g_application_add_main_option_entries (G_APPLICATION (self), cmd_options);
 }
 
