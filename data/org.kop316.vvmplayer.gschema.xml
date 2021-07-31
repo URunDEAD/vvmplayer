@@ -15,7 +15,7 @@
     </key>
 
     <key name="window-size" type="(ii)">
-      <default>(600, 300)</default>
+      <default>(300, 600)</default>
       <summary>Window size</summary>
       <description>Window size (width, height).</description>
     </key>
