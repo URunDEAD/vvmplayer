@@ -41,7 +41,7 @@ struct _VvmVvmd
   GDBusProxy       *manager_proxy;
   GDBusProxy       *service_proxy;
   GListStore       *vvm_list;
-//  VvmEds           *contacts;
+  VvmEds           *contacts;
   GstDiscoverer    *discoverer;
   unsigned int unread_vvms;
 
@@ -329,8 +329,6 @@ vvmplayer_vvmd_mark_message_read (GDBusProxy      *message_proxy,
                      user_data);
 }
 
-/*
-//TODO FIXME
 void
 vvmplayer_vvmd_add_contact_name (VvmVvmd     *self,
                                  VoicemailWindow  *voicemail)
@@ -341,6 +339,7 @@ vvmplayer_vvmd_add_contact_name (VvmVvmd     *self,
       VvmContact *contact;
 
       phone_number = voicemail_window_get_number (VVM_VOICEMAIL_WINDOW (voicemail));
+
       contact = vvm_eds_find_by_number (self->contacts, phone_number);
 
       if (contact != NULL) {
@@ -352,7 +351,6 @@ vvmplayer_vvmd_add_contact_name (VvmVvmd     *self,
       g_free (phone_number);
     }
 }
-*/
 
 static int
 compare_dates (VoicemailWindow  *old_voicemail,
@@ -402,7 +400,7 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
   }
 
   voicemail = voicemail_window_new (message_t, message_proxy, self->discoverer);
-//  vvmplayer_vvmd_add_contact_name (self, VVM_VOICEMAIL_WINDOW (voicemail));
+  vvmplayer_vvmd_add_contact_name (self, VVM_VOICEMAIL_WINDOW (voicemail));
 
   if (voicemail == NULL) {
     g_warning ("There was an error with making the VVM!");
@@ -853,6 +851,16 @@ vvmd_vanished_cb (GDBusConnection *connection,
 }
 
 static void
+vvm_vmd_eds_is_ready (VvmVvmd *self)
+{
+  unsigned int i = 0;
+  while (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i) != NULL) {
+    vvmplayer_vvmd_add_contact_name (self, g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i));
+    i = i + 1;
+  }
+}
+
+static void
 vvm_vvmd_constructed (GObject *object)
 {
   //VvmVvmd *self = (VvmVvmd *)object;
@@ -908,12 +916,11 @@ vvm_vvmd_get_default (void)
                                               (GBusNameAppearedCallback)vvmd_appeared_cb,
                                               (GBusNameVanishedCallback)vvmd_vanished_cb,
                                               self, NULL);
-/*
+
       self->contacts = vvm_eds_get_default ();
       g_signal_connect_object (self->contacts, "notify::is-ready",
                                G_CALLBACK (vvm_vmd_eds_is_ready), self,
                                G_CONNECT_SWAPPED);
-*/
 
     }
   return self;

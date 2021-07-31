@@ -6,6 +6,7 @@
 #include "vvmplayer-window.h"
 #include "vvmplayer-settings.h"
 #include "vvmplayer-voicemail-window.h"
+#include "vvmplayer-contact-provider.h"
 
 G_BEGIN_DECLS
 

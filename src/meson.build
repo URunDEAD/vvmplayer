@@ -21,6 +21,8 @@ libsrc = [
   'vvmplayer-window.c',
   'vvmplayer-voicemail-window.c',
   'vvmplayer-vvmd.c',
+  'vvmplayer-contact.c',
+  'vvmplayer-contact-provider.c',
 ]
 
 libvvmplayer = both_libraries(
