@@ -24,6 +24,13 @@
 /* See https://gitlab.gnome.org/GNOME/evolution-data-server/-/issues/332#note_1107764 */
 #define EDS_DISABLE_DEPRECATED
 
+#define G_LOG_DOMAIN "vvmplayer-contact"
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+# include "version.h"
+#endif
+
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <libebook-contacts/libebook-contacts.h>

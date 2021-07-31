@@ -22,6 +22,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#define G_LOG_DOMAIN "vvmplayer-preferences-window"
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+# include "version.h"
+#endif
+
 #include "vvmplayer-preferences-window.h"
 #include "vvmplayer-settings.h"
 #include "vvmplayer-vvmd.h"

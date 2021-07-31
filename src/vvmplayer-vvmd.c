@@ -16,6 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define G_LOG_DOMAIN "vvmplayer-vvmd"
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include "vvmplayer-vvmd.h"
 
 #define VVMD_SERVICE	                "org.kop316.vvm"

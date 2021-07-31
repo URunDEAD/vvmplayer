@@ -17,6 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define G_LOG_DOMAIN "vvmplayer-voicemail-window"
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include "vvmplayer-voicemail-window.h"
 
 #define ICON_PLAYBACK_STOP "media-playback-stop"
