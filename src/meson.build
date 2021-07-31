@@ -14,16 +14,16 @@ resources = gnome.compile_resources(
 )
 
 libsrc = [
+  'vvmplayer-contact.c',
+  'vvmplayer-contact-provider.c',
   'vvmplayer-log.c',
-  'vvmplayer-utils.c',
   'vvmplayer-notification.c',
   'vvmplayer-preferences-window.c',
   'vvmplayer-settings.c',
-  'vvmplayer-window.c',
+  'vvmplayer-utils.c',
   'vvmplayer-voicemail-window.c',
   'vvmplayer-vvmd.c',
-  'vvmplayer-contact.c',
-  'vvmplayer-contact-provider.c',
+  'vvmplayer-window.c',
 ]
 
 libvvmplayer = both_libraries(
