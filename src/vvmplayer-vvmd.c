@@ -98,6 +98,87 @@ char
 }
 
 int
+vvmplayer_vvmd_set_mm_vvm_enabled (VvmVvmd *self,
+                                   int enabled)
+{
+
+  g_autoptr (GError) error = NULL;
+  GVariant		*new_setting;
+
+  new_setting = g_variant_new_parsed("(%s, <%b>)",
+                                     "VVMEnabled",
+                                     enabled);
+
+  g_dbus_proxy_call_sync (self->modemmanager_proxy,
+                          "ChangeSettings",
+                           new_setting,
+                           G_DBUS_CALL_FLAGS_NONE,
+                           -1,
+                           NULL,
+                           &error);
+
+  if (error != NULL) {
+    g_warning ("Error Enabling or disabling VVM!");
+    return FALSE;
+  }
+  return TRUE;
+}
+
+int
+vvmplayer_vvmd_check_subscription_status (VvmVvmd *self)
+{
+
+  g_autoptr (GError) error = NULL;
+
+  g_dbus_proxy_call_sync (self->modemmanager_proxy,
+                          "CheckSubscriptonStatus",
+                           NULL,
+                           G_DBUS_CALL_FLAGS_NONE,
+                           -1,
+                           NULL,
+                           &error);
+
+  if (error != NULL) {
+    g_warning ("Error Checking Subscription Status!");
+    return FALSE;
+  }
+  return TRUE;
+
+}
+
+int
+vvmplayer_vvmd_set_mm_setting (VvmVvmd *self,
+                               const char *setting_to_change,
+                               const char *updated_setting)
+{
+
+  g_autoptr (GError) error = NULL;
+  GVariant		*new_setting;
+
+  new_setting = g_variant_new_parsed("(%s, <%s>)",
+                                     setting_to_change,
+                                     updated_setting);
+
+  g_dbus_proxy_call_sync (self->modemmanager_proxy,
+                          "ChangeSettings",
+                           new_setting,
+                           G_DBUS_CALL_FLAGS_NONE,
+                           -1,
+                           NULL,
+                           &error);
+
+  if (error != NULL) {
+    g_warning ("Error setting %s to %s: Error is %s",
+               setting_to_change,
+               updated_setting,
+               error->message);
+    return FALSE;
+  }
+  return TRUE;
+
+}
+
+int
 vvmplayer_vvmd_get_service_settings (VvmVvmd *self)
 {
   g_autoptr (GError) error = NULL;
