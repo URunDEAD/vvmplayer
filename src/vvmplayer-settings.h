@@ -83,5 +83,7 @@ const char *vvm_settings_get_vvm_country_code (VvmSettings *self);
 
 void vvm_settings_set_mailbox_active (VvmSettings *self, int MailboxActive);
 int vvm_settings_get_mailbox_active (VvmSettings *self);
+
 void vvmplayer_settings_set_dark_theme (VvmSettings *self, int prefer_dark_theme);
+int vvmplayer_settings_get_dark_theme (VvmSettings *self);
 G_END_DECLS

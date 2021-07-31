@@ -197,12 +197,18 @@ static void
 vvmplayer_application_activate (GApplication *application)
 {
   VvmApplication *self = (VvmApplication *)application;
+  VvmSettings *settings = vvm_settings_get_default ();
+  GtkSettings *gtk_settings = gtk_settings_get_default ();
+  int prefer_dark_theme;
   GtkWindow *window;
 
   window = gtk_application_get_active_window (GTK_APPLICATION (self));
 
   if (window == NULL)
     window = GTK_WINDOW (vvmplayer_window_new (GTK_APPLICATION (self), self->settings));
+
+  prefer_dark_theme = vvmplayer_settings_get_dark_theme (settings);
+  g_object_set (gtk_settings, "gtk-application-prefer-dark-theme", prefer_dark_theme, NULL);
 
   gtk_window_present (window);
 }
