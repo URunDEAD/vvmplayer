@@ -9,6 +9,14 @@ VVM Player is a front end GUI to display, play, and delete visual voicemails (VV
 VVM Player depends on vvmd for VVM functionality
 ( https://gitlab.com/kop316/vvmd )
 
+## License
+Unless otherwise specified, all code is licensed under the GPL Version 3 or later
+ https://www.gnu.org/licenses/gpl-3.0.en.html
+
+All other images/data is licensed under  Creative Commons
+Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+https://creativecommons.org/licenses/by-sa/4.0/
+
 ## Notes
 VVM Player is configured in the "Settings" page. VVM Player has the same
 limitations as vvmd (e.g. carrier limitations, backend limitations)
