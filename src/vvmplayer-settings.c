@@ -50,6 +50,9 @@ struct _VvmSettings
 
   GtkSettings *gtk_settings;
 
+  //App Settings
+  int prefer_dark_theme;
+
   //Modem Manager Settings
   char  *vvm_destination_number;
   char  *vvm_type;
@@ -96,6 +99,17 @@ vvm_settings_set_mm_available (VvmSettings *self, int ModemManagerAvailable)
     g_debug ("Modem Manager available through VVMD");
   else
     g_debug ("Modem Manager not available through VVMD");
+
+}
+
+void
+vvmplayer_settings_set_dark_theme (VvmSettings *self, int prefer_dark_theme)
+{
+  self->prefer_dark_theme = prefer_dark_theme;
+  if (self->prefer_dark_theme)
+    g_debug ("App prefers Dark Theme");
+  else
+    g_debug ("App doesn't prefer Dark Theme");
 
 }
 
@@ -269,6 +283,7 @@ vvmplayer_settings_dispose (GObject *object)
   VVMPLAYER_TRACE_MSG ("disposing settings");
 
   g_settings_set_string (self->app_settings, "version", PACKAGE_VERSION);
+  g_settings_set_int (self->app_settings, "dark-theme", self->prefer_dark_theme);
 
   g_settings_apply (self->app_settings);
   g_object_unref (self->gtk_settings);
@@ -293,9 +308,12 @@ static void
 vvmplayer_settings_init (VvmSettings *self)
 {
   g_autofree char *version = NULL;
+  GtkSettings *gtk_settings = gtk_settings_get_default ();
 
   self->app_settings = g_settings_new (PACKAGE_ID);
   version = g_settings_get_string (self->app_settings, "version");
+  self->prefer_dark_theme = g_settings_get_int (self->app_settings, "dark-theme");
+  g_object_set (gtk_settings, "gtk-application-prefer-dark-theme", self->prefer_dark_theme, NULL);
 
   if (!g_str_equal (version, PACKAGE_VERSION))
     self->first_run = TRUE;

@@ -38,6 +38,7 @@ struct _VvmPreferencesWindow
 
   //Enable VVM
   GtkSwitch *enable_vvm_switch;
+  GtkSwitch *enable_dark_theme_switch;
   HdyActionRow *enable_vvm_text;
 
   //Status
@@ -130,6 +131,8 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   int VVMEnabled, enable_vvm_switch_state;
   int VVMType_encoded, vvm_type_combo_row_state;
   VvmSettings *settings = vvm_settings_get_default ();
+  int prefer_dark_theme, enable_dark_theme_switch_state;
+  GtkSettings *gtk_settings = gtk_settings_get_default ();
 
   //Enable VVM
   VVMEnabled = vvm_settings_get_vvm_enabled (settings);
@@ -137,6 +140,10 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   if (VVMEnabled != enable_vvm_switch_state)
     gtk_switch_set_active (self->enable_vvm_switch, VVMEnabled);
 
+  g_object_get (gtk_settings, "gtk-application-prefer-dark-theme", &prefer_dark_theme, NULL);
+  enable_dark_theme_switch_state = gtk_switch_get_state (self->enable_dark_theme_switch);
+  if (prefer_dark_theme != enable_dark_theme_switch_state)
+    gtk_switch_set_active (self->enable_dark_theme_switch, prefer_dark_theme);
 
   //Modem Manager settings
   VVMDestinationNumber = vvm_settings_get_vvm_destination_number (settings);
@@ -218,6 +225,18 @@ refresh_settings_button_clicked_cb (GtkButton     *btn,
   } else {
     g_debug ("refresh_settings_button_clicked_cb() timed out!");
   }
+}
+
+static void
+enable_theme_switch_flipped_cb (GtkSwitch *widget,
+                                gboolean   prefer_dark_theme,
+                                VvmPreferencesWindow *self)
+{
+  GtkSettings *gtk_settings = gtk_settings_get_default ();
+  VvmSettings *settings = vvm_settings_get_default ();
+
+  g_object_set (gtk_settings, "gtk-application-prefer-dark-theme", prefer_dark_theme, NULL);
+  vvmplayer_settings_set_dark_theme (settings, prefer_dark_theme);
 }
 
 static gboolean
@@ -489,8 +508,10 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
 
   //Refresh Page
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, refresh_settings_button);
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, enable_dark_theme_switch);
 
   gtk_widget_class_bind_template_callback (widget_class, refresh_settings_button_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, enable_theme_switch_flipped_cb);
 
   //Whether or not VVM is enabled
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, enable_vvm_text);

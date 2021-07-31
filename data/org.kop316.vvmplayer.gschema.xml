@@ -20,5 +20,11 @@
       <description>Window size (width, height).</description>
     </key>
 
+    <key name="dark-theme" type="i">
+      <default>0</default>
+      <summary>Dark Theme</summary>
+      <description>Dark Theme Enabled.</description>
+    </key>
+
   </schema>
 </schemalist>
