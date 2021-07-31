@@ -1,3 +1,4 @@
+/* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
 /* vvm-contact-provider.c
  *
  * Copyright 2020 Purism SPC

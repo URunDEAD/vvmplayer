@@ -1,3 +1,4 @@
+/* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
 /* vvmplayer-voicemail-window.c
  *
  * Copyright 2021 Chris Talbot

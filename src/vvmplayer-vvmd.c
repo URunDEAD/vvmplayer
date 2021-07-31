@@ -1,3 +1,4 @@
+/* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
 /* vvmplayer-vvmd.c
  *
  * Copyright 2021 Chris Talbot
