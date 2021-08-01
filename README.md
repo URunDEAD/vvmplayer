@@ -62,6 +62,12 @@ To prepare/configure the project for compilation:
 
     # meson _build
 
+If you plan on installing from meson, it is suggested to instead use
+
+    # meson _build --prefix=/usr
+
+So the xdg autostart desktop file will install in the correct place.
+
 To build the project:
 
     # meson compile -C _build
@@ -72,6 +78,11 @@ Install:
 
     (Install may require sudo or root privileges).
 
+Uninstall:
+
+    # ninja uninstall -C _build/
+
+    (Uninstall may require sudo or root privileges).
 
 ## Running from within the source code repository
 Meson will build the binary in builddir (_build, using the examples above), and
