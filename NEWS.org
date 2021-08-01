@@ -1,3 +1,10 @@
+vvmplayer (0.4~beta)
+
+  [ Chris Talbot ]
+  * Rebase vvmplayer on https://gitlab.com/sadiq/my-gtemplate/
+  * Enable Dark Theme
+  * Emable daemon mode
+
 vvmplayer (0.3~beta)
 
   [ Chris Talbot ]
