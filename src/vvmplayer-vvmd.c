@@ -456,8 +456,6 @@ vvmplayer_vvmd_get_all_vvm_cb (GObject      *service,
 
   int previous_unread = self->unread_vvms;
 
-  g_debug ("%s", __func__);
-
   ret = g_dbus_proxy_call_finish (self->service_proxy,
                                   res,
                                   &error);
