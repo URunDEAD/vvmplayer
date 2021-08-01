@@ -10,5 +10,5 @@ StartupNotify=true
 Categories=GTK;Network;GNOME;
 # Translators: Do NOT translate the semicolon. keywords should
 # also end with a semicolon
-Keywords=Template;
+Keywords=Network;
 DBusActivatable=true

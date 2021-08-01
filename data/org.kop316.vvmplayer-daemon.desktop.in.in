@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Visual Voicemail (daemon)
+Exec=@bindir@/vvmplayer --daemon
+Icon=org.kop316.vvmplayer
+Comment=Visaul Voicemail Management application (daemon mode)
+Keywords=Network;
+Terminal=false
+Type=Application
+Categories=GTK;Network;GNOME;
+StartupNotify=true
+NoDisplay=true
+X-GNOME-AutoRestart=true
