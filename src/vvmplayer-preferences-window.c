@@ -59,6 +59,7 @@ struct _VvmPreferencesWindow
   //Modem Manager Settings
   GtkEntry *destination_number_text;
   GtkEntry *modem_number_text;
+  HdyActionRow *carrier_prefix_text_row;
   GtkEntry *carrier_prefix_text;
   HdyComboRow *vvm_type_combo_row;
 
@@ -429,6 +430,16 @@ carrier_prefix_button_clicked_cb (GtkButton     *btn,
 }
 
 static void
+vvm_preferences_set_placeholder_text (GtkEntry *placeholder, const char *text) {
+  GValue a = G_VALUE_INIT;
+
+  g_value_init (&a, G_TYPE_STRING);
+  g_assert (G_VALUE_HOLDS_STRING (&a));
+  g_value_set_static_string (&a, text);
+  g_object_set_property (G_OBJECT (placeholder), "placeholder-text", &a);
+}
+
+static void
 vvm_type_selected_cb (GObject              *sender,
                       GParamSpec           *pspec,
                       VvmPreferencesWindow *self)
@@ -456,6 +467,20 @@ vvm_type_selected_cb (GObject              *sender,
                                       vvm_type) == FALSE) {
       g_error("Error changing setting in vvmd!");
       hdy_combo_row_set_selected_index (self->vvm_type_combo_row, VVM_TYPE_UNKNOWN);
+    } else {
+
+        if (row_selected == VVM_TYPE_ATTUSA) {
+           g_debug("Set setting to AT&T USA!");
+           vvm_preferences_set_hdyactionrow_text(self->carrier_prefix_text_row,
+                                                 "AT&T USA Number (No dashes or spaces)");
+           vvm_preferences_set_placeholder_text(self->carrier_prefix_text,
+                                                 "AT&T USA Number (No dashes or spaces)");
+
+        } else {
+           vvm_preferences_set_hdyactionrow_text(self->carrier_prefix_text_row, "Carrier Prefix");
+           vvm_preferences_set_placeholder_text(self->carrier_prefix_text,
+                                                 "Carrier Prefix");
+        }
     }
   } else {
      hdy_combo_row_set_selected_index (self->vvm_type_combo_row, VVM_TYPE_UNKNOWN);
@@ -538,6 +563,7 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
   //Modem Manager Settings
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, destination_number_text);
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, modem_number_text);
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, carrier_prefix_text_row);
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, carrier_prefix_text);
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, vvm_type_combo_row);
 
