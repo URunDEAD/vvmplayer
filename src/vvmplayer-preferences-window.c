@@ -386,7 +386,7 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
     self->enable_vvm_switch_clicked_timeout = TRUE;
 
     if(vvm_settings_get_mm_available (settings) == FALSE) {
-      g_warning("Cannot find VVMD!");
+      g_warning("Cannot find vvmd!");
       vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Cannot find vvmd");
       g_timeout_add_seconds (2, enable_vvm_switch_timeout, self);
       gtk_switch_set_active (self->enable_vvm_switch, FALSE);
@@ -502,8 +502,8 @@ sync_vvm_button_clicked_cb (GtkButton     *btn,
     self->sync_vvm_button_clicked_timeout = TRUE;
 
     if(vvm_settings_get_mm_available (settings) == FALSE) {
-      g_warning ("Cannot find VVMD!");
-      vvm_preferences_set_button_content (self->sync_vvm_button, "Cannot find VVMD");
+      g_warning ("Cannot find vvmd!");
+      vvm_preferences_set_button_content (self->sync_vvm_button, "Cannot find vvmd");
       g_timeout_add_seconds (2, sync_vvm_button_timeout, self);
       return;
     }
