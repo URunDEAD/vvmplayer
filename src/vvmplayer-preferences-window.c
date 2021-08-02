@@ -265,9 +265,15 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
                               VvmPreferencesWindow *self)
 {
   VvmSettings *settings = vvm_settings_get_default ();
+  int VVMEnabled = vvm_settings_get_vvm_enabled (settings);
+
   if(vvm_settings_get_mm_available (settings) == FALSE) {
     g_warning("Cannot find VVMD!");
     refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+    return;
+  }
+
+  if (VVMEnabled == state) {
     return;
   }
 
