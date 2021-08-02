@@ -300,52 +300,17 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
 
 }
 
-static gboolean
-activate_vvm_button_timeout(gpointer user_data)
-{
-  VvmPreferencesWindow *self = user_data;
-  g_debug("Removing timeout to activate_vvm_button_clicked_cb()");
-  self->activate_vvm_button_clicked_timeout = FALSE;
-  vvm_preferences_set_button_content (self->activate_vvm_button, "Activate");
-
-  refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
-
-  return FALSE;
-}
-
-static void
-activate_vvm_button_clicked_cb (GtkButton     *btn,
-                                VvmPreferencesWindow *self)
-{
-  VvmSettings *settings = vvm_settings_get_default ();
-  if(vvm_settings_get_mm_available (settings) == FALSE) {
-    g_warning("Cannot find VVMD!");
-    refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
-    return;
-  }
-
-  if (self->activate_vvm_button_clicked_timeout == FALSE) {
-    VvmVvmd *backend = vvm_vvmd_get_default ();
-    g_debug("Activating VVM.....");
-    self->activate_vvm_button_clicked_timeout = TRUE;
-    g_debug("Adding timeout to activate_vvm_button_clicked_cb()");
-    g_timeout_add_seconds (10,activate_vvm_button_timeout, self);
-
-    vvm_preferences_set_button_content (self->activate_vvm_button, "Activating...");
-
-    vvmplayer_vvmd_check_subscription_status (backend);
-
-  } else {
-    g_debug("activate_vvm_button_clicked_cb() timed out!");
-  }
-}
-
 static void
 destination_number_button_clicked_cb (GtkButton     *btn,
                                       VvmPreferencesWindow *self)
 {
   VvmVvmd *backend = vvm_vvmd_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
+
+  /*
+   * You will need to modify activate_vvm_button_clicked_cb() if you
+   * do anything with *btn
+   */
 
   if(vvm_settings_get_mm_available (settings)) {
     const char *dest_number = NULL;
@@ -376,6 +341,11 @@ default_modem_number_button_clicked_cb (GtkButton     *btn,
 {
   VvmVvmd *backend = vvm_vvmd_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
+
+  /*
+   * You will need to modify activate_vvm_button_clicked_cb() if you
+   * do anything with *btn
+   */
 
   if(vvm_settings_get_mm_available (settings)) {
     const char *modem_number = NULL;
@@ -411,6 +381,11 @@ carrier_prefix_button_clicked_cb (GtkButton     *btn,
   VvmVvmd *backend = vvm_vvmd_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
 
+  /*
+   * You will need to modify activate_vvm_button_clicked_cb() if you
+   * do anything with *btn
+   */
+
   if(vvm_settings_get_mm_available (settings)) {
     const char *carrier_prefix = NULL;
 
@@ -431,6 +406,51 @@ carrier_prefix_button_clicked_cb (GtkButton     *btn,
 
     g_warning("VVMD Modem Manager settings not available!");
     gtk_entry_set_text (self->carrier_prefix_text, result);
+  }
+}
+
+static gboolean
+activate_vvm_button_timeout(gpointer user_data)
+{
+  VvmPreferencesWindow *self = user_data;
+  g_debug("Removing timeout to activate_vvm_button_clicked_cb()");
+  self->activate_vvm_button_clicked_timeout = FALSE;
+  vvm_preferences_set_button_content (self->activate_vvm_button, "Activate");
+
+  refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+
+  return FALSE;
+}
+
+static void
+activate_vvm_button_clicked_cb (GtkButton     *btn,
+                                VvmPreferencesWindow *self)
+{
+  VvmSettings *settings = vvm_settings_get_default ();
+  if(vvm_settings_get_mm_available (settings) == FALSE) {
+    g_warning("Cannot find VVMD!");
+    refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+    return;
+  }
+
+  if (self->activate_vvm_button_clicked_timeout == FALSE) {
+    VvmVvmd *backend = vvm_vvmd_get_default ();
+    g_debug("Activating VVM.....");
+    self->activate_vvm_button_clicked_timeout = TRUE;
+    g_debug("Adding timeout to activate_vvm_button_clicked_cb()");
+    g_timeout_add_seconds (10,activate_vvm_button_timeout, self);
+
+    /* In case the user did not hit apply, just refresh all settings */
+    destination_number_button_clicked_cb (NULL, self);
+    default_modem_number_button_clicked_cb (NULL, self);
+    carrier_prefix_button_clicked_cb (NULL, self);
+
+    vvm_preferences_set_button_content (self->activate_vvm_button, "Activating...");
+
+    vvmplayer_vvmd_check_subscription_status (backend);
+
+  } else {
+    g_debug("activate_vvm_button_clicked_cb() timed out!");
   }
 }
 
