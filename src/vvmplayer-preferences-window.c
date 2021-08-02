@@ -249,6 +249,128 @@ enable_theme_switch_flipped_cb (GtkSwitch *widget,
   vvmplayer_settings_set_dark_theme (settings, prefer_dark_theme);
 }
 
+static void
+destination_number_button_clicked_cb (GtkButton     *btn,
+                                      VvmPreferencesWindow *self)
+{
+  VvmVvmd *backend = vvm_vvmd_get_default ();
+  VvmSettings *settings = vvm_settings_get_default ();
+
+  /*
+   * You will need to modify activate_vvm_button_clicked_cb() and
+   * enable_vvm_switch_flipped_cb() if you do anything with *btn
+   */
+
+  if(vvm_settings_get_mm_available (settings)) {
+    const char *dest_number = NULL;
+
+    dest_number = gtk_entry_get_text (self->destination_number_text);
+
+    vvm_settings_set_vvm_destination_number (settings, dest_number);
+    if(vvmplayer_vvmd_set_mm_setting (backend,
+                                      "VVMDestinationNumber",
+                                      dest_number) == FALSE) {
+
+      g_autofree char *result = g_strdup("Action Failed");
+
+      g_error("Error changing setting in vvmd!");
+      gtk_entry_set_text (self->destination_number_text, result);
+    }
+  } else {
+    g_autofree char *result = g_strdup("Action Failed");
+
+    g_warning("VVMD Modem Manager settings not available!");
+    gtk_entry_set_text (self->destination_number_text, result);
+  }
+}
+
+static void
+default_modem_number_button_clicked_cb (GtkButton     *btn,
+                                        VvmPreferencesWindow *self)
+{
+  VvmVvmd *backend = vvm_vvmd_get_default ();
+  VvmSettings *settings = vvm_settings_get_default ();
+
+  /*
+   * You will need to modify activate_vvm_button_clicked_cb() and
+   * enable_vvm_switch_flipped_cb() if you do anything with *btn
+   */
+
+  if(vvm_settings_get_mm_available (settings)) {
+    const char *modem_number = NULL;
+
+    modem_number = gtk_entry_get_text (self->modem_number_text);
+
+    if (strlen (modem_number) < 1) {
+      modem_number = "NULL";
+    }
+
+    vvm_settings_set_vvm_default_number (settings, modem_number);
+    if(vvmplayer_vvmd_set_mm_setting (backend,
+                                      "DefaultModemNumber",
+                                      modem_number) == FALSE) {
+
+      g_autofree char *result = g_strdup("Action Failed");
+
+      g_error("Error changing setting in vvmd!");
+      gtk_entry_set_text (self->destination_number_text, result);
+    }
+  } else {
+    g_autofree char *result = g_strdup("Action Failed");
+
+    g_warning("VVMD Modem Manager settings not available!");
+    gtk_entry_set_text (self->modem_number_text, result);
+  }
+}
+
+static void
+carrier_prefix_button_clicked_cb (GtkButton     *btn,
+                                  VvmPreferencesWindow *self)
+{
+  VvmVvmd *backend = vvm_vvmd_get_default ();
+  VvmSettings *settings = vvm_settings_get_default ();
+
+  /*
+   * You will need to modify activate_vvm_button_clicked_cb() and
+   * enable_vvm_switch_flipped_cb() if you do anything with *btn
+   */
+
+  if(vvm_settings_get_mm_available (settings)) {
+    const char *carrier_prefix = NULL;
+
+    carrier_prefix = gtk_entry_get_text (self->carrier_prefix_text);
+
+    vvm_settings_set_vvm_default_number (settings, carrier_prefix);
+    if(vvmplayer_vvmd_set_mm_setting (backend,
+                                      "CarrierPrefix",
+                                      carrier_prefix) == FALSE) {
+
+      g_autofree char *result = g_strdup("Action Failed");
+
+      g_error("Error changing setting in vvmd!");
+      gtk_entry_set_text (self->destination_number_text, result);
+    }
+  } else {
+    g_autofree char *result = g_strdup("Action Failed");
+
+    g_warning("VVMD Modem Manager settings not available!");
+    gtk_entry_set_text (self->carrier_prefix_text, result);
+  }
+}
+
+static gboolean
+activate_vvm_button_timeout(gpointer user_data)
+{
+  VvmPreferencesWindow *self = user_data;
+  g_debug("Removing timeout to activate_vvm_button_clicked_cb()");
+  self->activate_vvm_button_clicked_timeout = FALSE;
+  vvm_preferences_set_button_content (self->activate_vvm_button, "Activate");
+
+  refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+
+  return FALSE;
+}
+
 static gboolean
 enable_vvm_switch_timeout(gpointer user_data)
 {
@@ -291,6 +413,12 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
     if (state) {
       g_debug("Enabling VVM");
       vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Enabling VVM...");
+
+      /* In case the user did not hit apply, just refresh all settings */
+      destination_number_button_clicked_cb (NULL, self);
+      default_modem_number_button_clicked_cb (NULL, self);
+      carrier_prefix_button_clicked_cb (NULL, self);
+
     } else {
       g_debug("Disabling VVM");
       vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Disabling VVM...");
@@ -302,128 +430,6 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
     g_debug("enable_vvm_switch_clicked_cb() timed out!");
   }
 
-}
-
-static void
-destination_number_button_clicked_cb (GtkButton     *btn,
-                                      VvmPreferencesWindow *self)
-{
-  VvmVvmd *backend = vvm_vvmd_get_default ();
-  VvmSettings *settings = vvm_settings_get_default ();
-
-  /*
-   * You will need to modify activate_vvm_button_clicked_cb() if you
-   * do anything with *btn
-   */
-
-  if(vvm_settings_get_mm_available (settings)) {
-    const char *dest_number = NULL;
-
-    dest_number = gtk_entry_get_text (self->destination_number_text);
-
-    vvm_settings_set_vvm_destination_number (settings, dest_number);
-    if(vvmplayer_vvmd_set_mm_setting (backend,
-                                      "VVMDestinationNumber",
-                                      dest_number) == FALSE) {
-
-      g_autofree char *result = g_strdup("Action Failed");
-
-      g_error("Error changing setting in vvmd!");
-      gtk_entry_set_text (self->destination_number_text, result);
-    }
-  } else {
-    g_autofree char *result = g_strdup("Action Failed");
-
-    g_warning("VVMD Modem Manager settings not available!");
-    gtk_entry_set_text (self->destination_number_text, result);
-  }
-}
-
-static void
-default_modem_number_button_clicked_cb (GtkButton     *btn,
-                                        VvmPreferencesWindow *self)
-{
-  VvmVvmd *backend = vvm_vvmd_get_default ();
-  VvmSettings *settings = vvm_settings_get_default ();
-
-  /*
-   * You will need to modify activate_vvm_button_clicked_cb() if you
-   * do anything with *btn
-   */
-
-  if(vvm_settings_get_mm_available (settings)) {
-    const char *modem_number = NULL;
-
-    modem_number = gtk_entry_get_text (self->modem_number_text);
-
-    if (strlen (modem_number) < 1) {
-      modem_number = "NULL";
-    }
-
-    vvm_settings_set_vvm_default_number (settings, modem_number);
-    if(vvmplayer_vvmd_set_mm_setting (backend,
-                                      "DefaultModemNumber",
-                                      modem_number) == FALSE) {
-
-      g_autofree char *result = g_strdup("Action Failed");
-
-      g_error("Error changing setting in vvmd!");
-      gtk_entry_set_text (self->destination_number_text, result);
-    }
-  } else {
-    g_autofree char *result = g_strdup("Action Failed");
-
-    g_warning("VVMD Modem Manager settings not available!");
-    gtk_entry_set_text (self->modem_number_text, result);
-  }
-}
-
-static void
-carrier_prefix_button_clicked_cb (GtkButton     *btn,
-                                  VvmPreferencesWindow *self)
-{
-  VvmVvmd *backend = vvm_vvmd_get_default ();
-  VvmSettings *settings = vvm_settings_get_default ();
-
-  /*
-   * You will need to modify activate_vvm_button_clicked_cb() if you
-   * do anything with *btn
-   */
-
-  if(vvm_settings_get_mm_available (settings)) {
-    const char *carrier_prefix = NULL;
-
-    carrier_prefix = gtk_entry_get_text (self->carrier_prefix_text);
-
-    vvm_settings_set_vvm_default_number (settings, carrier_prefix);
-    if(vvmplayer_vvmd_set_mm_setting (backend,
-                                      "CarrierPrefix",
-                                      carrier_prefix) == FALSE) {
-
-      g_autofree char *result = g_strdup("Action Failed");
-
-      g_error("Error changing setting in vvmd!");
-      gtk_entry_set_text (self->destination_number_text, result);
-    }
-  } else {
-    g_autofree char *result = g_strdup("Action Failed");
-
-    g_warning("VVMD Modem Manager settings not available!");
-    gtk_entry_set_text (self->carrier_prefix_text, result);
-  }
-}
-
-static gboolean
-activate_vvm_button_timeout(gpointer user_data)
-{
-  VvmPreferencesWindow *self = user_data;
-  g_debug("Removing timeout to activate_vvm_button_clicked_cb()");
-  self->activate_vvm_button_clicked_timeout = FALSE;
-  vvm_preferences_set_button_content (self->activate_vvm_button, "Activate");
-
-  refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
-
-  return FALSE;
 }
 
 static void
