@@ -366,7 +366,7 @@ voicemail_window_new (GVariant *message_t,
 
   number_of_attachments = g_strv_length (Attachment_list);
 
-  for (int i = 0; i < (number_of_attachments); i++) {
+  for (int attachment_counter = 0; attachment_counter < (number_of_attachments); attachment_counter++) {
     GFile *vvm_file;
     GFileInfo *vvm_file_info;
     g_autofree char *mime_type = NULL;
@@ -376,8 +376,8 @@ voicemail_window_new (GVariant *message_t,
     GstDiscovererInfo *info;
     GstBus *bus;
 
-    g_debug("On Attachment: %s", Attachment_list[i]);
-    vvm_file = g_file_new_for_path (Attachment_list[i]);
+    g_debug("On Attachment: %s", Attachment_list[attachment_counter]);
+    vvm_file = g_file_new_for_path (Attachment_list[attachment_counter]);
     vvm_file_info = g_file_query_info (vvm_file,
                                        "*",
                                        G_FILE_QUERY_INFO_NONE,
@@ -409,7 +409,7 @@ voicemail_window_new (GVariant *message_t,
 
 
 
-    attachment_uri = g_strdup_printf("file://%s", Attachment_list[i]);
+    attachment_uri = g_strdup_printf("file://%s", Attachment_list[attachment_counter]);
     // amr files have issues playing on Mobian, so I need to add `audio-sink='capsfilter caps=audio/x-raw,rate=48000 ! pulsesink'`
     // gst-launch-1.0 playbin uri=file:///path/to/foo audio-sink='capsfilter caps=audio/x-raw,rate=48000 ! pulsesink'
     attachment_uri_playbin = g_strdup_printf("playbin uri=%s audio-sink='capsfilter caps=audio/x-raw,rate=48000 ! pulsesink'", attachment_uri);
@@ -422,8 +422,27 @@ voicemail_window_new (GVariant *message_t,
         self->duration = gst_discoverer_info_get_duration (info);
         if (self->duration == 0) {
           /* There is a problem in gst-discoverer:
-           * https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/718 */
+           * https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/718
+           * This code works around it.
+           */
+          int retry_counter = 0;
           g_warning ("Error in gst_discoverer!");
+          while (self->duration == 0) {
+             g_debug ("Retrying....");
+             info = gst_discoverer_discover_uri(discoverer, attachment_uri, &error);
+             self->duration = gst_discoverer_info_get_duration (info);
+             retry_counter = retry_counter + 1;
+             if (retry_counter == 10) {
+               break;
+             }
+          }
+         if (self->duration == 0) {
+          g_warning ("Could not fix!");
+         } else {
+           g_debug ("Fixed!");
+         }
+        }
+        if (self->duration == 0) {
           self->duration_formatted = g_strdup ("??:??");
         } else {
           self->minutes = (self->duration / (GST_SECOND * 60)) % 60;
