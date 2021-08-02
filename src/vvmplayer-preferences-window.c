@@ -281,6 +281,9 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
     VvmVvmd *backend = vvm_vvmd_get_default ();
     self->enable_vvm_switch_clicked_timeout = TRUE;
 
+    g_debug("Adding timeout to enable_vvm_switch_clicked_cb()");
+    g_timeout_add_seconds(10,enable_vvm_switch_timeout, self);
+
     if (state) {
       g_debug("Enabling VVM");
       vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Enabling VVM...");
@@ -288,8 +291,6 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
       g_debug("Disabling VVM");
       vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Disabling VVM...");
     }
-    g_debug("Adding timeout to enable_vvm_switch_clicked_cb()");
-    g_timeout_add_seconds(10,enable_vvm_switch_timeout, self);
 
     vvmplayer_vvmd_set_mm_vvm_enabled (backend, state);
 
@@ -325,15 +326,15 @@ activate_vvm_button_clicked_cb (GtkButton     *btn,
 
   if (self->activate_vvm_button_clicked_timeout == FALSE) {
     VvmVvmd *backend = vvm_vvmd_get_default ();
-
     g_debug("Activating VVM.....");
     self->activate_vvm_button_clicked_timeout = TRUE;
+    g_debug("Adding timeout to activate_vvm_button_clicked_cb()");
+    g_timeout_add_seconds (10,activate_vvm_button_timeout, self);
+
     vvm_preferences_set_button_content (self->activate_vvm_button, "Activating...");
 
     vvmplayer_vvmd_check_subscription_status (backend);
 
-    g_debug("Adding timeout to activate_vvm_button_clicked_cb()");
-    g_timeout_add_seconds (10,activate_vvm_button_timeout, self);
   } else {
     g_debug("activate_vvm_button_clicked_cb() timed out!");
   }
