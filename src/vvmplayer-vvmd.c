@@ -171,6 +171,39 @@ vvmplayer_vvmd_check_subscription_status (VvmVvmd *self)
 
 }
 
+static void
+vvmplayer_vvmd_sync_vvm_cb (GObject      *interface,
+                              GAsyncResult *result,
+                              gpointer     *user_data)
+{
+  g_autoptr (GError) error = NULL;
+
+  if (g_dbus_proxy_call_finish (G_DBUS_PROXY (interface),
+                                result,
+                                &error)) {
+    g_debug ("Sync'd VVMs");
+  } else {
+    g_debug ("Couldn't synchronize VVMs: %s", error ? error->message : "unknown");
+  }
+}
+
+int
+vvmplayer_vvmd_sync_vvm (VvmVvmd *self)
+{
+
+  g_dbus_proxy_call (self->modemmanager_proxy,
+                     "SyncVVM",
+                     NULL,
+                     G_DBUS_CALL_FLAGS_NONE,
+                     -1,
+                     NULL,
+                     (GAsyncReadyCallback) vvmplayer_vvmd_sync_vvm_cb,
+                     NULL);
+
+  return TRUE;
+
+}
+
 int
 vvmplayer_vvmd_set_mm_setting (VvmVvmd *self,
                                const char *setting_to_change,

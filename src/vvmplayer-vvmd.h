@@ -64,6 +64,8 @@ int vvmplayer_vvmd_get_service_settings (VvmVvmd *self);
 
 int vvmplayer_vvmd_check_subscription_status (VvmVvmd *self);
 
+int vvmplayer_vvmd_sync_vvm (VvmVvmd *self);
+
 int vvmplayer_vvmd_encode_vvm_type (const char *vvm_type);
 
 char *vvmplayer_vvmd_decode_vvm_type (int vvm_type);

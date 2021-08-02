@@ -56,6 +56,9 @@ struct _VvmPreferencesWindow
   //Activate
   GtkButton *activate_vvm_button;
 
+  //Sync
+  GtkButton *sync_vvm_button;
+
   //Modem Manager Settings
   GtkEntry *destination_number_text;
   GtkEntry *modem_number_text;
@@ -66,6 +69,7 @@ struct _VvmPreferencesWindow
   //Timeouts
   int refresh_settings_button_timeout;
   int activate_vvm_button_clicked_timeout;
+  int sync_vvm_button_clicked_timeout;
   int enable_vvm_switch_clicked_timeout;
 };
 
@@ -454,6 +458,44 @@ activate_vvm_button_clicked_cb (GtkButton     *btn,
   }
 }
 
+static gboolean
+sync_vvm_button_timeout(gpointer user_data)
+{
+  VvmPreferencesWindow *self = user_data;
+  g_debug("Removing timeout to sync_vvm_button_clicked_cb()");
+  self->sync_vvm_button_clicked_timeout = FALSE;
+  vvm_preferences_set_button_content (self->sync_vvm_button, "Sync");
+
+  return FALSE;
+}
+
+static void
+sync_vvm_button_clicked_cb (GtkButton     *btn,
+                                VvmPreferencesWindow *self)
+{
+  VvmSettings *settings = vvm_settings_get_default ();
+  if(vvm_settings_get_mm_available (settings) == FALSE) {
+    g_warning("Cannot find VVMD!");
+    refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+    return;
+  }
+
+  if (self->sync_vvm_button_clicked_timeout == FALSE) {
+    VvmVvmd *backend = vvm_vvmd_get_default ();
+    g_debug("Syncing VVM.....");
+    self->sync_vvm_button_clicked_timeout = TRUE;
+    vvm_preferences_set_button_content (self->sync_vvm_button, "Syncing...");
+
+    g_debug("Adding timeout to sync_vvm_button_clicked_cb()");
+    g_timeout_add_seconds (10,sync_vvm_button_timeout, self);
+
+    vvmplayer_vvmd_sync_vvm (backend);
+
+  } else {
+    g_debug("sync_vvm_button_clicked_cb() timed out!");
+  }
+}
+
 static void
 vvm_preferences_set_placeholder_text (GtkEntry *placeholder, const char *text) {
   GValue a = G_VALUE_INIT;
@@ -583,6 +625,11 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
   //Activate VVM
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, activate_vvm_button);
   gtk_widget_class_bind_template_callback (widget_class, activate_vvm_button_clicked_cb);
+
+
+  //Sync VVM
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, sync_vvm_button);
+  gtk_widget_class_bind_template_callback (widget_class, sync_vvm_button_clicked_cb);
 
   //Modem Manager Settings
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, destination_number_text);
