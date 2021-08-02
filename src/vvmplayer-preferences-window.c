@@ -113,21 +113,21 @@ vvm_preferences_refresh_settings (void)
 
   if(vvm_settings_get_mm_available (settings)) {
     if (vvmplayer_vvmd_get_mm_settings(backend) == FALSE) {
-      g_error("Error getting VVMD Modem Manager Settings");
+      g_error ("Error getting VVMD Modem Manager Settings");
       vvm_settings_load_mm_defaults (settings);
     }
   } else {
-    g_debug("Loading VVMD MM Defaults");
+    g_debug ("Loading VVMD MM Defaults");
     vvm_settings_load_mm_defaults (settings);
   }
 
-  if(vvm_settings_get_service_available (settings)) {
+  if (vvm_settings_get_service_available (settings)) {
     if (vvmplayer_vvmd_get_service_settings (backend) == FALSE) {
       g_error("Error getting VVMD Service Settings");
       vvm_settings_load_service_defaults (settings);
     }
   } else {
-    g_debug("Loading VVMD service Defaults");
+    g_debug ("Loading VVMD service Defaults");
     vvm_settings_load_service_defaults (settings);
   }
 }
@@ -199,16 +199,16 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   }
 
   VVMProvisionStatus = vvm_settings_get_vvm_provision_status (settings);
-  VVMProvisionStatus = g_strdup_printf("Provision Status: %s", VVMProvisionStatus);
-  vvm_preferences_set_hdyactionrow_text(self->provision_status_text, VVMProvisionStatus);
+  VVMProvisionStatus = g_strdup_printf ("Provision Status: %s", VVMProvisionStatus);
+  vvm_preferences_set_hdyactionrow_text (self->provision_status_text, VVMProvisionStatus);
 
 }
 
 static gboolean
-refresh_settings_button_timeout(gpointer user_data)
+refresh_settings_button_timeout (gpointer user_data)
 {
   VvmPreferencesWindow *self = user_data;
-  g_debug("Removing timeout to refresh_settings_button_clicked_cb()");
+  g_debug("Removing timeout to refresh_settings_button_clicked_cb ()");
   self->refresh_settings_button_timeout = FALSE;
 
   return FALSE;
@@ -220,8 +220,8 @@ refresh_settings_button_clicked_cb (GtkButton     *btn,
 {
 
   if (self->refresh_settings_button_timeout == FALSE) {
-    g_debug("Refreshing Settings.....");
-    g_debug("Adding timeout to refresh_settings_button_clicked_cb()");
+    g_debug ("Refreshing Settings.....");
+    g_debug ("Adding timeout to refresh_settings_button_clicked_cb ()");
     //Adding one hundred millisecond timeout
     g_timeout_add (100,refresh_settings_button_timeout, self);
 
@@ -259,23 +259,23 @@ destination_number_button_clicked_cb (GtkButton     *btn,
    * enable_vvm_switch_flipped_cb() if you do anything with *btn
    */
 
-  if(vvm_settings_get_mm_available (settings)) {
+  if (vvm_settings_get_mm_available (settings)) {
     const char *dest_number = NULL;
 
     dest_number = gtk_entry_get_text (self->destination_number_text);
 
     vvm_settings_set_vvm_destination_number (settings, dest_number);
-    if(vvmplayer_vvmd_set_mm_setting (backend,
+    if (vvmplayer_vvmd_set_mm_setting (backend,
                                       "VVMDestinationNumber",
                                       dest_number) == FALSE) {
 
-      g_autofree char *result = g_strdup("Action Failed");
+      g_autofree char *result = g_strdup ("Action Failed");
 
-      g_error("Error changing setting in vvmd!");
+      g_error ("Error changing setting in vvmd!");
       gtk_entry_set_text (self->destination_number_text, result);
     }
   } else {
-    g_autofree char *result = g_strdup("Action Failed");
+    g_autofree char *result = g_strdup ("Cannot find vvmd");
 
     g_warning("VVMD Modem Manager settings not available!");
     gtk_entry_set_text (self->destination_number_text, result);
@@ -314,7 +314,7 @@ default_modem_number_button_clicked_cb (GtkButton     *btn,
       gtk_entry_set_text (self->destination_number_text, result);
     }
   } else {
-    g_autofree char *result = g_strdup("Action Failed");
+    g_autofree char *result = g_strdup ("Cannot find vvmd");
 
     g_warning("VVMD Modem Manager settings not available!");
     gtk_entry_set_text (self->modem_number_text, result);
@@ -343,13 +343,13 @@ carrier_prefix_button_clicked_cb (GtkButton     *btn,
                                       "CarrierPrefix",
                                       carrier_prefix) == FALSE) {
 
-      g_autofree char *result = g_strdup("Action Failed");
+      g_autofree char *result = g_strdup ("Action Failed");
 
       g_error("Error changing setting in vvmd!");
       gtk_entry_set_text (self->destination_number_text, result);
     }
   } else {
-    g_autofree char *result = g_strdup("Action Failed");
+    g_autofree char *result = g_strdup ("Cannot find vvmd");
 
     g_warning("VVMD Modem Manager settings not available!");
     gtk_entry_set_text (self->carrier_prefix_text, result);
@@ -362,7 +362,7 @@ enable_vvm_switch_timeout(gpointer user_data)
   VvmPreferencesWindow *self = user_data;
 
   self->enable_vvm_switch_clicked_timeout = FALSE;
-  vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Enable VVM");
+  vvm_preferences_set_hdyactionrow_text (self->enable_vvm_text, "Enable VVM");
 
   refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
 
@@ -388,7 +388,7 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
     if(vvm_settings_get_mm_available (settings) == FALSE) {
       g_warning("Cannot find VVMD!");
       vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Cannot find vvmd");
-      g_timeout_add_seconds(2, enable_vvm_switch_timeout, self);
+      g_timeout_add_seconds (2, enable_vvm_switch_timeout, self);
       gtk_switch_set_active (self->enable_vvm_switch, FALSE);
       return;
     }
@@ -396,7 +396,7 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
     g_timeout_add_seconds(10, enable_vvm_switch_timeout, self);
 
     if (state) {
-      g_debug("Enabling VVM");
+      g_debug ("Enabling VVM");
       vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Enabling VVM...");
 
       /* In case the user did not hit apply, just refresh all settings */
@@ -405,14 +405,14 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
       carrier_prefix_button_clicked_cb (NULL, self);
 
     } else {
-      g_debug("Disabling VVM");
+      g_debug ("Disabling VVM");
       vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Disabling VVM...");
     }
 
     vvmplayer_vvmd_set_mm_vvm_enabled (backend, state);
 
   } else {
-    g_debug("enable_vvm_switch_clicked_cb() timed out!");
+    g_debug ("enable_vvm_switch_clicked_cb() timed out!");
     gtk_switch_set_active (self->enable_vvm_switch, VVMEnabled);
   }
 
@@ -442,26 +442,26 @@ activate_vvm_button_clicked_cb (GtkButton     *btn,
     self->activate_vvm_button_clicked_timeout = TRUE;
 
     if(vvm_settings_get_mm_available (settings) == FALSE) {
-      g_warning("Cannot find vvmd!");
+      g_warning ("Cannot find vvmd!");
       vvm_preferences_set_button_content (self->activate_vvm_button, "Cannot find vvmd");
       g_timeout_add_seconds (2, activate_vvm_button_timeout, self);
       return;
     }
 
     if (VVMEnabled == FALSE) {
-      g_warning("VVM not Active!");
+      g_warning ("VVM not Active!");
       vvm_preferences_set_button_content (self->activate_vvm_button, "VVM not enabled in VVM Player");
       g_timeout_add_seconds (2, activate_vvm_button_timeout, self);
       return;
     }
 
     if (MailboxActive == TRUE) {
-      g_warning("Mailbox already Active!");
+      g_warning ("Mailbox already Active!");
       vvm_preferences_set_button_content (self->activate_vvm_button, "Mailbox already active");
       g_timeout_add_seconds (2, activate_vvm_button_timeout, self);
       return;
     }
-    g_debug("Activating VVM.....");
+    g_debug ("Activating VVM.....");
     g_timeout_add_seconds (10, activate_vvm_button_timeout, self);
 
     /* In case the user did not hit apply, just refresh all settings */
@@ -498,25 +498,25 @@ sync_vvm_button_clicked_cb (GtkButton     *btn,
 
   if (self->sync_vvm_button_clicked_timeout == FALSE) {
     VvmVvmd *backend = vvm_vvmd_get_default ();
-    g_debug("Syncing VVM.....");
+    g_debug ("Syncing VVM.....");
     self->sync_vvm_button_clicked_timeout = TRUE;
 
     if(vvm_settings_get_mm_available (settings) == FALSE) {
-      g_warning("Cannot find VVMD!");
+      g_warning ("Cannot find VVMD!");
       vvm_preferences_set_button_content (self->sync_vvm_button, "Cannot find VVMD");
       g_timeout_add_seconds (2, sync_vvm_button_timeout, self);
       return;
     }
 
     if (VVMEnabled == FALSE) {
-      g_warning("VVM not Active!");
+      g_warning ("VVM not Active!");
       vvm_preferences_set_button_content (self->sync_vvm_button, "VVM not enabled in VVM Player");
       g_timeout_add_seconds (2, sync_vvm_button_timeout, self);
       return;
     }
 
     if (MailboxActive == FALSE) {
-      g_warning("Mailbox not Active!");
+      g_warning ("Mailbox not Active!");
       vvm_preferences_set_button_content (self->sync_vvm_button, "Mailbox not active");
       g_timeout_add_seconds (2, sync_vvm_button_timeout, self);
       return;
@@ -524,13 +524,13 @@ sync_vvm_button_clicked_cb (GtkButton     *btn,
 
     vvm_preferences_set_button_content (self->sync_vvm_button, "Syncing...");
 
-    g_debug("Adding timeout to sync_vvm_button_clicked_cb()");
+    g_debug ("Adding timeout to sync_vvm_button_clicked_cb()");
     g_timeout_add_seconds (10, sync_vvm_button_timeout, self);
 
     vvmplayer_vvmd_sync_vvm (backend);
 
   } else {
-    g_debug("sync_vvm_button_clicked_cb() timed out!");
+    g_debug ("sync_vvm_button_clicked_cb() timed out!");
   }
 }
 
