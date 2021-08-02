@@ -475,7 +475,6 @@ vvm_type_selected_cb (GObject              *sender,
     } else {
 
         if (row_selected == VVM_TYPE_ATTUSA) {
-           g_debug("Set setting to AT&T USA!");
            vvm_preferences_set_hdyactionrow_text(self->carrier_prefix_text_row,
                                                  "AT&T USA Number (No dashes or spaces)");
            vvm_preferences_set_placeholder_text(self->carrier_prefix_text,
