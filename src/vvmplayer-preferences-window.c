@@ -140,7 +140,7 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   g_autofree char     *VVMProvisionStatus = NULL;
   g_autofree char     *VVMCarrierPrefix = NULL;
   g_autofree char     *VVMType = NULL;
-  int VVMEnabled, enable_vvm_switch_state;
+  int VVMEnabled;
   int VVMType_encoded, vvm_type_combo_row_state;
   VvmSettings *settings = vvm_settings_get_default ();
   int prefer_dark_theme, enable_dark_theme_switch_state;
@@ -148,9 +148,7 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
 
   //Enable VVM
   VVMEnabled = vvm_settings_get_vvm_enabled (settings);
-  enable_vvm_switch_state = gtk_switch_get_state (self->enable_vvm_switch);
-  if (VVMEnabled != enable_vvm_switch_state)
-    gtk_switch_set_active (self->enable_vvm_switch, VVMEnabled);
+  gtk_switch_set_active (self->enable_vvm_switch, VVMEnabled);
 
   g_object_get (gtk_settings, "gtk-application-prefer-dark-theme", &prefer_dark_theme, NULL);
   enable_dark_theme_switch_state = gtk_switch_get_state (self->enable_dark_theme_switch);
@@ -359,23 +357,9 @@ carrier_prefix_button_clicked_cb (GtkButton     *btn,
 }
 
 static gboolean
-activate_vvm_button_timeout(gpointer user_data)
-{
-  VvmPreferencesWindow *self = user_data;
-  g_debug("Removing timeout to activate_vvm_button_clicked_cb()");
-  self->activate_vvm_button_clicked_timeout = FALSE;
-  vvm_preferences_set_button_content (self->activate_vvm_button, "Activate");
-
-  refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
-
-  return FALSE;
-}
-
-static gboolean
 enable_vvm_switch_timeout(gpointer user_data)
 {
   VvmPreferencesWindow *self = user_data;
-  g_debug("Removing timeout to enable_vvm_switch_clicked_cb()");
 
   self->enable_vvm_switch_clicked_timeout = FALSE;
   vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Enable VVM");
@@ -393,12 +377,6 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
   VvmSettings *settings = vvm_settings_get_default ();
   int VVMEnabled = vvm_settings_get_vvm_enabled (settings);
 
-  if(vvm_settings_get_mm_available (settings) == FALSE) {
-    g_warning("Cannot find VVMD!");
-    refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
-    return;
-  }
-
   if (VVMEnabled == state) {
     return;
   }
@@ -407,8 +385,15 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
     VvmVvmd *backend = vvm_vvmd_get_default ();
     self->enable_vvm_switch_clicked_timeout = TRUE;
 
-    g_debug("Adding timeout to enable_vvm_switch_clicked_cb()");
-    g_timeout_add_seconds(10,enable_vvm_switch_timeout, self);
+    if(vvm_settings_get_mm_available (settings) == FALSE) {
+      g_warning("Cannot find VVMD!");
+      vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Cannot find vvmd");
+      g_timeout_add_seconds(2, enable_vvm_switch_timeout, self);
+      gtk_switch_set_active (self->enable_vvm_switch, FALSE);
+      return;
+    }
+
+    g_timeout_add_seconds(10, enable_vvm_switch_timeout, self);
 
     if (state) {
       g_debug("Enabling VVM");
@@ -428,8 +413,20 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
 
   } else {
     g_debug("enable_vvm_switch_clicked_cb() timed out!");
+    gtk_switch_set_active (self->enable_vvm_switch, VVMEnabled);
   }
 
+}
+
+static gboolean
+activate_vvm_button_timeout(gpointer user_data)
+{
+  VvmPreferencesWindow *self = user_data;
+  self->activate_vvm_button_clicked_timeout = FALSE;
+  vvm_preferences_set_button_content (self->activate_vvm_button, "Activate");
+
+  refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+  return FALSE;
 }
 
 static void
@@ -437,18 +434,35 @@ activate_vvm_button_clicked_cb (GtkButton     *btn,
                                 VvmPreferencesWindow *self)
 {
   VvmSettings *settings = vvm_settings_get_default ();
-  if(vvm_settings_get_mm_available (settings) == FALSE) {
-    g_warning("Cannot find VVMD!");
-    refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
-    return;
-  }
+  int VVMEnabled = vvm_settings_get_vvm_enabled (settings);
+  int MailboxActive = vvm_settings_get_mailbox_active (settings);
 
   if (self->activate_vvm_button_clicked_timeout == FALSE) {
     VvmVvmd *backend = vvm_vvmd_get_default ();
-    g_debug("Activating VVM.....");
     self->activate_vvm_button_clicked_timeout = TRUE;
-    g_debug("Adding timeout to activate_vvm_button_clicked_cb()");
-    g_timeout_add_seconds (10,activate_vvm_button_timeout, self);
+
+    if(vvm_settings_get_mm_available (settings) == FALSE) {
+      g_warning("Cannot find vvmd!");
+      vvm_preferences_set_button_content (self->activate_vvm_button, "Cannot find vvmd");
+      g_timeout_add_seconds (2, activate_vvm_button_timeout, self);
+      return;
+    }
+
+    if (VVMEnabled == FALSE) {
+      g_warning("VVM not Active!");
+      vvm_preferences_set_button_content (self->activate_vvm_button, "VVM not enabled in VVM Player");
+      g_timeout_add_seconds (2, activate_vvm_button_timeout, self);
+      return;
+    }
+
+    if (MailboxActive == TRUE) {
+      g_warning("Mailbox already Active!");
+      vvm_preferences_set_button_content (self->activate_vvm_button, "Mailbox already active");
+      g_timeout_add_seconds (2, activate_vvm_button_timeout, self);
+      return;
+    }
+    g_debug("Activating VVM.....");
+    g_timeout_add_seconds (10, activate_vvm_button_timeout, self);
 
     /* In case the user did not hit apply, just refresh all settings */
     destination_number_button_clicked_cb (NULL, self);
@@ -468,7 +482,6 @@ static gboolean
 sync_vvm_button_timeout(gpointer user_data)
 {
   VvmPreferencesWindow *self = user_data;
-  g_debug("Removing timeout to sync_vvm_button_clicked_cb()");
   self->sync_vvm_button_clicked_timeout = FALSE;
   vvm_preferences_set_button_content (self->sync_vvm_button, "Sync");
 
@@ -480,20 +493,39 @@ sync_vvm_button_clicked_cb (GtkButton     *btn,
                                 VvmPreferencesWindow *self)
 {
   VvmSettings *settings = vvm_settings_get_default ();
-  if(vvm_settings_get_mm_available (settings) == FALSE) {
-    g_warning("Cannot find VVMD!");
-    refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
-    return;
-  }
+  int VVMEnabled = vvm_settings_get_vvm_enabled (settings);
+  int MailboxActive = vvm_settings_get_mailbox_active (settings);
 
   if (self->sync_vvm_button_clicked_timeout == FALSE) {
     VvmVvmd *backend = vvm_vvmd_get_default ();
     g_debug("Syncing VVM.....");
     self->sync_vvm_button_clicked_timeout = TRUE;
+
+    if(vvm_settings_get_mm_available (settings) == FALSE) {
+      g_warning("Cannot find VVMD!");
+      vvm_preferences_set_button_content (self->sync_vvm_button, "Cannot find VVMD");
+      g_timeout_add_seconds (2, sync_vvm_button_timeout, self);
+      return;
+    }
+
+    if (VVMEnabled == FALSE) {
+      g_warning("VVM not Active!");
+      vvm_preferences_set_button_content (self->sync_vvm_button, "VVM not enabled in VVM Player");
+      g_timeout_add_seconds (2, sync_vvm_button_timeout, self);
+      return;
+    }
+
+    if (MailboxActive == FALSE) {
+      g_warning("Mailbox not Active!");
+      vvm_preferences_set_button_content (self->sync_vvm_button, "Mailbox not active");
+      g_timeout_add_seconds (2, sync_vvm_button_timeout, self);
+      return;
+    }
+
     vvm_preferences_set_button_content (self->sync_vvm_button, "Syncing...");
 
     g_debug("Adding timeout to sync_vvm_button_clicked_cb()");
-    g_timeout_add_seconds (10,sync_vvm_button_timeout, self);
+    g_timeout_add_seconds (10, sync_vvm_button_timeout, self);
 
     vvmplayer_vvmd_sync_vvm (backend);
 

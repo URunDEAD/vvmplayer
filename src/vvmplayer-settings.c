@@ -117,6 +117,9 @@ vvmplayer_settings_set_dark_theme (VvmSettings *self, int prefer_dark_theme)
   else
     g_debug ("App doesn't prefer Dark Theme");
 
+  /* Set the setting right away */
+  g_settings_set_int (self->app_settings, "dark-theme", self->prefer_dark_theme);
+  g_settings_apply (self->app_settings);
 }
 
 int
