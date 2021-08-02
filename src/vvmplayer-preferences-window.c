@@ -208,7 +208,6 @@ refresh_settings_button_timeout(gpointer user_data)
   VvmPreferencesWindow *self = user_data;
   g_debug("Removing timeout to refresh_settings_button_clicked_cb()");
   self->refresh_settings_button_timeout = FALSE;
-  vvm_preferences_set_button_content (self->refresh_settings_button, "Apply");
 
   return FALSE;
 }
@@ -220,16 +219,15 @@ refresh_settings_button_clicked_cb (GtkButton     *btn,
 
   if (self->refresh_settings_button_timeout == FALSE) {
     g_debug("Refreshing Settings.....");
+    g_debug("Adding timeout to refresh_settings_button_clicked_cb()");
+    //Adding one hundred millisecond timeout
+    g_timeout_add (100,refresh_settings_button_timeout, self);
 
     vvm_preferences_refresh_settings ();
     vvm_preferences_window_populate (self);
 
     self->refresh_settings_button_timeout = TRUE;
-    vvm_preferences_set_button_content (self->refresh_settings_button, "Refreshing...");
 
-    g_debug("Adding timeout to refresh_settings_button_clicked_cb()");
-    //Adding two second timeout
-    g_timeout_add_seconds (2,refresh_settings_button_timeout, self);
   } else {
     g_debug ("refresh_settings_button_clicked_cb() timed out!");
   }
