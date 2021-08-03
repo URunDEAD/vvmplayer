@@ -1,13 +1,17 @@
 # Visual Voicemail Player (VVM Player)
 
-Copyright (C) 2021, Chris Talbot <chris@talbothome.com>
+Copyright (C) 2021, Chris Talbot
 
 ## About
-
 VVM Player is a front end GUI to display, play, and delete visual voicemails (VVMs).
 
 VVM Player depends on vvmd for VVM functionality
 ( https://gitlab.com/kop316/vvmd )
+
+<div align="center">
+  <img src="https://gitlab.com/kop316/vvmplayer/-/raw/main/data/metainfo/screenshot.png?inline=false" width="300" >
+  <img src="https://gitlab.com/kop316/vvmplayer/-/raw/main/data/metainfo/screenshot2.png?inline=false" width="300" >
+</div>
 
 ## License
 Unless otherwise specified, all code is licensed under the GPL Version 3 or later
