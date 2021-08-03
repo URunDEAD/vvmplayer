@@ -34,7 +34,6 @@ libvvmplayer = both_libraries(
 )
 
 ui_files = files(
-  'resources/gtk/help-overlay.ui',
   'resources/ui/vvmplayer-window.ui',
   'resources/ui/vvmplayer-preferences-window.ui',
   'resources/ui/vvmplayer-voicemail-window.ui',
