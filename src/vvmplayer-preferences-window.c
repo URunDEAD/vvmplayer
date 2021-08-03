@@ -260,8 +260,6 @@ override_global_pref (VvmPreferencesWindow *self)
   VvmSettings *settings = vvm_settings_get_default ();
   GtkSettings *gtk_settings = gtk_settings_get_default ();
 
-  g_debug("Overriding global preferences");
-
   //Dark Theme
   vvm_preferences_set_hdyactionrow_visibility (self->enable_dark_theme_row, TRUE);
   int prefer_dark_theme = vvmplayer_settings_get_dark_theme (settings);
