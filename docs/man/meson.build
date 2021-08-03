@@ -5,7 +5,9 @@ if not xsltproc.found()
   subdir_done()
 endif
 
-build_man = true
+# Disable manpages
+build_man = false
+subdir_done()
 
 xsltproc_args = [
   '--nonet',
