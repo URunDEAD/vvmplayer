@@ -26,5 +26,11 @@
       <description>Dark Theme Enabled.</description>
     </key>
 
+    <key name="override-global-appearence-pref" type="i">
+      <default>0</default>
+      <summary>Override Global Appearence</summary>
+      <description>Override Global Appearence Settings.</description>
+    </key>
+
   </schema>
 </schemalist>

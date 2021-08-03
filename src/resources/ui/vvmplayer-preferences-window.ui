@@ -82,6 +82,22 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="use-underline">True</property>
+                <property name="title" translatable="yes">Override Global Preferences</property>
+                <child>
+                  <object class="GtkSwitch" id="override_global_pref_switch">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="valign">center</property>
+                    <signal name="state-set" handler="override_global_pref_switch_flipped_cb" swapped="no"/>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="HdyActionRow" id="enable_dark_theme_row">
+                <property name="visible">false</property>
+                <property name="can-focus">False</property>
+                <property name="use-underline">True</property>
                 <property name="title" translatable="yes">Enable Dark Theme</property>
                 <child>
                   <object class="GtkSwitch" id="enable_dark_theme_switch">

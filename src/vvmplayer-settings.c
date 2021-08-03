@@ -51,7 +51,9 @@ struct _VvmSettings
   GtkSettings *gtk_settings;
 
   //App Settings
+  int override_global_appearence_pref;
   int prefer_dark_theme;
+  int default_dark_theme_pref;
 
   //Modem Manager Settings
   char  *vvm_destination_number;
@@ -103,6 +105,25 @@ vvm_settings_set_mm_available (VvmSettings *self, int ModemManagerAvailable)
 }
 
 int
+vvmplayer_settings_get_override_global_appearence_pref (VvmSettings *self)
+{
+  return self->override_global_appearence_pref;
+}
+
+void
+vvmplayer_settings_set_override_global_appearence_pref (VvmSettings *self,
+                                            int override_global_appearence_pref)
+{
+  self->override_global_appearence_pref = override_global_appearence_pref;
+
+  /* Set the setting right away */
+  g_settings_set_int (self->app_settings,
+                      "override-global-appearence-pref",
+                      self->override_global_appearence_pref);
+  g_settings_apply (self->app_settings);
+}
+
+int
 vvmplayer_settings_get_dark_theme (VvmSettings *self)
 {
   return self->prefer_dark_theme;
@@ -112,14 +133,23 @@ void
 vvmplayer_settings_set_dark_theme (VvmSettings *self, int prefer_dark_theme)
 {
   self->prefer_dark_theme = prefer_dark_theme;
-  if (self->prefer_dark_theme)
-    g_debug ("App prefers Dark Theme");
-  else
-    g_debug ("App doesn't prefer Dark Theme");
 
   /* Set the setting right away */
   g_settings_set_int (self->app_settings, "dark-theme", self->prefer_dark_theme);
   g_settings_apply (self->app_settings);
+}
+
+void
+vvmplayer_settings_set_default_dark_theme_pref (VvmSettings *self, int default_dark_theme_pref)
+{
+  self->default_dark_theme_pref = default_dark_theme_pref;
+
+}
+
+int
+vvmplayer_settings_get_default_dark_theme_pref (VvmSettings *self)
+{
+  return self->default_dark_theme_pref;
 }
 
 int
@@ -319,6 +349,8 @@ vvmplayer_settings_init (VvmSettings *self)
   self->app_settings = g_settings_new (PACKAGE_ID);
   version = g_settings_get_string (self->app_settings, "version");
   self->prefer_dark_theme = g_settings_get_int (self->app_settings, "dark-theme");
+  self->override_global_appearence_pref = g_settings_get_int (self->app_settings,
+                                               "override-global-appearence-pref");
 
 
   if (!g_str_equal (version, PACKAGE_VERSION))

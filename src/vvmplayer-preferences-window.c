@@ -45,8 +45,13 @@ struct _VvmPreferencesWindow
 
   //Enable VVM
   GtkSwitch *enable_vvm_switch;
-  GtkSwitch *enable_dark_theme_switch;
+
   HdyActionRow *enable_vvm_text;
+
+  //Appearence Settings
+  HdyActionRow *enable_dark_theme_row;
+  GtkSwitch *enable_dark_theme_switch;
+  GtkSwitch *override_global_pref_switch;
 
   //Status
   GtkImage *vvmd_enabled_image;
@@ -106,6 +111,15 @@ vvm_preferences_set_button_content (GtkButton *btn, const char *title) {
 }
 
 static void
+vvm_preferences_set_hdyactionrow_visibility (HdyActionRow *hdy_row, int visible) {
+  GValue a = G_VALUE_INIT;
+
+  g_value_init (&a, G_TYPE_BOOLEAN);
+  g_value_set_boolean (&a, visible);
+  g_object_set_property (G_OBJECT (hdy_row), "visible", &a);
+}
+
+static void
 vvm_preferences_refresh_settings (void)
 {
   VvmVvmd *backend = vvm_vvmd_get_default ();
@@ -144,11 +158,16 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   int VVMType_encoded, vvm_type_combo_row_state;
   VvmSettings *settings = vvm_settings_get_default ();
   int prefer_dark_theme, enable_dark_theme_switch_state;
+  int override_global_appearence_pref;
   GtkSettings *gtk_settings = gtk_settings_get_default ();
 
   //Enable VVM
   VVMEnabled = vvm_settings_get_vvm_enabled (settings);
   gtk_switch_set_active (self->enable_vvm_switch, VVMEnabled);
+
+  //Appearence Settings
+  override_global_appearence_pref = vvmplayer_settings_get_override_global_appearence_pref (settings);
+  gtk_switch_set_active (self->override_global_pref_switch, override_global_appearence_pref);
 
   g_object_get (gtk_settings, "gtk-application-prefer-dark-theme", &prefer_dark_theme, NULL);
   enable_dark_theme_switch_state = gtk_switch_get_state (self->enable_dark_theme_switch);
@@ -236,15 +255,61 @@ refresh_settings_button_clicked_cb (GtkButton     *btn,
 }
 
 static void
+override_global_pref (VvmPreferencesWindow *self)
+{
+  VvmSettings *settings = vvm_settings_get_default ();
+  GtkSettings *gtk_settings = gtk_settings_get_default ();
+
+  g_debug("Overriding global preferences");
+
+  //Dark Theme
+  vvm_preferences_set_hdyactionrow_visibility (self->enable_dark_theme_row, TRUE);
+  int prefer_dark_theme = vvmplayer_settings_get_dark_theme (settings);
+  g_object_set (gtk_settings, "gtk-application-prefer-dark-theme", prefer_dark_theme, NULL);
+
+  //Set swtich to proper position
+  gtk_switch_set_active (self->enable_dark_theme_switch, prefer_dark_theme);
+}
+
+static void
+reset_global_pref (VvmPreferencesWindow *self)
+{
+  VvmSettings *settings = vvm_settings_get_default ();
+  GtkSettings *gtk_settings = gtk_settings_get_default ();
+
+  //Dark Theme
+  int prefer_dark_theme = vvmplayer_settings_get_default_dark_theme_pref (settings);
+  vvm_preferences_set_hdyactionrow_visibility (self->enable_dark_theme_row, FALSE);
+  g_object_set (gtk_settings, "gtk-application-prefer-dark-theme", prefer_dark_theme, NULL);
+}
+
+static void
+override_global_pref_switch_flipped_cb (GtkSwitch *widget,
+                                        gboolean   override_global_pref_bool,
+                                        VvmPreferencesWindow *self)
+{
+  VvmSettings *settings = vvm_settings_get_default ();
+
+  if (override_global_pref_bool) {
+    override_global_pref (self);
+  } else {
+    reset_global_pref (self);
+  }
+
+  vvmplayer_settings_set_override_global_appearence_pref (settings, override_global_pref_bool);
+}
+
+
+static void
 enable_theme_switch_flipped_cb (GtkSwitch *widget,
-                                gboolean   prefer_dark_theme,
+                                gboolean   prefer_dark_theme_bool,
                                 VvmPreferencesWindow *self)
 {
   GtkSettings *gtk_settings = gtk_settings_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
 
-  g_object_set (gtk_settings, "gtk-application-prefer-dark-theme", prefer_dark_theme, NULL);
-  vvmplayer_settings_set_dark_theme (settings, prefer_dark_theme);
+  g_object_set (gtk_settings, "gtk-application-prefer-dark-theme", prefer_dark_theme_bool, NULL);
+  vvmplayer_settings_set_dark_theme (settings, prefer_dark_theme_bool);
 }
 
 static void
@@ -644,9 +709,17 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
 
   //Refresh Page
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, refresh_settings_button);
-  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, enable_dark_theme_switch);
+
 
   gtk_widget_class_bind_template_callback (widget_class, refresh_settings_button_clicked_cb);
+
+
+  //Appearence Settings
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, override_global_pref_switch);
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, enable_dark_theme_switch);
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, enable_dark_theme_row);
+
+  gtk_widget_class_bind_template_callback (widget_class, override_global_pref_switch_flipped_cb);
   gtk_widget_class_bind_template_callback (widget_class, enable_theme_switch_flipped_cb);
 
   //Whether or not VVM is enabled
