@@ -1,3 +1,13 @@
+vvmplayer (1.0)
+
+  [ Chris Talbot ]
+  * Reformat icons to be square
+  * Do not automatically override global gtk themes
+  * Add option to force voicemail sync
+  * Clean up preferences GUI to be more user friendly
+  * Add workaround for gst_discoverer issue
+  * Remove Shortcuts window
+
 vvmplayer (0.4~beta)
 
   [ Chris Talbot ]
