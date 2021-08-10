@@ -1,3 +1,9 @@
+vvmplayer (1.0.1)
+
+  [ Chris Talbot ]
+  * Work around vvmd issue without affecting GUI
+  * remove g_error ()
+
 vvmplayer (1.0)
 
   [ Chris Talbot ]
