@@ -767,6 +767,35 @@ vvmplayer_vvmd_get_mm_settings (VvmVvmd *self)
   return TRUE;
 }
 
+static gboolean
+vvmplayer_vvmd_retry_mm_settings(gpointer user_data)
+{
+  VvmVvmd *self = user_data;
+  g_debug("Retrying...");
+
+  if (vvmplayer_vvmd_get_mm_settings(self) == FALSE) {
+    g_warning ("Error getting VVMD Modem Manager Settings");
+
+    return TRUE;
+
+  } else {
+    VvmSettings *settings = vvm_settings_get_default ();
+    vvm_settings_set_mm_available (settings, TRUE);
+    g_dbus_proxy_new (self->connection,
+                      G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
+	              NULL,
+	              VVMD_SERVICE,
+	              VVMD_PATH,
+	              VVMD_MANAGER_INTERFACE,
+	              NULL,
+	              vvmplayer_vvmd_get_manager_cb,
+	              self);
+
+    }
+
+  return FALSE;
+}
+
 static void
 vvmplayer_vvmd_get_modemmanager_cb (GObject      *simple,
                                     GAsyncResult *res,
@@ -775,14 +804,6 @@ vvmplayer_vvmd_get_modemmanager_cb (GObject      *simple,
   VvmVvmd *self = user_data;
   g_autoptr (GError) error = NULL;
 
-  /*
-   * There is a race condition where if vvmd loads after VVM Player,
-   * the dbus is not set up in time for it to do this proxy call. I am sleeping
-   * for 1 second here to fix that.
-   */
-  //TODO: Probably a better way to handle doing this?
-  sleep (1);
-
   self->modemmanager_proxy = g_dbus_proxy_new_finish (res, &error);
   if (error != NULL) {
     g_warning ("Error in VVMD Modem Manager Proxy call: %s\n", error->message);
@@ -790,6 +811,8 @@ vvmplayer_vvmd_get_modemmanager_cb (GObject      *simple,
 
     if (vvmplayer_vvmd_get_mm_settings(self) == FALSE) {
       g_warning ("Error getting VVMD Modem Manager Settings");
+
+      g_timeout_add_seconds (1, vvmplayer_vvmd_retry_mm_settings, self);
 
     } else {
     VvmSettings *settings = vvm_settings_get_default ();
