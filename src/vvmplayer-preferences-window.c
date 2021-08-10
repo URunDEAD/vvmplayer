@@ -127,7 +127,7 @@ vvm_preferences_refresh_settings (void)
 
   if(vvm_settings_get_mm_available (settings)) {
     if (vvmplayer_vvmd_get_mm_settings(backend) == FALSE) {
-      g_error ("Error getting VVMD Modem Manager Settings");
+      g_warning ("Error getting VVMD Modem Manager Settings");
       vvm_settings_load_mm_defaults (settings);
     }
   } else {
@@ -137,7 +137,7 @@ vvm_preferences_refresh_settings (void)
 
   if (vvm_settings_get_service_available (settings)) {
     if (vvmplayer_vvmd_get_service_settings (backend) == FALSE) {
-      g_error("Error getting VVMD Service Settings");
+      g_warning ("Error getting VVMD Service Settings");
       vvm_settings_load_service_defaults (settings);
     }
   } else {
@@ -334,7 +334,7 @@ destination_number_button_clicked_cb (GtkButton     *btn,
 
       g_autofree char *result = g_strdup ("Action Failed");
 
-      g_error ("Error changing setting in vvmd!");
+      g_warning ("Error changing setting in vvmd!");
       gtk_entry_set_text (self->destination_number_text, result);
     }
   } else {
@@ -373,7 +373,7 @@ default_modem_number_button_clicked_cb (GtkButton     *btn,
 
       g_autofree char *result = g_strdup("Action Failed");
 
-      g_error("Error changing setting in vvmd!");
+      g_warning ("Error changing setting in vvmd!");
       gtk_entry_set_text (self->destination_number_text, result);
     }
   } else {
@@ -408,7 +408,7 @@ carrier_prefix_button_clicked_cb (GtkButton     *btn,
 
       g_autofree char *result = g_strdup ("Action Failed");
 
-      g_error("Error changing setting in vvmd!");
+      g_warning ("Error changing setting in vvmd!");
       gtk_entry_set_text (self->destination_number_text, result);
     }
   } else {
@@ -633,7 +633,7 @@ vvm_type_selected_cb (GObject              *sender,
     if(vvmplayer_vvmd_set_mm_setting (backend,
                                       "VVMType",
                                       vvm_type) == FALSE) {
-      g_error("Error changing setting in vvmd!");
+      g_warning ("Error changing setting in vvmd!");
       hdy_combo_row_set_selected_index (self->vvm_type_combo_row, VVM_TYPE_UNKNOWN);
     } else {
 

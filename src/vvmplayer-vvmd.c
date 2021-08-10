@@ -537,7 +537,7 @@ vvmplayer_vvmd_get_service_cb (GObject      *service,
     g_debug ("Got VVMD Service");
 
     if (vvmplayer_vvmd_get_service_settings (self) == FALSE) {
-      g_error("Error getting VVMD Service Settings");
+      g_warning ("Error getting VVMD Service Settings");
 
     } else {
       VvmSettings *settings = vvm_settings_get_default ();
@@ -789,7 +789,7 @@ vvmplayer_vvmd_get_modemmanager_cb (GObject      *simple,
   } else {
 
     if (vvmplayer_vvmd_get_mm_settings(self) == FALSE) {
-      g_error("Error getting VVMD Modem Manager Settings");
+      g_warning ("Error getting VVMD Modem Manager Settings");
 
     } else {
     VvmSettings *settings = vvm_settings_get_default ();
