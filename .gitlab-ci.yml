@@ -1,0 +1,48 @@
+---
+.only-default: &only-default
+  only:
+    - master
+    - merge_requests
+    - tags
+
+build-debian:
+  image: debian:bullseye
+  <<: *only-default
+  before_script:
+    - apt update
+    - apt install -y
+        debhelper-compat
+        meson
+        libgstreamer1.0-dev
+        libebook1.2-dev
+        libgtk-3-dev
+        libhandy-1-dev
+        libgstreamer-plugins-base1.0-dev
+        xvfb
+  script:
+    - meson -Dwerror=true _build
+    - meson compile -C _build
+    - xvfb-run meson test -C _build --print-errorlogs
+  artifacts:
+    paths:
+      - _build/
+
+build-alpine:
+  image: alpine:edge
+  <<: *only-default
+  before_script:
+    - apk -q add
+        build-base
+        glib-dev
+        evolution-data-server-dev
+        libhandy1-dev
+        gst-plugins-base-dev
+        meson
+        xvfb-run
+  script:
+    - meson -Dwerror=true _build
+    - meson compile -C _build
+    - xvfb-run meson test -C _build --print-errorlogs
+  artifacts:
+    paths:
+      - _build/
