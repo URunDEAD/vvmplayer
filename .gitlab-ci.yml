@@ -42,6 +42,8 @@ build-alpine:
         meson
         xvfb-run
   script:
+    # check for uninitialized g_autoptr, which cause segfaults in musl
+    - grep -n -e 'g_autoptr(\w*)\s*\w*;' -R . && exit 1
     - meson -Dwerror=true _build
     - meson compile -C _build
     - xvfb-run meson test -C _build --print-errorlogs
