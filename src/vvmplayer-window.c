@@ -30,6 +30,7 @@
 #endif
 
 #include <glib/gi18n.h>
+#include <libcallaudio.h>
 
 #include "vvmplayer-window.h"
 #include "vvmplayer-log.h"
@@ -44,6 +45,9 @@ struct _VvmWindow
 
   GtkWidget   *menu_button;
   GtkListBox  *visual_voicemail;
+  GtkToggleButton *speaker_output_button;
+  gboolean         toggled;
+  GtkImage    *speaker_output_image;
 };
 
 G_DEFINE_TYPE (VvmWindow, vvmplayer_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -95,6 +99,32 @@ vvmplayer_window_show_about (VvmWindow *self)
                          "logo-icon-name", PACKAGE_ID,
                          "translator-credits", _("translator-credits"),
                          NULL);
+}
+
+static void
+speaker_output_button_clicked_cb (GtkToggleButton     *btn,
+                                  VvmWindow *self)
+{
+  g_autoptr (GError) error = NULL;
+  gboolean ret;
+  //gboolean toggled;
+  //toggled = gtk_toggle_button_get_active (self->speaker_output_button);
+
+  /* HACK: gtk_toggle_button_get_active only returns FALSE */
+  if (self->toggled)
+    self->toggled = FALSE;
+  else
+    self->toggled = TRUE;
+
+  ret = call_audio_enable_speaker (self->toggled, &error);
+  if (!ret && error)
+    g_warning ("Failed to %sable speaker: %s",
+               self->toggled ? "en" : "dis",
+               error->message);
+  else
+    g_debug ("%sabled speaker",
+             self->toggled ? "En" : "Dis");
+
 }
 
 static void
@@ -204,17 +234,29 @@ vvmplayer_window_class_init (VvmWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, VvmWindow, menu_button);
   gtk_widget_class_bind_template_child (widget_class, VvmWindow, visual_voicemail);
-
+  gtk_widget_class_bind_template_child (widget_class, VvmWindow, speaker_output_image);
+  gtk_widget_class_bind_template_child (widget_class, VvmWindow, speaker_output_button);
   gtk_widget_class_bind_template_callback (widget_class, vvmplayer_window_show_about);
   gtk_widget_class_bind_template_callback (widget_class, vvmplayer_window_show_settings_dialog);
+  gtk_widget_class_bind_template_callback (widget_class, speaker_output_button_clicked_cb);
 }
 
 static void
 vvmplayer_window_init (VvmWindow *self)
 {
+  g_autoptr (GError) error = NULL;
   VvmVvmd *backend = vvm_vvmd_get_default ();
   gtk_widget_init_template (GTK_WIDGET (self));
   vvmplayer_vvmd_set_mm_vvm_list_box (backend, self);
+
+  if (!call_audio_init (&error)) {
+      g_warning ("Failed to init libcallaudio: %s", error->message);
+  }
+
+  /* speaker_output_button_clicked_cb () changes TRUE to FALSE */
+  self->toggled = TRUE;
+  speaker_output_button_clicked_cb (self->speaker_output_button, self);
+
 }
 
 GtkWidget *

@@ -26,7 +26,19 @@
         <property name="visible">1</property>
         <property name="title" translatable="yes">Visual Voicemail</property>
         <property name="show-close-button">1</property>
-
+        <!-- Speaker Output Button -->
+        <child>
+          <object class="GtkToggleButton" id="speaker_output_button">
+            <property name="visible">True</property>
+            <signal name="toggled" handler="speaker_output_button_clicked_cb" swapped="yes"/>
+            <child>
+              <object class="GtkImage" id="speaker_output_image">
+                <property name="visible">True</property>
+                <property name="icon-name">audio-volume-high</property>
+              </object>
+            </child>
+           </object>
+        </child>
         <!-- Menu Button -->
         <child>
           <object class="GtkMenuButton" id="menu_button">

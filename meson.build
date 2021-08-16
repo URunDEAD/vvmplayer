@@ -110,7 +110,8 @@ pkg_dep = [
   dependency('libebook-1.2'),
   dependency('libhandy-1', version: '>= 1.0.0'),
   dependency('gstreamer-1.0', version : '>1.16'),
-  dependency('gstreamer-pbutils-1.0', version : '>1.0')
+  dependency('gstreamer-pbutils-1.0', version : '>1.0'),
+  dependency('libcallaudio-0.1'),
 ]
 
 subdir('src')
