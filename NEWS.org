@@ -1,3 +1,9 @@
+vvmplayer (1.1)
+
+  [ Chris Talbot ]
+  * Add option to switch between headset and speaker
+  * Mark application as adaptive in Phosh
+
 vvmplayer (1.0.1)
 
   [ Chris Talbot ]
