@@ -43,6 +43,8 @@ struct _VoicemailWindow
 
   HdyExpanderRow *action_expander_row;
   HdyActionRow *second_row;
+  HdyActionRow *call_row;
+  HdyActionRow *sms_row;
   gint64 duration;
   gint64 minutes;
   gint64 seconds;
@@ -212,6 +214,39 @@ play_button_clicked_cb (GtkButton     *btn,
 }
 
 static void
+call_button_clicked_cb (GtkButton     *btn,
+                        VoicemailWindow *self)
+{
+  g_autoptr(GError) error = NULL;
+  g_autofree char *uri = NULL;
+
+  uri = g_strconcat ("tel://",
+                     self->number,
+                     NULL);
+
+  if (!gtk_show_uri_on_window (NULL, uri, GDK_CURRENT_TIME, &error))
+    g_warning ("Failed to launch call: %s", error->message);
+
+}
+
+static void
+sms_button_clicked_cb (GtkButton     *btn,
+                        VoicemailWindow *self)
+{
+  g_autoptr(GError) error = NULL;
+  g_autofree char *uri = NULL;
+
+  uri = g_strconcat ("sms://",
+                     self->number,
+                     NULL);
+
+  if (!gtk_show_uri_on_window (NULL, uri, GDK_CURRENT_TIME, &error))
+    g_warning ("Failed to launch call: %s", error->message);
+
+}
+
+
+static void
 delete_button_clicked_cb (GtkButton     *btn,
                         VoicemailWindow *self)
 {
@@ -318,12 +353,24 @@ voicemail_window_new (GVariant *message_t,
   int number_of_attachments;
   GVariant             *properties;
   GVariantDict          dict;
+  g_autoptr(GAppInfo) app_info_tel = NULL;
+  g_autoptr(GAppInfo) app_info_sms = NULL;
 
   self = g_object_new (GTK_TYPE_VOICEMAIL_WINDOW, NULL);
   self->minutes = 0;
   self->seconds = 0;
   self->message_proxy = message_proxy;
   self->contact_name = NULL;
+
+  app_info_tel = g_app_info_get_default_for_uri_scheme ("tel");
+  if (app_info_tel) {
+    gtk_widget_show (GTK_WIDGET (self->call_row));
+  }
+
+  app_info_sms = g_app_info_get_default_for_uri_scheme ("sms");
+  if (app_info_sms) {
+    gtk_widget_show (GTK_WIDGET (self->sms_row));
+  }
 
   if (!discoverer) {
     self->duration_formatted = g_strdup ("??:??");
@@ -512,9 +559,13 @@ voicemail_window_class_init (VoicemailWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, play_button_icon);
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, delete_button_icon);
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, second_row);
+  gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, call_row);
+  gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, sms_row);
 
   gtk_widget_class_bind_template_callback (widget_class, play_button_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, delete_button_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, call_button_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, sms_button_clicked_cb);
 
   object_class->finalize = voicemail_window_finalize;
 
