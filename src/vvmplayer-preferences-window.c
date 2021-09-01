@@ -33,8 +33,8 @@
 #include "vvmplayer-settings.h"
 #include "vvmplayer-vvmd.h"
 
-#define STATUS_GOOD "gtk-apply"
-#define STATUS_BAD "gtk-no"
+#define STATUS_GOOD "emblem-ok-symbolic"
+#define STATUS_BAD "window-close-symbolic"
 
 struct _VvmPreferencesWindow
 {

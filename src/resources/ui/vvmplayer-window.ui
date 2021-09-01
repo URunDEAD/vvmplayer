@@ -34,7 +34,7 @@
             <child>
               <object class="GtkImage" id="speaker_output_image">
                 <property name="visible">True</property>
-                <property name="icon-name">audio-volume-high</property>
+                <property name="icon-name">audio-volume-high-symbolic</property>
               </object>
             </child>
            </object>
