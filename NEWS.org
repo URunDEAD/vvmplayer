@@ -1,3 +1,9 @@
+vvmplayer (1.2)
+
+  [ Chris Talbot ]
+  * Reformat all icons to be similar
+  * Add option to call and SMS back the person who left you a voicemail
+
 vvmplayer (1.1)
 
   [ Chris Talbot ]
