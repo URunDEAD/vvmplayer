@@ -281,7 +281,7 @@ reset_global_pref (VvmPreferencesWindow *self)
   g_object_set (gtk_settings, "gtk-application-prefer-dark-theme", prefer_dark_theme, NULL);
 }
 
-static void
+static gboolean
 override_global_pref_switch_flipped_cb (GtkSwitch *widget,
                                         gboolean   override_global_pref_bool,
                                         VvmPreferencesWindow *self)
@@ -295,10 +295,11 @@ override_global_pref_switch_flipped_cb (GtkSwitch *widget,
   }
 
   vvmplayer_settings_set_override_global_appearence_pref (settings, override_global_pref_bool);
+  return FALSE;
 }
 
 
-static void
+static gboolean
 enable_theme_switch_flipped_cb (GtkSwitch *widget,
                                 gboolean   prefer_dark_theme_bool,
                                 VvmPreferencesWindow *self)
@@ -308,6 +309,7 @@ enable_theme_switch_flipped_cb (GtkSwitch *widget,
 
   g_object_set (gtk_settings, "gtk-application-prefer-dark-theme", prefer_dark_theme_bool, NULL);
   vvmplayer_settings_set_dark_theme (settings, prefer_dark_theme_bool);
+  return FALSE;
 }
 
 static void
@@ -401,7 +403,7 @@ carrier_prefix_button_clicked_cb (GtkButton     *btn,
 
     carrier_prefix = gtk_entry_get_text (self->carrier_prefix_text);
 
-    vvm_settings_set_vvm_default_number (settings, carrier_prefix);
+    vvm_settings_set_vvm_carrier_prefix (settings, carrier_prefix);
     if(vvmplayer_vvmd_set_mm_setting (backend,
                                       "CarrierPrefix",
                                       carrier_prefix) == FALSE) {
@@ -432,7 +434,7 @@ enable_vvm_switch_timeout(gpointer user_data)
   return FALSE;
 }
 
-static void
+static gboolean
 enable_vvm_switch_flipped_cb (GtkSwitch *widget,
                               gboolean   state,
                               VvmPreferencesWindow *self)
@@ -441,7 +443,7 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
   int VVMEnabled = vvm_settings_get_vvm_enabled (settings);
 
   if (VVMEnabled == state) {
-    return;
+    return FALSE;
   }
 
   if (self->enable_vvm_switch_clicked_timeout == FALSE) {
@@ -453,7 +455,7 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
       vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Cannot find vvmd");
       g_timeout_add_seconds (2, enable_vvm_switch_timeout, self);
       gtk_switch_set_active (self->enable_vvm_switch, FALSE);
-      return;
+      return FALSE;
     }
 
     g_timeout_add_seconds(10, enable_vvm_switch_timeout, self);
@@ -478,7 +480,7 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
     g_debug ("enable_vvm_switch_clicked_cb() timed out!");
     gtk_switch_set_active (self->enable_vvm_switch, VVMEnabled);
   }
-
+    return FALSE;
 }
 
 static gboolean
