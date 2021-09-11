@@ -1,3 +1,8 @@
+vvmplayer (1.2.1)
+
+  [ Chris Talbot ]
+  * Fix bug where carrier prefix was not set correctly
+
 vvmplayer (1.2)
 
   [ Chris Talbot ]
