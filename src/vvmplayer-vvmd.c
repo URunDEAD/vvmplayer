@@ -45,6 +45,8 @@ struct _VvmVvmd
   unsigned int      vvmd_manager_proxy_remove_watch_id;
   unsigned int      vvmd_manager_proxy_add_watch_id;
   unsigned int      vvmd_service_proxy_watch_id;
+  unsigned int      vvmd_mm_settings_watch_id;
+  unsigned int      vvmd_mm_provision_watch_id;
   GDBusProxy       *manager_proxy;
   GDBusProxy       *service_proxy;
   GListStore       *vvm_list;
@@ -711,6 +713,53 @@ vvmplayer_vvmd_get_manager_cb (GObject      *manager,
   }
 }
 
+static void
+vvmplayer_vvmd_provision_status_changed_cb (GDBusConnection *connection,
+                                            const char      *sender_name,
+                                            const char      *object_path,
+                                            const char      *interface_name,
+                                            const char      *signal_name,
+                                            GVariant        *parameters,
+                                            gpointer         user_data)
+{
+  //VvmVvmd *self = user_data;
+  VvmSettings *settings = vvm_settings_get_default ();
+  g_autoptr (GVariant) provisionstatus = NULL;
+  const char *provision;
+
+  g_debug ("%s", __func__);
+  g_variant_get (parameters, "(sv)", NULL, &provisionstatus);
+  provision = g_variant_get_string (provisionstatus, NULL);
+
+  vvm_settings_set_vvm_provision_status (settings, provision);
+}
+
+static void
+vvmplayer_vvmd_provision_settings_changed_cb (GDBusConnection *connection,
+                                            const char      *sender_name,
+                                            const char      *object_path,
+                                            const char      *interface_name,
+                                            const char      *signal_name,
+                                            GVariant        *parameters,
+                                            gpointer         user_data)
+{
+  //VvmVvmd *self = user_data;
+  VvmSettings *settings = vvm_settings_get_default ();
+  g_autoptr (GError) error = NULL;
+  g_autoptr (GVariant) provisionstatus = NULL;
+  const char     *VVMType = NULL;
+  const char     *VVMDestinationNumber = NULL;
+  const char     *CarrierPrefix = NULL;
+
+
+  g_debug ("%s", __func__);
+  g_variant_get (parameters, "(sss)", &VVMType, &VVMDestinationNumber, &CarrierPrefix);
+
+  vvm_settings_set_vvm_type (settings, VVMType);
+  vvm_settings_set_vvm_destination_number (settings, VVMDestinationNumber);
+  vvm_settings_set_vvm_carrier_prefix (settings, CarrierPrefix);
+}
+
 int
 vvmplayer_vvmd_get_mm_settings (VvmVvmd *self)
 {
@@ -763,6 +812,28 @@ vvmplayer_vvmd_get_mm_settings (VvmVvmd *self)
       vvm_settings_set_vvm_provision_status (settings, ProvisionStatus);
     }
   }
+
+  self->vvmd_mm_provision_watch_id = g_dbus_connection_signal_subscribe (self->connection,
+                                        VVMD_SERVICE,
+                                        VVMD_MODEMMANAGER_INTERFACE,
+                                        "ProvisionStatusChanged",
+                                        VVMD_PATH,
+                                        NULL,
+                                        G_DBUS_SIGNAL_FLAGS_NONE,
+                                        (GDBusSignalCallback)vvmplayer_vvmd_provision_status_changed_cb,
+                                        self,
+                                        NULL);
+
+  self->vvmd_mm_settings_watch_id = g_dbus_connection_signal_subscribe (self->connection,
+                                        VVMD_SERVICE,
+                                        VVMD_MODEMMANAGER_INTERFACE,
+                                        "SettingsChanged",
+                                        VVMD_PATH,
+                                        NULL,
+                                        G_DBUS_SIGNAL_FLAGS_NONE,
+                                        (GDBusSignalCallback)vvmplayer_vvmd_provision_settings_changed_cb,
+                                        self,
+                                        NULL);
 
   return TRUE;
 }
@@ -877,6 +948,12 @@ vvmd_vanished_cb (GDBusConnection *connection,
                                           self->vvmd_manager_proxy_add_watch_id);
     g_dbus_connection_signal_unsubscribe (self->connection,
                                           self->vvmd_manager_proxy_remove_watch_id);
+  }
+  if (G_IS_OBJECT (self->modemmanager_proxy)) {
+    g_dbus_connection_signal_unsubscribe (self->connection,
+                                          self->vvmd_mm_settings_watch_id);
+    g_dbus_connection_signal_unsubscribe (self->connection,
+                                          self->vvmd_mm_provision_watch_id);
   }
 
   if (G_IS_DBUS_CONNECTION (self->connection)) {
