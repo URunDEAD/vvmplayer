@@ -796,7 +796,6 @@ vvmplayer_vvmd_get_mm_settings (VvmVvmd *self)
       vvm_settings_set_vvm_enabled (settings, VVMEnabled);
     }
     if (g_variant_dict_lookup (&dict, "VVMType", "s", &VVMType)) {
-      g_debug("VVMType is:%s", VVMType);
       vvm_settings_set_vvm_type (settings, VVMType);
     }
     if (g_variant_dict_lookup (&dict, "VVMDestinationNumber", "s", &VVMDestinationNumber)) {
