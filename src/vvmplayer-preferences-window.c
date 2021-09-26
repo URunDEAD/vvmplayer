@@ -313,16 +313,10 @@ enable_theme_switch_flipped_cb (GtkSwitch *widget,
 }
 
 static void
-destination_number_button_clicked_cb (GtkButton     *btn,
-                                      VvmPreferencesWindow *self)
+set_destination_number (VvmPreferencesWindow *self)
 {
   VvmVvmd *backend = vvm_vvmd_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
-
-  /*
-   * You will need to modify activate_vvm_button_clicked_cb() and
-   * enable_vvm_switch_flipped_cb() if you do anything with *btn
-   */
 
   if (vvm_settings_get_mm_available (settings)) {
     const char *dest_number = NULL;
@@ -348,16 +342,10 @@ destination_number_button_clicked_cb (GtkButton     *btn,
 }
 
 static void
-default_modem_number_button_clicked_cb (GtkButton     *btn,
-                                        VvmPreferencesWindow *self)
+set_default_modem_number (VvmPreferencesWindow *self)
 {
   VvmVvmd *backend = vvm_vvmd_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
-
-  /*
-   * You will need to modify activate_vvm_button_clicked_cb() and
-   * enable_vvm_switch_flipped_cb() if you do anything with *btn
-   */
 
   if(vvm_settings_get_mm_available (settings)) {
     const char *modem_number = NULL;
@@ -387,16 +375,10 @@ default_modem_number_button_clicked_cb (GtkButton     *btn,
 }
 
 static void
-carrier_prefix_button_clicked_cb (GtkButton     *btn,
-                                  VvmPreferencesWindow *self)
+set_carrier_prefix (VvmPreferencesWindow *self)
 {
   VvmVvmd *backend = vvm_vvmd_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
-
-  /*
-   * You will need to modify activate_vvm_button_clicked_cb() and
-   * enable_vvm_switch_flipped_cb() if you do anything with *btn
-   */
 
   if(vvm_settings_get_mm_available (settings)) {
     const char *carrier_prefix = NULL;
@@ -464,10 +446,9 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
       g_debug ("Enabling VVM");
       vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Enabling VVM...");
 
-      /* In case the user did not hit apply, just refresh all settings */
-      destination_number_button_clicked_cb (NULL, self);
-      default_modem_number_button_clicked_cb (NULL, self);
-      carrier_prefix_button_clicked_cb (NULL, self);
+      set_destination_number (self);
+      set_default_modem_number (self);
+      set_carrier_prefix (self);
 
     } else {
       g_debug ("Disabling VVM");
@@ -529,10 +510,9 @@ activate_vvm_button_clicked_cb (GtkButton     *btn,
     g_debug ("Activating VVM.....");
     g_timeout_add_seconds (10, activate_vvm_button_timeout, self);
 
-    /* In case the user did not hit apply, just refresh all settings */
-    destination_number_button_clicked_cb (NULL, self);
-    default_modem_number_button_clicked_cb (NULL, self);
-    carrier_prefix_button_clicked_cb (NULL, self);
+    set_destination_number (self);
+    set_default_modem_number (self);
+    set_carrier_prefix (self);
 
     vvm_preferences_set_button_content (self->activate_vvm_button, "Activating...");
 
@@ -749,9 +729,6 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, carrier_prefix_text);
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, vvm_type_combo_row);
 
-  gtk_widget_class_bind_template_callback (widget_class, destination_number_button_clicked_cb);
-  gtk_widget_class_bind_template_callback (widget_class, default_modem_number_button_clicked_cb);
-  gtk_widget_class_bind_template_callback (widget_class, carrier_prefix_button_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, vvm_type_selected_cb);
 }
 
