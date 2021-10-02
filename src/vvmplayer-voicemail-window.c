@@ -193,6 +193,8 @@ play_button_clicked_cb (GtkButton     *btn,
     if (ret == GST_STATE_CHANGE_FAILURE) {
       g_printerr ("Unable to set the pipeline to the playing state.\n");
     } else {
+      VvmSettings *settings = vvm_settings_get_default ();
+      vvm_settings_incriment_stream_count (settings);
       vvm_voicemail_set_gtkimage_icon (self->play_button_icon, ICON_PLAYBACK_PAUSE);
       /* Register a function that GLib will call every second */
       g_timeout_add_seconds (1, (GSourceFunc)refresh_ui, self);
@@ -207,6 +209,8 @@ play_button_clicked_cb (GtkButton     *btn,
     if (ret == GST_STATE_CHANGE_FAILURE) {
       g_printerr ("Unable to set the pipeline to the playing state.\n");
     } else {
+      VvmSettings *settings = vvm_settings_get_default ();
+      vvm_settings_decriment_stream_count (settings);
       vvm_voicemail_set_gtkimage_icon (self->play_button_icon, ICON_PLAYBACK_START);
       self->state = GST_STATE_PAUSED;
     }
@@ -268,7 +272,8 @@ delete_button_clicked_cb (GtkButton     *btn,
       g_printerr ("Unable to set the pipeline to the stopped state.\n");
     } else {
       g_autofree char *duration = NULL;
-      g_debug ("Stopping playback\n");
+      VvmSettings *settings = vvm_settings_get_default ();
+      vvm_settings_decriment_stream_count (settings);
       gst_element_set_state (self->playbin, GST_STATE_READY);
       vvm_voicemail_set_gtkimage_icon (self->delete_button_icon, ICON_DELETE);
       vvm_voicemail_set_gtkimage_icon (self->play_button_icon, ICON_PLAYBACK_START);
@@ -305,10 +310,12 @@ static void error_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *self) {
  * We just set the pipeline to READY (which stops playback) */
 static void eos_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *self) {
   g_autofree char *duration = NULL;
+  VvmSettings *settings = vvm_settings_get_default ();
   g_debug ("End-Of-Stream reached.");
   gst_element_set_state (self->playbin, GST_STATE_READY);
   self->state = GST_STATE_READY;
 
+  vvm_settings_decriment_stream_count (settings);
   vvm_voicemail_set_gtkimage_icon (self->play_button_icon, ICON_PLAYBACK_START);
 
 

@@ -114,17 +114,32 @@ speaker_output_button_clicked_cb (GtkToggleButton     *btn,
                                   VvmWindow *self)
 {
   gboolean toggled;
+  VvmSettings *settings = vvm_settings_get_default ();
   toggled = gtk_toggle_button_get_active (btn);
+  vvm_settings_set_speaker_button_state (settings, toggled);
 
-  if (toggled)
+  if (toggled) {
+    g_debug ("Setting audio profile to default");
     call_audio_select_mode_async (CALL_AUDIO_MODE_DEFAULT,
                                   select_mode_complete,
                                   NULL);
-  else
-    call_audio_select_mode_async (CALL_AUDIO_MODE_CALL,
-                                  select_mode_complete,
-                                  NULL);
+  } else {
+    if (vvm_settings_get_stream_count (settings) > 0) {
+      g_debug ("Setting audio profile to call");
+      call_audio_select_mode_async (CALL_AUDIO_MODE_CALL,
+                                    select_mode_complete,
+                                    NULL);
+    } else {
+      g_debug ("No stream is playing, waiting to change profile.");
+    }
+  }
 
+}
+
+void vvmplayer_window_set_speaker_button (VvmWindow *self, gboolean setting)
+{
+  gtk_toggle_button_set_active (self->speaker_output_button,
+                                setting);
 }
 
 static void

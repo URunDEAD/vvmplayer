@@ -39,4 +39,6 @@ GtkWidget *vvmplayer_window_new (GtkApplication *application,
 
 void vvmplayer_window_add_row (VvmWindow *self, GtkWidget *voicemail);
 
+void vvmplayer_window_set_speaker_button (VvmWindow *self, gboolean setting);
+
 G_END_DECLS

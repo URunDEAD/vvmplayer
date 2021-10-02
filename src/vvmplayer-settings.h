@@ -25,6 +25,9 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <libcallaudio.h>
+
+#include "vvmplayer-log.h"
 
 G_BEGIN_DECLS
 
@@ -49,6 +52,13 @@ void vvm_settings_load_service_defaults (VvmSettings *self);
 
 void vvm_settings_set_vvm_enabled (VvmSettings *self, int VVMEnabled);
 int vvm_settings_get_vvm_enabled (VvmSettings *self);
+
+void vvm_settings_incriment_stream_count (VvmSettings *self);
+void vvm_settings_decriment_stream_count (VvmSettings *self);
+
+unsigned int vvm_settings_get_stream_count (VvmSettings *self);
+
+void vvm_settings_set_speaker_button_state (VvmSettings *self, gboolean setting);
 
 void vvm_settings_set_vvm_type (VvmSettings *self, const char *VVMType);
 char *vvm_settings_get_vvm_type (VvmSettings *self);

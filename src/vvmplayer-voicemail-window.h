@@ -29,6 +29,7 @@
 #include <gst/gst.h>
 #include <gst/pbutils/pbutils.h>
 #include "vvmplayer-vvmd.h"
+#include "vvmplayer-settings.h"
 
 G_BEGIN_DECLS
 

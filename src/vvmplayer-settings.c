@@ -29,7 +29,6 @@
 #endif
 
 #include "vvmplayer-settings.h"
-#include "vvmplayer-log.h"
 
 /**
  * SECTION: vvmplayer-settings
@@ -64,6 +63,9 @@ struct _VvmSettings
   //Whether or not to activate VVM
   int    enable_vvm;
 
+  unsigned int  stream_count;
+  gboolean  speaker_active;
+
   //Status Settings
   char  *provision_status;
   int    mm_available;       //Boolean
@@ -91,6 +93,59 @@ int
 vvm_settings_get_vvm_enabled (VvmSettings *self)
 {
   return self->enable_vvm;
+}
+
+void vvm_settings_set_speaker_button_state (VvmSettings *self,
+                                            gboolean setting)
+{
+  self->speaker_active = setting;
+  g_debug ("speaker button state is now %d", self->speaker_active);
+}
+
+unsigned int vvm_settings_get_stream_count (VvmSettings *self)
+{
+ return self->stream_count;
+}
+
+void
+vvm_settings_incriment_stream_count (VvmSettings *self)
+{
+  if (self->stream_count == 0 && self->speaker_active == FALSE) {
+    g_autoptr (GError) error = NULL;
+    gboolean ret;
+    g_debug ("Setting audio profile to call");
+    ret = call_audio_select_mode (CALL_AUDIO_MODE_CALL, &error);
+
+    if (!ret && error)
+      g_warning ("Failed to switch profile: %s", error->message);
+  }
+
+  self->stream_count = self->stream_count + 1;
+  g_debug ("Stream count is imcrimented to %d", self->stream_count);
+}
+
+
+void
+vvm_settings_decriment_stream_count (VvmSettings *self)
+{
+  if (self->stream_count == 0) {
+    g_warning ("Stream count is already at 0!");
+    return;
+  }
+
+  self->stream_count = self->stream_count - 1;
+  g_debug ("Stream count is decrimented to %d", self->stream_count);
+
+  if (self->stream_count == 0 && self->speaker_active == FALSE) {
+    g_autoptr (GError) error = NULL;
+    gboolean ret;
+    g_debug ("Setting audio profile to back to default");
+    ret = call_audio_select_mode (CALL_AUDIO_MODE_DEFAULT, &error);
+
+    if (!ret && error)
+      g_warning ("Failed to switch profile: %s", error->message);
+  }
+
 }
 
 void
@@ -381,6 +436,8 @@ vvm_settings_get_default (void)
       g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&self);
       vvm_settings_load_mm_defaults (self);
       vvm_settings_load_service_defaults (self);
+      self->stream_count = 0;
+      self->speaker_active = FALSE;
     }
   return self;
 }

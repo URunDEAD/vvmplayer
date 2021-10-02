@@ -31,6 +31,7 @@
 
 #include <glib/gi18n.h>
 #include <handy.h>
+#include <libcallaudio.h>
 
 #include "vvmplayer-window.h"
 #include "vvmplayer-application.h"
@@ -224,7 +225,24 @@ vvmplayer_application_command_line (GApplication            *application,
 gboolean
 on_widget_deleted(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-    return gtk_widget_hide_on_delete (widget);
+  VvmApplication *self = (VvmApplication *)data;
+  g_autoptr (GError) error = NULL;
+  gboolean hide_on_del = FALSE;
+  gboolean ret;
+
+  /* If we are not running in daemon mode, hide the window and reset speaker button */
+  if (self->daemon) {
+    hide_on_del = gtk_widget_hide_on_delete (widget);
+    vvmplayer_window_set_speaker_button (VVMPLAYER_WINDOW (self->main_window), FALSE);
+  }
+
+  g_debug ("Setting audio profile to back to default");
+  ret = call_audio_select_mode (CALL_AUDIO_MODE_DEFAULT, &error);
+
+  if (!ret && error)
+    g_warning ("Failed to switch profile: %s", error->message);
+
+  return hide_on_del;
 }
 
 static void
@@ -237,11 +255,8 @@ vvmplayer_application_activate (GApplication *application)
     self->main_window = GTK_WINDOW (vvmplayer_window_new (GTK_APPLICATION (self), self->settings));
     g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
 
-    /* If we are not running in daemon mode, quit the window */
-    if (self->daemon) {
-      g_signal_connect(G_OBJECT(self->main_window),
-          "delete-event", G_CALLBACK(on_widget_deleted), NULL);
-    }
+    g_signal_connect(G_OBJECT(self->main_window),
+        "delete-event", G_CALLBACK(on_widget_deleted), application);
   }
 
   if ((!self->daemon && !self->daemon_running) || (self->daemon_running)) {
