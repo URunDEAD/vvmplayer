@@ -30,7 +30,7 @@
         <child>
           <object class="GtkToggleButton" id="speaker_output_button">
             <property name="visible">True</property>
-            <signal name="toggled" handler="speaker_output_button_clicked_cb" swapped="yes"/>
+            <signal name="toggled" handler="speaker_output_button_clicked_cb" swapped="no"/>
             <child>
               <object class="GtkImage" id="speaker_output_image">
                 <property name="visible">True</property>

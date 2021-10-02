@@ -46,7 +46,6 @@ struct _VvmWindow
   GtkWidget   *menu_button;
   GtkListBox  *visual_voicemail;
   GtkToggleButton *speaker_output_button;
-  gboolean         toggled;
   GtkImage    *speaker_output_image;
 };
 
@@ -102,28 +101,29 @@ vvmplayer_window_show_about (VvmWindow *self)
 }
 
 static void
+select_mode_complete (gboolean success, GError *error, gpointer data)
+{
+  if (error) {
+    g_warning ("Failed to select audio mode: %s", error->message);
+    g_error_free (error);
+  }
+}
+
+static void
 speaker_output_button_clicked_cb (GtkToggleButton     *btn,
                                   VvmWindow *self)
 {
-  g_autoptr (GError) error = NULL;
-  gboolean ret;
-  //gboolean toggled;
-  //toggled = gtk_toggle_button_get_active (self->speaker_output_button);
+  gboolean toggled;
+  toggled = gtk_toggle_button_get_active (btn);
 
-  /* HACK: gtk_toggle_button_get_active only returns FALSE */
-  if (self->toggled)
-    self->toggled = FALSE;
+  if (toggled)
+    call_audio_select_mode_async (CALL_AUDIO_MODE_DEFAULT,
+                                  select_mode_complete,
+                                  NULL);
   else
-    self->toggled = TRUE;
-
-  ret = call_audio_enable_speaker (self->toggled, &error);
-  if (!ret && error)
-    g_warning ("Failed to %sable speaker: %s",
-               self->toggled ? "en" : "dis",
-               error->message);
-  else
-    g_debug ("%sabled speaker",
-             self->toggled ? "En" : "Dis");
+    call_audio_select_mode_async (CALL_AUDIO_MODE_CALL,
+                                  select_mode_complete,
+                                  NULL);
 
 }
 
@@ -252,10 +252,6 @@ vvmplayer_window_init (VvmWindow *self)
   if (!call_audio_init (&error)) {
       g_warning ("Failed to init libcallaudio: %s", error->message);
   }
-
-  /* speaker_output_button_clicked_cb () changes TRUE to FALSE */
-  self->toggled = TRUE;
-  speaker_output_button_clicked_cb (self->speaker_output_button, self);
 
 }
 
