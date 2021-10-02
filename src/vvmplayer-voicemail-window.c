@@ -26,10 +26,10 @@
 
 #include "vvmplayer-voicemail-window.h"
 
-#define ICON_PLAYBACK_STOP "media-playback-stop"
-#define ICON_PLAYBACK_START "media-playback-start"
-#define ICON_PLAYBACK_PAUSE "media-playback-pause"
-#define ICON_DELETE "edit-delete"
+#define ICON_PLAYBACK_STOP "media-playback-stop-symbolic"
+#define ICON_PLAYBACK_START "media-playback-start-symbolic"
+#define ICON_PLAYBACK_PAUSE "media-playback-pause-symbolic"
+#define ICON_DELETE "user-trash-symbolic"
 
 struct _VoicemailWindow
 {
