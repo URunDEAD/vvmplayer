@@ -1,3 +1,14 @@
+vvmplayer (1.3)
+
+  [ Chris Talbot ]
+  * Fix various memory errors
+  * Reset main window GUI if it is closed
+  * Stop playback if main window is closed
+  * Only change Call profile if voicemail is playing
+
+  [ Delirious Error ]
+  * Update Icons
+
 vvmplayer (1.2.1)
 
   [ Chris Talbot ]
