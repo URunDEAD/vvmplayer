@@ -356,6 +356,8 @@ main_window_closed_cb (VoicemailWindow *self)
   } else {
     g_debug ("Not playing");
   }
+  if (self->action_expander_row)
+    hdy_expander_row_set_expanded (self->action_expander_row, FALSE);
 
 }
 
