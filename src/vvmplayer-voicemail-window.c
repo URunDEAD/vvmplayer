@@ -348,14 +348,11 @@ static void state_changed_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *sel
 static void
 main_window_closed_cb (VoicemailWindow *self)
 {
-  g_debug ("Window closed");
-
   if (self->state == GST_STATE_PLAYING) {
-    g_debug("Stopping Playing");
+    g_debug("Stopping Playback");
     delete_button_clicked_cb (self->delete_button, self);
-  } else {
-    g_debug ("Not playing");
   }
+
   if (self->action_expander_row)
     hdy_expander_row_set_expanded (self->action_expander_row, FALSE);
 
