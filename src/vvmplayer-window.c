@@ -47,6 +47,7 @@ struct _VvmWindow
   GtkListBox  *visual_voicemail;
   GtkToggleButton *speaker_output_button;
   GtkImage    *speaker_output_image;
+  gulong window_closed_id;
 };
 
 G_DEFINE_TYPE (VvmWindow, vvmplayer_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -190,6 +191,12 @@ vvmplayer_window_add_row (VvmWindow *self, GtkWidget *voicemail)
 }
 
 static void
+main_window_closed_cb (VvmWindow *self)
+{
+  gtk_list_box_unselect_all (GTK_LIST_BOX (self->visual_voicemail));
+}
+
+static void
 vvmplayer_window_constructed (GObject *object)
 {
   VvmWindow *self = (VvmWindow *)object;
@@ -213,6 +220,9 @@ vvmplayer_window_finalize (GObject *object)
   VVMPLAYER_TRACE_MSG ("finalizing window");
 
   g_object_unref (self->settings);
+
+  g_signal_handler_disconnect (g_application_get_default (),
+                               self->window_closed_id);
 
   G_OBJECT_CLASS (vvmplayer_window_parent_class)->finalize (object);
 }
@@ -267,6 +277,11 @@ vvmplayer_window_init (VvmWindow *self)
   if (!call_audio_init (&error)) {
       g_warning ("Failed to init libcallaudio: %s", error->message);
   }
+
+  self->window_closed_id = g_signal_connect_swapped (g_application_get_default (),
+                                             "main-window-closed",
+                                             G_CALLBACK (main_window_closed_cb),
+                                             self);
 
 }
 
