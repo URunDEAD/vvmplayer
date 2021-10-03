@@ -317,7 +317,8 @@ vvmplayer_vvmd_delete_vvm (VvmVvmd     *self,
                                            (GEqualFunc)vvm_list_match_by_obj_path,
                                            &position)) {
       g_list_store_remove (self->vvm_list, position);
-      g_debug ("Deleted VVM from g_list_store new length: %d", g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list)));
+      g_debug ("Deleted VVM from g_list_store new length: %d",
+               g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list)));
     } else {
       g_debug ("Could not find MMS in pointer array");
       return;
@@ -411,20 +412,22 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
   GVariant      *properties;
   char          *objectpath;
   GDBusProxy    *message_proxy;
+  guint          n_items = g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list));
 
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
   g_debug ("Processing VVM: %s", objectpath);
 
-  if (g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list)) != 0) {
+  if (n_items != 0) {
     unsigned int i = 0;
-    while (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i) != NULL) {
+    for (i = 0; i < n_items; i = i + 1) {
        g_autofree char *temp_objectpath = NULL;
-       temp_objectpath = voicemail_window_get_objectpath (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i));
+       g_autoptr(VoicemailWindow) voicemail = NULL;
+       voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i);
+       temp_objectpath = voicemail_window_get_objectpath (voicemail);
        if (g_strcmp0 (temp_objectpath, objectpath) == 0) {
          g_debug("VVM Already exists!");
          return;
        }
-       i = i + 1;
     }
   }
   message_proxy =
@@ -465,13 +468,13 @@ vvmplayer_vvmd_get_new_vvm_cb (GDBusConnection   *connection,
 {
   VvmVvmd *self = user_data;
   unsigned int last_position = g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list));
+  g_autoptr(VoicemailWindow) voicemail = NULL;
   int previous_unread = self->unread_vvms;
 
   g_debug ("%s", __func__);
   vvmplayer_vvmd_receive_message (self, parameters);
-  vvmplayer_window_add_row (self->visual_voicemail,
-                            g_list_model_get_item (G_LIST_MODEL (self->vvm_list),
-                            last_position));
+  voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), last_position);
+  vvmplayer_window_add_row (self->visual_voicemail, GTK_WIDGET (voicemail));
   if (previous_unread < self->unread_vvms) {
     vvmplayer_notification_send_unread_vvm (self->unread_vvms);
   }
@@ -504,18 +507,19 @@ vvmplayer_vvmd_get_all_vvm_cb (GObject      *service,
 
     if ((num = g_variant_iter_init (&iter, msg_pack))) {
       GVariant *message_t;
+      guint n_items;
+      unsigned int i = 0;
       g_debug ("Have %lu VVM (s) to process", num);
 
       while ((message_t = g_variant_iter_next_value (&iter))) {
         vvmplayer_vvmd_receive_message (self, message_t);
       }
-      if (g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list)) != 0) {
-        unsigned int i = 0;
-        while (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i) != NULL) {
-          vvmplayer_window_add_row (self->visual_voicemail, g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i));
-          i = i + 1;
-        }
-      }
+      n_items = g_list_model_get_n_items (G_LIST_MODEL (self->vvm_list));
+      for (i = 0; i < n_items; i = i + 1) {
+        g_autoptr(VoicemailWindow) voicemail = NULL;
+        voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i);
+        vvmplayer_window_add_row (self->visual_voicemail, GTK_WIDGET (voicemail));
+       }
     }
 
   }
@@ -965,10 +969,14 @@ vvmd_vanished_cb (GDBusConnection *connection,
 static void
 vvm_vmd_eds_is_ready (VvmVvmd *self)
 {
-  unsigned int i = 0;
-  while (g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i) != NULL) {
-    vvmplayer_vvmd_add_contact_name (self, g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i));
-    i = i + 1;
+  guint n_items = g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list));
+  if (n_items != 0) {
+    unsigned int i = 0;
+    for (i = 0; i < n_items; i = i + 1) {
+       g_autoptr(VoicemailWindow) voicemail = NULL;
+       voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i);
+       vvmplayer_vvmd_add_contact_name (self, voicemail);
+    }
   }
 }
 
