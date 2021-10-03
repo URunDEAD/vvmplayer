@@ -30,7 +30,7 @@
           <property name="title" translatable="yes">00:00/??:??</property>
           <property name="visible">True</property>
           <child type="prefix">
-            <object class="GtkButton">
+            <object class="GtkButton" id="delete_button">
             <property name="visible">True</property>
             <property name="valign">center</property>
             <signal name="clicked" handler="delete_button_clicked_cb" swapped="no"/>

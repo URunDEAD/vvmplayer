@@ -60,6 +60,13 @@ struct _VvmApplication
 
 G_DEFINE_TYPE (VvmApplication, vvmplayer_application, GTK_TYPE_APPLICATION)
 
+enum {
+  SIGNAL_MAIN_WINDOW_CLOSED,
+  N_SIGNALS
+};
+
+static guint signals[N_SIGNALS];
+
 static gboolean
 cmd_verbose_cb (const char *option_name,
                 const char *value,
@@ -236,6 +243,8 @@ on_widget_deleted(GtkWidget *widget, GdkEvent *event, gpointer data)
     vvmplayer_window_set_speaker_button (VVMPLAYER_WINDOW (self->main_window), FALSE);
   }
 
+  g_signal_emit_by_name (self, "main-window-closed", 0);
+
   g_debug ("Setting audio profile to back to default");
   ret = call_audio_select_mode (CALL_AUDIO_MODE_DEFAULT, &error);
 
@@ -300,6 +309,13 @@ vvmplayer_application_class_init (VvmApplicationClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GApplicationClass *application_class = G_APPLICATION_CLASS (klass);
+
+  signals [SIGNAL_MAIN_WINDOW_CLOSED] =
+    g_signal_new ("main-window-closed",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
 
   object_class->finalize = vvmplayer_application_finalize;
 

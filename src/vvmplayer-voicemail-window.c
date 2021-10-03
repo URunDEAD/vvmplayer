@@ -41,6 +41,8 @@ struct _VoicemailWindow
   GtkImage *play_button_icon;
   GtkImage *delete_button_icon;
 
+  GtkButton *delete_button;
+
   HdyExpanderRow *action_expander_row;
   HdyActionRow *second_row;
   HdyActionRow *call_row;
@@ -55,6 +57,8 @@ struct _VoicemailWindow
   int lifetime_status;
   GDBusProxy *message_proxy;
   GDateTime *time_local;
+
+  gulong window_closed_id;
 
 };
 
@@ -341,6 +345,20 @@ static void state_changed_cb (GstBus *bus, GstMessage *msg, VoicemailWindow *sel
   }
 }
 
+static void
+main_window_closed_cb (VoicemailWindow *self)
+{
+  g_debug ("Window closed");
+
+  if (self->state == GST_STATE_PLAYING) {
+    g_debug("Stopping Playing");
+    delete_button_clicked_cb (self->delete_button, self);
+  } else {
+    g_debug ("Not playing");
+  }
+
+}
+
 GtkWidget *
 voicemail_window_new (GVariant *message_t,
                       GDBusProxy *message_proxy,
@@ -364,6 +382,12 @@ voicemail_window_new (GVariant *message_t,
   g_autoptr(GAppInfo) app_info_sms = NULL;
 
   self = g_object_new (GTK_TYPE_VOICEMAIL_WINDOW, NULL);
+
+  self->window_closed_id = g_signal_connect_swapped (g_application_get_default (),
+                                             "main-window-closed",
+                                             G_CALLBACK (main_window_closed_cb),
+                                             self);
+
   self->minutes = 0;
   self->seconds = 0;
   self->message_proxy = message_proxy;
@@ -541,6 +565,8 @@ static void
 voicemail_window_finalize (GObject *object)
 {
   VoicemailWindow *self = (VoicemailWindow *)object;
+  g_signal_handler_disconnect (g_application_get_default (),
+                               self->window_closed_id);
 
   g_free (self->duration_formatted);
   g_free (self->objectpath);
@@ -564,6 +590,7 @@ voicemail_window_class_init (VoicemailWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, action_expander_row);
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, play_button_icon);
+  gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, delete_button);
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, delete_button_icon);
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, second_row);
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, call_row);
