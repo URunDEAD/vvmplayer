@@ -185,9 +185,10 @@ vvmplayer_window_set_property (GObject      *object,
 void
 vvmplayer_window_add_row (VvmWindow *self, GtkWidget *voicemail)
 {
-  gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
-                        GTK_WIDGET (voicemail));
-
+  if (gtk_widget_get_parent (voicemail) == NULL) {
+    gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
+                          GTK_WIDGET (voicemail));
+  }
 }
 
 static void
