@@ -7,14 +7,20 @@
     <property name="width-request">300</property>
     <!-- Visual Voicemail GtkListBox -->
     <child>
-      <object class="GtkListBox" id="visual_voicemail">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <child type="placeholder">
-          <object class="GtkLabel" id="no_visual_voicemail_label">
+      <object class="GtkScrolledWindow">
+        <property name="hscrollbar_policy">never</property>
+        <property name="visible">1</property>
+        <child>
+          <object class="GtkListBox" id="visual_voicemail">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">No Voicemails!</property>
+            <child type="placeholder">
+              <object class="GtkLabel" id="no_visual_voicemail_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">No Voicemails!</property>
+              </object>
+            </child>
           </object>
         </child>
       </object>
