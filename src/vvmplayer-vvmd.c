@@ -445,16 +445,16 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
   }
 
   voicemail = voicemail_window_new (message_t, message_proxy, self->discoverer);
-  vvmplayer_vvmd_add_contact_name (self, VVM_VOICEMAIL_WINDOW (voicemail));
-
   if (voicemail == NULL) {
     g_warning ("There was an error with making the VVM!");
-  } else {
-    g_list_store_insert_sorted (self->vvm_list,
-                                VVM_VOICEMAIL_WINDOW (voicemail),
-                                (GCompareDataFunc) compare_dates,
-                                NULL);
+    return;
   }
+
+  vvmplayer_vvmd_add_contact_name (self, VVM_VOICEMAIL_WINDOW (voicemail));
+  g_list_store_insert_sorted (self->vvm_list,
+                              VVM_VOICEMAIL_WINDOW (voicemail),
+                              (GCompareDataFunc) compare_dates,
+                              NULL);
 }
 
 static void
