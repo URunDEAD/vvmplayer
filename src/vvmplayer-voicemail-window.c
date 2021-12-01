@@ -265,7 +265,11 @@ delete_button_clicked_cb (GtkButton     *btn,
 
   if (self->state != GST_STATE_PLAYING) { //We are stopped
       VvmVvmd *vvmd_object = vvm_vvmd_get_default ();
+
       g_debug("Deleting: %s", self->objectpath);
+      if (self->lifetime_status == VVM_LIFETIME_STATUS_NOT_READ)
+        vvmplayer_vvmd_decrement_unread (vvmd_object);
+
       vvmplayer_vvmd_delete_vvm (vvmd_object, self->message_proxy, self->objectpath, self);
       gtk_widget_destroy (GTK_WIDGET (self));
       return;
