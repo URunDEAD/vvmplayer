@@ -54,6 +54,10 @@ struct _VvmSettings
   int prefer_dark_theme;
   int default_dark_theme_pref;
 
+  //Spam Contact
+  char     *spam_contact;
+  gboolean  spam_contact_enabled;
+
   //Modem Manager Settings
   char  *vvm_destination_number;
   char  *vvm_type;
@@ -194,11 +198,44 @@ vvmplayer_settings_set_dark_theme (VvmSettings *self, int prefer_dark_theme)
   g_settings_apply (self->app_settings);
 }
 
+char
+*vvm_settings_get_spam_contact (VvmSettings *self)
+{
+  return g_strdup(self->spam_contact);
+}
+
+void
+vvm_settings_set_spam_contact (VvmSettings *self, const char *spam_contact)
+{
+  g_free(self->spam_contact);
+  self->spam_contact = g_strdup(spam_contact);
+  g_debug ("Spam Contact is set to %s", self->spam_contact);
+
+  /* Set the setting right away */
+  g_settings_set_string (self->app_settings, "spam-contact", self->spam_contact);
+  g_settings_apply (self->app_settings);
+}
+
+gboolean
+vvmplayer_settings_get_spam_contact_enabled (VvmSettings *self)
+{
+  return self->spam_contact_enabled;
+}
+
+void
+vvmplayer_settings_set_spam_contact_enabled (VvmSettings *self, gboolean spam_contact_enabled)
+{
+  self->spam_contact_enabled = spam_contact_enabled;
+
+  /* Set the setting right away */
+  g_settings_set_boolean (self->app_settings, "spam-contact-enabled", self->spam_contact_enabled);
+  g_settings_apply (self->app_settings);
+}
+
 void
 vvmplayer_settings_set_default_dark_theme_pref (VvmSettings *self, int default_dark_theme_pref)
 {
   self->default_dark_theme_pref = default_dark_theme_pref;
-
 }
 
 int
@@ -349,15 +386,15 @@ vvm_settings_load_mm_defaults (VvmSettings *self)
 {
   self->mm_available = FALSE;
   self->enable_vvm = FALSE;
-  g_free(self->vvm_destination_number);
+  g_free (self->vvm_destination_number);
   self->vvm_destination_number = g_strdup("Destination Number invalid");
-  g_free(self->vvm_type);
+  g_free (self->vvm_type);
   self->vvm_type = g_strdup("Unknown");
-  g_free(self->default_number);
+  g_free (self->default_number);
   self->default_number = g_strdup("NULL");
-  g_free(self->provision_status);
+  g_free (self->provision_status);
   self->provision_status = g_strdup("Unknown");
-  g_free(self->carrier_prefix);
+  g_free (self->carrier_prefix);
   self->carrier_prefix = g_strdup("Carrier Prefix invalid");
 }
 
@@ -377,17 +414,20 @@ vvmplayer_settings_dispose (GObject *object)
   VVMPLAYER_TRACE_MSG ("disposing settings");
 
   g_settings_set_string (self->app_settings, "version", PACKAGE_VERSION);
+  g_settings_set_string (self->app_settings, "spam-contact", self->spam_contact);
+  g_settings_set_boolean (self->app_settings, "spam-contact-enabled", self->spam_contact_enabled);
   g_settings_set_boolean (self->app_settings, "dark-theme", self->prefer_dark_theme);
   g_settings_set_boolean (self->app_settings,
                           "override-global-appearence-pref",
                           self->override_global_appearence_pref);
 
   g_settings_apply (self->app_settings);
-  g_free(self->vvm_destination_number);
-  g_free(self->vvm_type);
-  g_free(self->default_number);
-  g_free(self->carrier_prefix);
-  g_free(self->provision_status);
+  g_free (self->vvm_destination_number);
+  g_free (self->vvm_type);
+  g_free (self->default_number);
+  g_free (self->carrier_prefix);
+  g_free (self->provision_status);
+  g_free (self->spam_contact);
 
   G_OBJECT_CLASS (vvmplayer_settings_parent_class)->dispose (object);
 }
@@ -406,6 +446,8 @@ vvmplayer_settings_init (VvmSettings *self)
   g_autofree char *version = NULL;
   self->app_settings = g_settings_new (PACKAGE_ID);
   version = g_settings_get_string (self->app_settings, "version");
+  self->spam_contact = g_settings_get_string (self->app_settings, "spam-contact");
+  self->spam_contact_enabled = g_settings_get_boolean (self->app_settings, "spam-contact-enabled");
   self->prefer_dark_theme = g_settings_get_boolean (self->app_settings, "dark-theme");
   self->override_global_appearence_pref = g_settings_get_boolean (self->app_settings,
                                                "override-global-appearence-pref");

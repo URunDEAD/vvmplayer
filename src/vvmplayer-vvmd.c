@@ -309,20 +309,17 @@ vvmplayer_vvmd_delete_vvm (VvmVvmd     *self,
                            char        *objectpath,
                            gconstpointer user_data)
 {
-    guint position;
-    VoicemailWindow  *voicemail = (VoicemailWindow  *) user_data;
+  guint position;
+  VoicemailWindow  *voicemail = (VoicemailWindow  *) user_data;
 
-    if (g_list_store_find_with_equal_func (self->vvm_list,
-                                           voicemail,
-                                           (GEqualFunc)vvm_list_match_by_obj_path,
-                                           &position)) {
-      g_list_store_remove (self->vvm_list, position);
-      g_debug ("Deleted VVM from g_list_store new length: %d",
-               g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list)));
-    } else {
-      g_debug ("Could not find MMS in pointer array");
-      return;
-    }
+  if (g_list_store_find_with_equal_func (self->vvm_list,
+                                         voicemail,
+                                         (GEqualFunc)vvm_list_match_by_obj_path,
+                                         &position)) {
+    g_list_store_remove (self->vvm_list, position);
+    g_debug ("Deleted VVM from g_list_store new length: %d",
+             g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list)));
+  }
 
   g_debug ("Deleting VVM with Object Path: %s", objectpath);
 
@@ -372,7 +369,7 @@ vvmplayer_vvmd_mark_message_read (GDBusProxy      *message_proxy,
                      user_data);
 }
 
-void
+static gboolean
 vvmplayer_vvmd_add_contact_name (VvmVvmd     *self,
                                  VoicemailWindow  *voicemail)
 {
@@ -386,11 +383,24 @@ vvmplayer_vvmd_add_contact_name (VvmVvmd     *self,
       contact = vvm_eds_find_by_number (self->contacts, phone_number);
 
       if (contact != NULL) {
+        VvmSettings *settings = vvm_settings_get_default ();
+
         contact_name = g_strdup (vvm_contact_get_name (contact));
+        if (vvmplayer_settings_get_spam_contact_enabled (settings) == TRUE) {
+          g_autofree char *spam_contact = NULL;
+          spam_contact = vvm_settings_get_spam_contact (settings);
+          if (g_strcmp0 (spam_contact, contact_name) == 0) {
+            g_debug("Deleting spam Voicemail.");
+            voicemail_window_delete_self (VVM_VOICEMAIL_WINDOW (voicemail));
+            return FALSE;
+          }
+        }
+
         voicemail_window_set_contact_name (VVM_VOICEMAIL_WINDOW (voicemail),
                                          contact_name);
       }
     }
+    return TRUE;
 }
 
 static int
@@ -449,7 +459,9 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
     return FALSE;
   }
 
-  vvmplayer_vvmd_add_contact_name (self, VVM_VOICEMAIL_WINDOW (voicemail));
+  if (vvmplayer_vvmd_add_contact_name (self, VVM_VOICEMAIL_WINDOW (voicemail)) == FALSE) {
+    return FALSE;
+  }
   g_list_store_insert_sorted (self->vvm_list,
                               VVM_VOICEMAIL_WINDOW (voicemail),
                               (GCompareDataFunc) compare_dates,

@@ -105,4 +105,13 @@ int vvmplayer_settings_get_dark_theme (VvmSettings *self);
 void vvmplayer_settings_set_default_dark_theme_pref (VvmSettings *self,
                                                    int default_dark_theme_pref);
 int vvmplayer_settings_get_default_dark_theme_pref (VvmSettings *self);
+
+gboolean vvmplayer_settings_get_spam_contact_enabled (VvmSettings *self);
+void vvmplayer_settings_set_spam_contact_enabled (VvmSettings *self,
+                                                  gboolean spam_contact_enabled);
+
+char *vvm_settings_get_spam_contact (VvmSettings *self);
+void  vvm_settings_set_spam_contact (VvmSettings *self,
+                                     const char *spam_contact);
+
 G_END_DECLS

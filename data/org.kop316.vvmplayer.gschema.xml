@@ -8,6 +8,18 @@
       <description>Version of the application</description>
     </key>
 
+    <key name="spam-contact" type="s">
+      <default>"Spam"</default>
+      <summary>Spam Contact</summary>
+      <description>The contact to consider as spam</description>
+    </key>
+
+    <key name="spam-contact-enabled" type="b">
+      <default>false</default>
+      <summary>Delete Spam Contact VVM</summary>
+      <description>Autodelete Voicemails from the Spam Contact</description>
+    </key>
+
     <key name="window-maximized" type="b">
       <default>false</default>
       <summary>Window maximized</summary>
