@@ -377,8 +377,8 @@ vvmplayer_vvmd_add_contact_name (VvmVvmd     *self,
                                  VoicemailWindow  *voicemail)
 {
     if (vvm_eds_get_is_ready (self->contacts)) {
-      char *contact_name;
-      char *phone_number;
+      g_autofree char *contact_name = NULL;
+      g_autofree char *phone_number = NULL;
       VvmContact *contact;
 
       phone_number = voicemail_window_get_number (VVM_VOICEMAIL_WINDOW (voicemail));
@@ -389,9 +389,7 @@ vvmplayer_vvmd_add_contact_name (VvmVvmd     *self,
         contact_name = g_strdup (vvm_contact_get_name (contact));
         voicemail_window_set_contact_name (VVM_VOICEMAIL_WINDOW (voicemail),
                                          contact_name);
-        g_free (contact_name);
       }
-      g_free (phone_number);
     }
 }
 
