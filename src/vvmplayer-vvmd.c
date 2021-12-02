@@ -402,7 +402,7 @@ compare_dates (VoicemailWindow  *old_voicemail,
                               voicemail_window_get_datetime (voicemail));
 }
 
-static void
+static gboolean
 vvmplayer_vvmd_receive_message (VvmVvmd   *self,
                                 GVariant *message_t)
 {
@@ -424,7 +424,7 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
        temp_objectpath = voicemail_window_get_objectpath (voicemail);
        if (g_strcmp0 (temp_objectpath, objectpath) == 0) {
          g_debug("VVM Already exists!");
-         return;
+         return FALSE;
        }
     }
   }
@@ -440,12 +440,13 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
 
   if (message_proxy == NULL) {
     g_warning ("Error connecting to the message Proxy!");
+    return FALSE;
   }
 
   voicemail = voicemail_window_new (message_t, message_proxy, self->discoverer);
   if (voicemail == NULL) {
     g_warning ("There was an error with making the VVM!");
-    return;
+    return FALSE;
   }
 
   vvmplayer_vvmd_add_contact_name (self, VVM_VOICEMAIL_WINDOW (voicemail));
@@ -453,6 +454,7 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
                               VVM_VOICEMAIL_WINDOW (voicemail),
                               (GCompareDataFunc) compare_dates,
                               NULL);
+  return TRUE;
 }
 
 static void
@@ -470,13 +472,13 @@ vvmplayer_vvmd_get_new_vvm_cb (GDBusConnection   *connection,
   int previous_unread = self->unread_vvms;
 
   g_debug ("%s", __func__);
-  vvmplayer_vvmd_receive_message (self, parameters);
-  voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), last_position);
-  vvmplayer_window_add_row (self->visual_voicemail, GTK_WIDGET (voicemail));
-  if (previous_unread < self->unread_vvms) {
-    vvmplayer_notification_send_unread_vvm (self->unread_vvms);
+  if (vvmplayer_vvmd_receive_message (self, parameters) == TRUE) {
+    voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), last_position);
+    vvmplayer_window_add_row (self->visual_voicemail, GTK_WIDGET (voicemail));
+    if (previous_unread < self->unread_vvms) {
+      vvmplayer_notification_send_unread_vvm (self->unread_vvms);
+    }
   }
-
 }
 
 
