@@ -71,6 +71,10 @@ struct _VvmPreferencesWindow
   GtkEntry *carrier_prefix_text;
   HdyComboRow *vvm_type_combo_row;
 
+  //Spam Contact
+  GtkSwitch *spam_contact_switch;
+  GtkEntry *spam_contact_text;
+
   //Timeouts
   int refresh_settings_button_timeout;
   int activate_vvm_button_clicked_timeout;
@@ -154,7 +158,9 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   g_autofree char     *VVMProvisionStatus = NULL;
   g_autofree char     *VVMCarrierPrefix = NULL;
   g_autofree char     *VVMType = NULL;
+  g_autofree char     *VVMSpamContact = NULL;
   int VVMEnabled;
+  gboolean VVMSpamContactEnabled;
   int VVMType_encoded, vvm_type_combo_row_state;
   VvmSettings *settings = vvm_settings_get_default ();
   int prefer_dark_theme, enable_dark_theme_switch_state;
@@ -164,6 +170,12 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   //Enable VVM
   VVMEnabled = vvm_settings_get_vvm_enabled (settings);
   gtk_switch_set_active (self->enable_vvm_switch, VVMEnabled);
+
+  //Spam Contact
+  VVMSpamContact = vvm_settings_get_spam_contact (settings);
+  VVMSpamContactEnabled = vvmplayer_settings_get_spam_contact_enabled (settings);
+  gtk_switch_set_active (self->spam_contact_switch, VVMSpamContactEnabled);
+  gtk_entry_set_text (self->spam_contact_text, VVMSpamContact);
 
   //Appearence Settings
   override_global_appearence_pref = vvmplayer_settings_get_override_global_appearence_pref (settings);
@@ -295,6 +307,28 @@ override_global_pref_switch_flipped_cb (GtkSwitch *widget,
   }
 
   vvmplayer_settings_set_override_global_appearence_pref (settings, override_global_pref_bool);
+  return FALSE;
+}
+
+static void
+spam_contact_text_button_clicked_cb (GtkButton     *btn,
+                                     VvmPreferencesWindow *self)
+{
+  VvmSettings *settings = vvm_settings_get_default ();
+  const char *new_contact;
+
+  new_contact = gtk_entry_get_text (self->spam_contact_text);
+  vvm_settings_set_spam_contact (settings, new_contact);
+}
+
+static gboolean
+spam_contact_switch_flipped_cb (GtkSwitch *widget,
+                                gboolean   contact_switch_bool,
+                                VvmPreferencesWindow *self)
+{
+  VvmSettings *settings = vvm_settings_get_default ();
+
+  vvmplayer_settings_set_spam_contact_enabled (settings, contact_switch_bool);
   return FALSE;
 }
 
@@ -717,10 +751,16 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, activate_vvm_button);
   gtk_widget_class_bind_template_callback (widget_class, activate_vvm_button_clicked_cb);
 
-
   //Sync VVM
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, sync_vvm_button);
   gtk_widget_class_bind_template_callback (widget_class, sync_vvm_button_clicked_cb);
+
+  //Spam Contact
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, spam_contact_switch);
+  gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, spam_contact_text);
+
+  gtk_widget_class_bind_template_callback (widget_class, spam_contact_switch_flipped_cb);
+  gtk_widget_class_bind_template_callback (widget_class, spam_contact_text_button_clicked_cb);
 
   //Modem Manager Settings
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, destination_number_text);
