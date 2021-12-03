@@ -1,3 +1,10 @@
+vvmplayer (1.4)
+
+  [ Chris Talbot ]
+  * Make main window scrollable
+  * Fix phantom rows appearing
+  * Add option to auto-delete spam voicemail
+
 vvmplayer (1.3)
 
   [ Chris Talbot ]
