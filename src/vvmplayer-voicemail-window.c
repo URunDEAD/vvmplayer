@@ -1,7 +1,7 @@
 /* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
 /* vvmplayer-voicemail-window.c
  *
- * Copyright 2021 Chris Talbot
+ * Copyright 2021-2022 Chris Talbot
  *           2021 GStreamer developers
  *
  * This program is free software: you can redistribute it and/or modify
@@ -453,8 +453,8 @@ voicemail_window_new (GVariant *message_t,
   number_of_attachments = g_strv_length (Attachment_list);
 
   for (int attachment_counter = 0; attachment_counter < (number_of_attachments); attachment_counter++) {
-    GFile *vvm_file;
-    GFileInfo *vvm_file_info;
+    g_autoptr(GFile) vvm_file = NULL;
+    g_autoptr(GFileInfo) vvm_file_info = NULL;
     g_autofree char *mime_type = NULL;
     g_autofree char *attachment_uri = NULL;
     g_autofree char *attachment_uri_playbin = NULL;
