@@ -1,7 +1,7 @@
 /* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
 /* vvmplayer-preferences-window.c
  *
- * Copyright 2021 Chris Talbot <chris@talbothome.com>
+ * Copyright 2021-2022 Chris Talbot <chris@talbothome.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
