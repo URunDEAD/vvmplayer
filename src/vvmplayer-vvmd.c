@@ -1,7 +1,7 @@
 /* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
 /* vvmplayer-vvmd.c
  *
- * Copyright 2021 Chris Talbot
+ * Copyright 2021-2022 Chris Talbot
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,14 +24,6 @@
 #endif
 
 #include "vvmplayer-vvmd.h"
-
-#define VVMD_SERVICE	                "org.kop316.vvm"
-#define VVMD_PATH	                "/org/kop316/vvm"
-#define VVMD_MODEMMANAGER_PATH          VVMD_PATH    "/modemmanager"
-#define VVMD_MANAGER_INTERFACE	        VVMD_SERVICE ".Manager"
-#define VVMD_SERVICE_INTERFACE	        VVMD_SERVICE ".Service"
-#define VVMD_MESSAGE_INTERFACE	        VVMD_SERVICE ".Message"
-#define VVMD_MODEMMANAGER_INTERFACE	VVMD_SERVICE ".ModemManager"
 
 struct _VvmVvmd
 {
