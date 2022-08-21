@@ -80,6 +80,9 @@ struct _VvmPreferencesWindow
   int activate_vvm_button_clicked_timeout;
   int sync_vvm_button_clicked_timeout;
   int enable_vvm_switch_clicked_timeout;
+
+  //Watch ID
+  gulong vvm_settings_watch_id;
 };
 
 G_DEFINE_TYPE (VvmPreferencesWindow, vvm_preferences_window, HDY_TYPE_PREFERENCES_WINDOW)
@@ -716,7 +719,11 @@ vvm_preferences_window_new (void)
 static void
 preference_window_finalize (GObject *object)
 {
-  //VvmPreferencesWindow *self = (VvmPreferencesWindow *)object;
+  VvmPreferencesWindow *self = (VvmPreferencesWindow *)object;
+  VvmVvmd *backend = vvm_vvmd_get_default ();
+
+  g_clear_signal_handler (&self->vvm_settings_watch_id,
+                          backend);
 
   G_OBJECT_CLASS (vvm_preferences_window_parent_class)->finalize (object);
 }
@@ -785,12 +792,23 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
 }
 
 static void
+update_settings_cb (VvmPreferencesWindow *self)
+{
+  refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+}
+
+static void
 vvm_preferences_window_init (VvmPreferencesWindow *self)
 {
+  VvmVvmd *backend = vvm_vvmd_get_default ();
+
   gtk_widget_init_template (GTK_WIDGET (self));
   lists_page_init (self);
   vvm_preferences_refresh_settings ();
   vvm_preferences_window_populate (self);
+
+  self->vvm_settings_watch_id = g_signal_connect_swapped (backend, "settings-updated",
+                                                          G_CALLBACK (update_settings_cb), self);
 
 
 }
