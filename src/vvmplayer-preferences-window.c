@@ -711,8 +711,17 @@ vvm_preferences_window_new (void)
 }
 
 static void
+preference_window_finalize (GObject *object)
+{
+  //VvmPreferencesWindow *self = (VvmPreferencesWindow *)object;
+
+  G_OBJECT_CLASS (vvm_preferences_window_parent_class)->finalize (object);
+}
+
+static void
 vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
 {
+  GObjectClass *object_class  = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   gtk_widget_class_set_template_from_resource (widget_class,
@@ -768,6 +777,8 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, vvm_type_combo_row);
 
   gtk_widget_class_bind_template_callback (widget_class, vvm_type_selected_cb);
+
+  object_class->finalize = preference_window_finalize;
 }
 
 static void
