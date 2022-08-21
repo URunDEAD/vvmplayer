@@ -444,6 +444,8 @@ enable_vvm_switch_timeout(gpointer user_data)
   self->enable_vvm_switch_clicked_timeout = FALSE;
   vvm_preferences_set_hdyactionrow_text (self->enable_vvm_text, "Enable VVM");
 
+  gtk_widget_set_sensitive (GTK_WIDGET (self->enable_vvm_switch), TRUE);
+
   refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
 
   return FALSE;
@@ -464,6 +466,8 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
   if (self->enable_vvm_switch_clicked_timeout == FALSE) {
     VvmVvmd *backend = vvm_vvmd_get_default ();
     self->enable_vvm_switch_clicked_timeout = TRUE;
+
+    gtk_widget_set_sensitive (GTK_WIDGET (widget), FALSE);
 
     if(vvm_settings_get_mm_available (settings) == FALSE) {
       g_warning("Cannot find vvmd!");
@@ -491,7 +495,6 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
 
   } else {
     g_debug ("enable_vvm_switch_clicked_cb() timed out!");
-    gtk_switch_set_active (self->enable_vvm_switch, VVMEnabled);
   }
     return FALSE;
 }
