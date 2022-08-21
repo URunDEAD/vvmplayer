@@ -470,7 +470,6 @@ enable_vvm_switch_flipped_cb (GtkSwitch *widget,
       g_warning("Cannot find vvmd!");
       vvm_preferences_set_hdyactionrow_text(self->enable_vvm_text, "Cannot find vvmd");
       g_timeout_add_seconds (2, enable_vvm_switch_timeout, self);
-      gtk_switch_set_active (self->enable_vvm_switch, FALSE);
       return FALSE;
     }
 
