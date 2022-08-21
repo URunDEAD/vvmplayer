@@ -50,6 +50,13 @@ struct _VvmVvmd
 
 G_DEFINE_TYPE (VvmVvmd, vvm_vvmd, G_TYPE_OBJECT)
 
+enum {
+  SETTINGS_UPDATED,
+  N_SIGNALS
+};
+
+static guint signals[N_SIGNALS];
+
 int
 vvmplayer_vvmd_encode_vvm_type (const char *vvm_type)
 {
@@ -570,6 +577,8 @@ vvmplayer_vvmd_get_service_cb (GObject      *service,
     } else {
       g_warning ("Failed to connect 'MessageAdded' signal");
     }
+    g_debug ("Emitting update settings signal");
+    g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
 
     g_dbus_proxy_call (self->service_proxy,
                        "GetMessages",
@@ -661,6 +670,10 @@ vvmplayer_vvmd_service_removed_cb (GDBusConnection *connection,
   g_debug ("%s", __func__);
   g_debug ("Service Removed g_variant: %s", g_variant_print (parameters, TRUE));
   vvmplayer_vvmd_remove_service (self);
+
+  g_debug ("Emitting update settings signal");
+  g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
+
 }
 
 static void
@@ -717,6 +730,9 @@ vvmplayer_vvmd_get_manager_cb (GObject      *manager,
       while ((service = g_variant_iter_next_value (&iter))) {
         vvmplayer_vvmd_connect_to_service (self, service);
       }
+    } else {
+      g_debug ("No Services, Sending emit to update settings");
+      g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
     }
   }
 }
@@ -730,7 +746,7 @@ vvmplayer_vvmd_provision_status_changed_cb (GDBusConnection *connection,
                                             GVariant        *parameters,
                                             gpointer         user_data)
 {
-  //VvmVvmd *self = user_data;
+  VvmVvmd *self = user_data;
   VvmSettings *settings = vvm_settings_get_default ();
   g_autoptr (GVariant) provisionstatus = NULL;
   const char *provision;
@@ -740,6 +756,9 @@ vvmplayer_vvmd_provision_status_changed_cb (GDBusConnection *connection,
   provision = g_variant_get_string (provisionstatus, NULL);
 
   vvm_settings_set_vvm_provision_status (settings, provision);
+
+  g_debug ("Emitting update settings signal");
+  g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
 }
 
 static void
@@ -751,7 +770,7 @@ vvmplayer_vvmd_provision_settings_changed_cb (GDBusConnection *connection,
                                             GVariant        *parameters,
                                             gpointer         user_data)
 {
-  //VvmVvmd *self = user_data;
+  VvmVvmd *self = user_data;
   VvmSettings *settings = vvm_settings_get_default ();
   g_autoptr (GError) error = NULL;
   g_autoptr (GVariant) provisionstatus = NULL;
@@ -766,6 +785,9 @@ vvmplayer_vvmd_provision_settings_changed_cb (GDBusConnection *connection,
   vvm_settings_set_vvm_type (settings, VVMType);
   vvm_settings_set_vvm_destination_number (settings, VVMDestinationNumber);
   vvm_settings_set_vvm_carrier_prefix (settings, CarrierPrefix);
+
+  g_debug ("Emitting update settings signal");
+  g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
 }
 
 int
@@ -943,6 +965,8 @@ vvmd_vanished_cb (GDBusConnection *connection,
   VvmSettings *settings = vvm_settings_get_default ();
 
   g_debug ("VVMD vanished");
+
+  vvm_settings_set_mailbox_active (settings, FALSE);
   vvm_settings_set_mm_available (settings, FALSE);
   vvm_settings_set_service_available (settings, FALSE);
 
@@ -968,6 +992,8 @@ vvmd_vanished_cb (GDBusConnection *connection,
                                          self->vvmd_watch_id);
   }
 
+  g_debug ("Sending emit to update settings");
+  g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
 }
 
 static void
@@ -1006,6 +1032,13 @@ static void
 vvm_vvmd_class_init (VvmVvmdClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  signals [SETTINGS_UPDATED] =
+    g_signal_new ("settings-updated",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
 
   object_class->constructed = vvm_vvmd_constructed;
   object_class->finalize = vvm_vvmd_finalize;
