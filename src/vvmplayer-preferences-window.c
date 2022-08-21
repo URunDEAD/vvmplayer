@@ -216,8 +216,7 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
     hdy_combo_row_set_selected_index (self->vvm_type_combo_row, VVMType_encoded);
 
   //Status
-  if(vvm_settings_get_mm_available (settings) &&
-     vvm_settings_get_service_available (settings)) {
+  if(vvm_settings_get_mm_available (settings)) {
     vvm_preferences_set_gtkimage_icon (self->vvmd_enabled_image, STATUS_GOOD);
   } else {
     vvm_preferences_set_gtkimage_icon (self->vvmd_enabled_image, STATUS_BAD);
