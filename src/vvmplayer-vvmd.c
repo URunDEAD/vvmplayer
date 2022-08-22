@@ -749,16 +749,20 @@ vvmplayer_vvmd_provision_status_changed_cb (GDBusConnection *connection,
   VvmVvmd *self = user_data;
   VvmSettings *settings = vvm_settings_get_default ();
   g_autoptr (GVariant) provisionstatus = NULL;
+  g_autofree char *Oldprovision = NULL;
   const char *provision;
 
   g_debug ("%s", __func__);
   g_variant_get (parameters, "(sv)", NULL, &provisionstatus);
   provision = g_variant_get_string (provisionstatus, NULL);
 
-  vvm_settings_set_vvm_provision_status (settings, provision);
+  Oldprovision = vvm_settings_get_vvm_provision_status (settings);
 
-  g_debug ("Emitting update settings signal");
-  g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
+  if (g_strcmp0(Oldprovision, provision)) {
+    vvm_settings_set_vvm_provision_status (settings, provision);
+    g_debug ("Emitting update settings signal");
+    g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
+  }
 }
 
 static void
@@ -774,20 +778,41 @@ vvmplayer_vvmd_provision_settings_changed_cb (GDBusConnection *connection,
   VvmSettings *settings = vvm_settings_get_default ();
   g_autoptr (GError) error = NULL;
   g_autoptr (GVariant) provisionstatus = NULL;
+  g_autofree char *OldVVMType = NULL;
+  g_autofree char *OldVVMDestinationNumber = NULL;
+  g_autofree char *OldCarrierPrefix = NULL;
   const char     *VVMType = NULL;
   const char     *VVMDestinationNumber = NULL;
   const char     *CarrierPrefix = NULL;
+  gboolean settings_changed = FALSE;
 
 
   g_debug ("%s", __func__);
   g_variant_get (parameters, "(sss)", &VVMType, &VVMDestinationNumber, &CarrierPrefix);
 
-  vvm_settings_set_vvm_type (settings, VVMType);
-  vvm_settings_set_vvm_destination_number (settings, VVMDestinationNumber);
-  vvm_settings_set_vvm_carrier_prefix (settings, CarrierPrefix);
+  OldVVMType = vvm_settings_get_vvm_type (settings);
+  OldVVMDestinationNumber = vvm_settings_get_vvm_destination_number (settings);
+  OldCarrierPrefix = vvm_settings_get_vvm_carrier_prefix (settings);
 
-  g_debug ("Emitting update settings signal");
-  g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
+  if (g_strcmp0(OldVVMType, VVMType)) {
+    vvm_settings_set_vvm_type (settings, VVMType);
+    settings_changed = TRUE;
+  }
+
+  if (g_strcmp0(OldVVMDestinationNumber, VVMDestinationNumber)) {
+    vvm_settings_set_vvm_destination_number (settings, VVMDestinationNumber);
+    settings_changed = TRUE;
+  }
+
+  if (g_strcmp0(OldCarrierPrefix, CarrierPrefix)) {
+    vvm_settings_set_vvm_carrier_prefix (settings, CarrierPrefix);
+    settings_changed = TRUE;
+  }
+
+  if (settings_changed) {
+    g_debug ("Emitting update settings signal");
+    g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
+  }
 }
 
 int
