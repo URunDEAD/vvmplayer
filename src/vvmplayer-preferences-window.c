@@ -237,6 +237,13 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
 
 }
 
+static void
+update_settings_cb (VvmPreferencesWindow *self)
+{
+    vvm_preferences_refresh_settings ();
+    vvm_preferences_window_populate (self);
+}
+
 static gboolean
 refresh_settings_button_timeout (gpointer user_data)
 {
@@ -449,7 +456,7 @@ enable_vvm_switch_timeout(gpointer user_data)
 
   gtk_widget_set_sensitive (GTK_WIDGET (self->enable_vvm_switch), TRUE);
 
-  refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+  update_settings_cb (self);
 
   return FALSE;
 }
@@ -509,7 +516,7 @@ activate_vvm_button_timeout(gpointer user_data)
   self->activate_vvm_button_clicked_timeout = FALSE;
   vvm_preferences_set_button_content (self->activate_vvm_button, "Activate");
 
-  refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
+  update_settings_cb (self);
   return FALSE;
 }
 
@@ -789,12 +796,6 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, vvm_type_selected_cb);
 
   object_class->finalize = preference_window_finalize;
-}
-
-static void
-update_settings_cb (VvmPreferencesWindow *self)
-{
-  refresh_settings_button_clicked_cb (self->refresh_settings_button, self);
 }
 
 static void
