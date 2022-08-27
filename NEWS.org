@@ -1,3 +1,10 @@
+vvmplayer (1.5)
+
+  [ Chris Talbot ]
+  * Fix a couple of crashes
+  * Fix some memory leaks
+  * Make the preferences window more responsive
+
 vvmplayer (1.4)
 
   [ Chris Talbot ]

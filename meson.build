@@ -1,6 +1,6 @@
 project(
   'vvmplayer', 'c',
-  version: '1.4',
+  version: '1.5',
   meson_version: '>= 0.50.0',
   license: 'GPL3+',
   default_options: [
