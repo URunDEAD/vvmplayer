@@ -280,7 +280,7 @@ vvmplayer_application_activate (GApplication *application)
     vvmplayer_settings_set_default_dark_theme_pref (self->settings,
                                                     default_dark_theme_pref);
 
-    if (vvmplayer_settings_get_override_global_appearence_pref (self->settings)) {
+    if (vvmplayer_settings_get_override_global_appearance_pref (self->settings)) {
       prefer_dark_theme = vvmplayer_settings_get_dark_theme (self->settings);
       g_object_set (gtk_settings, "gtk-application-prefer-dark-theme", prefer_dark_theme, NULL);
     }

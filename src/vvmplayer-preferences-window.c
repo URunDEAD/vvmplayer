@@ -48,7 +48,7 @@ struct _VvmPreferencesWindow
 
   HdyActionRow *enable_vvm_text;
 
-  //Appearence Settings
+  //Appearance Settings
   HdyActionRow *enable_dark_theme_row;
   GtkSwitch *enable_dark_theme_switch;
   GtkSwitch *override_global_pref_switch;
@@ -167,7 +167,7 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   int VVMType_encoded, vvm_type_combo_row_state;
   VvmSettings *settings = vvm_settings_get_default ();
   int prefer_dark_theme, enable_dark_theme_switch_state;
-  int override_global_appearence_pref;
+  int override_global_appearance_pref;
   GtkSettings *gtk_settings = gtk_settings_get_default ();
 
   //Enable VVM
@@ -180,9 +180,9 @@ vvm_preferences_window_populate (VvmPreferencesWindow *self)
   gtk_switch_set_active (self->spam_contact_switch, VVMSpamContactEnabled);
   gtk_entry_set_text (self->spam_contact_text, VVMSpamContact);
 
-  //Appearence Settings
-  override_global_appearence_pref = vvmplayer_settings_get_override_global_appearence_pref (settings);
-  gtk_switch_set_active (self->override_global_pref_switch, override_global_appearence_pref);
+  //Appearance Settings
+  override_global_appearance_pref = vvmplayer_settings_get_override_global_appearance_pref (settings);
+  gtk_switch_set_active (self->override_global_pref_switch, override_global_appearance_pref);
 
   g_object_get (gtk_settings, "gtk-application-prefer-dark-theme", &prefer_dark_theme, NULL);
   enable_dark_theme_switch_state = gtk_switch_get_state (self->enable_dark_theme_switch);
@@ -315,7 +315,7 @@ override_global_pref_switch_flipped_cb (GtkSwitch *widget,
     reset_global_pref (self);
   }
 
-  vvmplayer_settings_set_override_global_appearence_pref (settings, override_global_pref_bool);
+  vvmplayer_settings_set_override_global_appearance_pref (settings, override_global_pref_bool);
   return FALSE;
 }
 
@@ -752,7 +752,7 @@ vvm_preferences_window_class_init (VvmPreferencesWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, refresh_settings_button_clicked_cb);
 
 
-  //Appearence Settings
+  //Appearance Settings
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, override_global_pref_switch);
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, enable_dark_theme_switch);
   gtk_widget_class_bind_template_child (widget_class, VvmPreferencesWindow, enable_dark_theme_row);

@@ -223,8 +223,8 @@
           <object class="HdyPreferencesGroup">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="description" translatable="yes">These are settings related to the appearence of VVM Player.</property>
-            <property name="title" translatable="yes">Appearence</property>
+            <property name="description" translatable="yes">These are settings related to the appearance of VVM Player.</property>
+            <property name="title" translatable="yes">Appearance</property>
             <child>
               <object class="HdyActionRow">
                 <property name="visible">True</property>

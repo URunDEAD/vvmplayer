@@ -50,7 +50,7 @@ struct _VvmSettings
   GtkSettings *gtk_settings;
 
   //App Settings
-  int override_global_appearence_pref;
+  int override_global_appearance_pref;
   int prefer_dark_theme;
   int default_dark_theme_pref;
 
@@ -164,21 +164,21 @@ vvm_settings_set_mm_available (VvmSettings *self, int ModemManagerAvailable)
 }
 
 int
-vvmplayer_settings_get_override_global_appearence_pref (VvmSettings *self)
+vvmplayer_settings_get_override_global_appearance_pref (VvmSettings *self)
 {
-  return self->override_global_appearence_pref;
+  return self->override_global_appearance_pref;
 }
 
 void
-vvmplayer_settings_set_override_global_appearence_pref (VvmSettings *self,
-                                            int override_global_appearence_pref)
+vvmplayer_settings_set_override_global_appearance_pref (VvmSettings *self,
+                                            int override_global_appearance_pref)
 {
-  self->override_global_appearence_pref = override_global_appearence_pref;
+  self->override_global_appearance_pref = override_global_appearance_pref;
 
   /* Set the setting right away */
   g_settings_set_boolean (self->app_settings,
-                          "override-global-appearence-pref",
-                          self->override_global_appearence_pref);
+                          "override-global-appearance-pref",
+                          self->override_global_appearance_pref);
   g_settings_apply (self->app_settings);
 }
 
@@ -418,8 +418,8 @@ vvmplayer_settings_dispose (GObject *object)
   g_settings_set_boolean (self->app_settings, "spam-contact-enabled", self->spam_contact_enabled);
   g_settings_set_boolean (self->app_settings, "dark-theme", self->prefer_dark_theme);
   g_settings_set_boolean (self->app_settings,
-                          "override-global-appearence-pref",
-                          self->override_global_appearence_pref);
+                          "override-global-appearance-pref",
+                          self->override_global_appearance_pref);
 
   g_settings_apply (self->app_settings);
   g_free (self->vvm_destination_number);
@@ -449,8 +449,8 @@ vvmplayer_settings_init (VvmSettings *self)
   self->spam_contact = g_settings_get_string (self->app_settings, "spam-contact");
   self->spam_contact_enabled = g_settings_get_boolean (self->app_settings, "spam-contact-enabled");
   self->prefer_dark_theme = g_settings_get_boolean (self->app_settings, "dark-theme");
-  self->override_global_appearence_pref = g_settings_get_boolean (self->app_settings,
-                                               "override-global-appearence-pref");
+  self->override_global_appearance_pref = g_settings_get_boolean (self->app_settings,
+                                               "override-global-appearance-pref");
 
 
   if (!g_str_equal (version, PACKAGE_VERSION))
