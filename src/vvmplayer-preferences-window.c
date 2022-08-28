@@ -707,6 +707,10 @@ lists_page_init (VvmPreferencesWindow *self)
   g_list_store_insert (list_store, VVM_TYPE_OTMP, obj);
   g_clear_object (&obj);
 
+  obj = hdy_value_object_new_string ("Free Mobile FR");
+  g_list_store_insert (list_store, VVM_TYPE_FREEMOBILEFRA, obj);
+  g_clear_object (&obj);
+
   obj = hdy_value_object_new_string ("vvm3");
   g_list_store_insert (list_store, VVM_TYPE_VVM_THREE, obj);
   g_clear_object (&obj);

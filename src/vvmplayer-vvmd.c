@@ -67,6 +67,8 @@ vvmplayer_vvmd_encode_vvm_type (const char *vvm_type)
    return VVM_TYPE_CVVM;
  } else if (g_strcmp0(vvm_type, "AT&TUSAProprietary") == 0) {
    return VVM_TYPE_ATTUSA;
+ } else if (g_strcmp0(vvm_type, "FreeMobileProprietary") == 0) {
+   return VVM_TYPE_FREEMOBILEFRA;
  } else if (g_strcmp0(vvm_type, "otmp") == 0) {
    return VVM_TYPE_OTMP;
  } else if (g_strcmp0(vvm_type, "vvm3") == 0) {
@@ -90,6 +92,9 @@ char
 
     case VVM_TYPE_ATTUSA:
       return g_strdup("AT&TUSAProprietary");
+
+    case VVM_TYPE_FREEMOBILEFRA:
+      return g_strdup("FreeMobileProprietary");
 
     case VVM_TYPE_OTMP:
       return g_strdup("otmp");
