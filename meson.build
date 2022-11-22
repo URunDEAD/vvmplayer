@@ -1,13 +1,8 @@
-project(
-  'vvmplayer', 'c',
+project('vvmplayer', 'c',
   version: '1.5',
-  meson_version: '>= 0.50.0',
-  license: 'GPL3+',
-  default_options: [
-    'c_std=gnu11',
-    'warning_level=1',
-    'buildtype=debugoptimized'
-  ])
+  meson_version: '>= 0.56.0',
+  default_options: [ 'warning_level=2', 'werror=false', 'c_std=gnu11', ],
+)
 
 pkg_name      = meson.project_name()
 pkg_id        = 'org.kop316.vvmplayer'
@@ -15,8 +10,8 @@ pkg_version   = meson.project_version()
 pkg_is_debug  = get_option('buildtype').startswith('debug')
 
 pkg_prefix    = get_option('prefix')
-pkg_srcdir    = meson.source_root()
-pkg_builddir  = meson.build_root()
+pkg_srcdir    = meson.project_source_root()
+pkg_builddir  = meson.project_build_root()
 pkg_bindir    = join_paths(pkg_prefix, get_option('bindir'))
 pkg_libdir    = join_paths(pkg_prefix, get_option('libdir'))
 pkg_localedir = join_paths(pkg_prefix, get_option('localedir'))
@@ -26,146 +21,92 @@ pkg_po_dir    = join_paths(pkg_srcdir, 'po')
 top_inc       = include_directories('.')
 src_inc       = include_directories('src')
 
+i18n = import('i18n')
 gnome = import('gnome')
-i18n  = import('i18n')
-cc    = meson.get_compiler('c')
+cc = meson.get_compiler('c')
 
+config_h = configuration_data()
+config_h.set_quoted('PACKAGE_VERSION', meson.project_version())
+config_h.set_quoted('GETTEXT_PACKAGE', 'vvmplayer')
+config_h.set_quoted('LOCALEDIR', join_paths(get_option('prefix'), get_option('localedir')))
+config_h.set('NDEBUG', (not pkg_is_debug))
+config_h.set('G_DISABLE_ASSERT', (not pkg_is_debug))
+config_h.set('G_DISABLE_CAST_CHECKS', (not pkg_is_debug))
+config_h.set_quoted('GETTEXT_PACKAGE', pkg_name)
+config_h.set_quoted('PACKAGE_NAME', pkg_name)
+config_h.set_quoted('PACKAGE_ID', pkg_id)
+config_h.set_quoted('PACKAGE_LOCALE_DIR', pkg_localedir)
+configure_file(output: 'config.h', configuration: config_h)
+add_project_arguments(['-I' + meson.project_build_root()], language: 'c')
 
-conf = configuration_data()
-conf.set('NDEBUG', (not pkg_is_debug))
-conf.set('G_DISABLE_ASSERT', (not pkg_is_debug))
-conf.set('G_DISABLE_CAST_CHECKS', (not pkg_is_debug))
-conf.set_quoted('GETTEXT_PACKAGE', pkg_name)
-conf.set_quoted('PACKAGE_NAME', pkg_name)
-conf.set_quoted('PACKAGE_VERSION', pkg_version)
-conf.set_quoted('PACKAGE_ID', pkg_id)
-conf.set_quoted('PACKAGE_LOCALE_DIR', pkg_localedir)
-if get_option('help')
-  conf.set_quoted('PACKAGE_HELP_URL', 'help:' + pkg_id)
-else
-  conf.set_quoted('PACKAGE_HELP_URL', 'https://gitlab.com/kop316/vvmd/wikis/home')
-endif
-
-configure_file(
-  output: 'config.h',
-  configuration: conf,
-)
-
-run_conf = configuration_data()
-run_conf.set('BUILD_DIR', meson.current_build_dir())
-configure_file(
-  input: 'run.in',
-  output: 'run',
-  configuration: run_conf,
-)
-
-common_flags = [
-  '-DHAVE_CONFIG_H',
-  '-D_FORTIFY_SOURCE=2',
-  '-DG_LOG_USE_STRUCTURED',
+project_c_args = []
+test_c_args = [
+  '-Wcast-align',
+  '-Wdeclaration-after-statement',
+  '-Werror=address',
+  '-Werror=array-bounds',
+  '-Werror=empty-body',
+  '-Werror=implicit',
+  '-Werror=implicit-function-declaration',
+  '-Werror=incompatible-pointer-types',
+  '-Werror=init-self',
+  '-Werror=int-conversion',
+  '-Werror=int-to-pointer-cast',
+  '-Werror=main',
+  '-Werror=misleading-indentation',
+  '-Werror=missing-braces',
+  '-Werror=missing-include-dirs',
+  '-Werror=nonnull',
+  '-Werror=overflow',
+  '-Werror=parenthesis',
+  '-Werror=pointer-arith',
+  '-Werror=pointer-to-int-cast',
+  '-Werror=redundant-decls',
+  '-Werror=return-type',
+  '-Werror=sequence-point',
+  '-Werror=shadow',
+  '-Werror=strict-prototypes',
+  '-Werror=trigraphs',
+  '-Werror=undef',
+  '-Werror=write-strings',
+  '-Wformat-nonliteral',
+  '-Wignored-qualifiers',
+  '-Wimplicit-function-declaration',
+  '-Wlogical-op',
+  '-Wmissing-declarations',
+  '-Wmissing-format-attribute',
+  '-Wmissing-include-dirs',
+  '-Wmissing-noreturn',
+  '-Wnested-externs',
+  '-Wno-cast-function-type',
+  '-Wno-dangling-pointer',
+  '-Wno-missing-field-initializers',
+  '-Wno-sign-compare',
+  '-Wno-unused-parameter',
+  '-Wold-style-definition',
+  '-Wpointer-arith',
+  '-Wredundant-decls',
+  '-Wstrict-prototypes',
+  '-Wswitch-default',
+  '-Wswitch-enum',
+  '-Wundef',
+  '-Wuninitialized',
+  '-Wunused',
+  '-fno-strict-aliasing',
+  ['-Werror=format-security', '-Werror=format=2'],
 ]
-
-add_global_arguments(common_flags, language: 'c')
-c_link_args = cc.get_supported_arguments(
-  ['-fasynchronous-unwind-tables',
-   '-fno-strict-aliasing',
-   '-Wall',
-   '-Wcast-align',
-   '-Wdate-time',
-   '-Werror=format-security',
-   '-Werror=implicit-function-declaration',
-   '-Werror=pointer-to-int-cast',
-   '-Werror=redundant-decls',
-   '-Werror=return-type',
-   '-Werror=vla',
-   '-Werror=write-strings',
-   '-Wfloat-equal',
-   '-Wformat=2',
-   '-Wimplicit-fallthrough',
-   '-Wlogical-op',
-   '-Wmissing-format-attribute',
-   '-Wmissing-include-dirs',
-   '-Wmissing-prototypes',
-   '-Wnested-externs',
-   '-Wold-style-declaration',
-   '-Wold-style-definition',
-   '-Wpointer-arith',
-   '-Wshadow',
-   '-Wswitch-default',
-   '-Wswitch-enum',
-   '-Wtrigraphs',
-   '-Wunused',
-   '-pipe',
-  ])
-
-if cc.get_id() == 'msvc'
-  warning('Your compiler doesn\'t support C99/C11 features.' +
-          ' Please use MinGW or native GNU/Linux')
+if get_option('buildtype') != 'plain'
+  test_c_args += '-fstack-protector-strong'
 endif
+foreach arg: test_c_args
+  if cc.has_multi_arguments(arg)
+    project_c_args += arg
+  endif
+endforeach
+add_project_arguments(project_c_args, language: 'c')
 
-pkg_dep = [
-  dependency('gio-2.0', version: '>= 2.50'),
-  dependency('gtk+-3.0', version: '>= 3.22.0'),
-  dependency('libebook-contacts-1.2'),
-  dependency('libebook-1.2'),
-  dependency('libhandy-1', version: '>= 1.0.0'),
-  dependency('gstreamer-1.0', version : '>1.16'),
-  dependency('gstreamer-pbutils-1.0', version : '>1.0'),
-  dependency('libcallaudio-0.1'),
-]
-
-subdir('src')
 subdir('data')
-subdir('docs')
-
-if get_option('tests')
-  subdir('tests')
-endif
-
-if get_option('po')
-  subdir('po')
-endif
-
-if get_option('bash_completion')
-  subdir('completion')
-endif
+subdir('src')
+subdir('po')
 
 meson.add_install_script('build-aux/meson_post_install.py')
-
-run_target('make-po',
-           command: [
-             find_program('build-aux/make_po.sh'),
-             pkg_name,
-             meson.current_build_dir(),
-             join_paths(pkg_srcdir, 'po'),
-           ])
-
-run_target('make-help-po',
-           command: [
-             find_program('build-aux/make_po.sh'),
-             pkg_id,
-             meson.current_build_dir(),
-             join_paths(pkg_srcdir, 'docs/help'),
-             'help-',
-             'true',
-           ])
-
-system = host_machine.system()
-if system == 'linux'
-  system = 'GNU/Linux'
-endif
-
-output = '\n        ' + pkg_name + ' ' + pkg_version + '\n'
-output += '        ==============================\n\n'
-output += '        prefix:          ' + pkg_prefix + '\n'
-output += '        compiler:        ' + cc.get_id() + ' ' + cc.version()+ '\n'
-output += '        compiler args:   ' + ' '.join(c_link_args) + '\n'
-output += '        build type:      ' + get_option('buildtype') + '\n'
-output += '        host system:     ' + system + '\n'
-output += '        tests:           ' + get_option('tests').to_string() + '\n'
-output += '        manpage:         ' + build_man.to_string() + '\n'
-output += '        documentation:   ' + get_option('gtk_doc').to_string() + '\n'
-output += '        translations:    ' + get_option('po').to_string() + '\n'
-output += '        help:            ' + get_option('help').to_string() + '\n'
-output += '        bash-completion: ' + get_option('bash_completion').to_string() + '\n'
-message(output)

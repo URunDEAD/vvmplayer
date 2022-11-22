@@ -10,9 +10,7 @@ appstream_file = i18n.merge_file(
 
 appstream_util = find_program('appstream-util', required: false)
 
-if not get_option('network_tests')
-  appstream_args += '--nonet'
-endif
+appstream_args += '--nonet'
 appstream_args += ['validate-relax', appstream_file]
 
 if appstream_util.found()

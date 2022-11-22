@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-set -e
-
-export GSETTINGS_SCHEMA_DIR="@BUILD_DIR@/data"
-set -x
-exec "@BUILD_DIR@/src/vvmplayer" "$@"

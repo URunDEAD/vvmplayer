@@ -1,7 +1,6 @@
-/* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
 /* vvmplayer-application.h
  *
- * Copyright 2021 Chris Talbot <chris@talbothome.com>
+ * Copyright 2021-2022 Chris Talbot
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,25 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Author(s):
- *   Chris Talbot <chris@talbothome.com>
- *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #pragma once
 
-#include <gtk/gtk.h>
-
-#include "vvmplayer-settings.h"
+#include <adwaita.h>
 
 G_BEGIN_DECLS
 
-#define VVMPLAYER_APPLICATION_DEFAULT() ((VvmApplication *)g_application_get_default ())
-#define VVMPLAYER_TYPE_APPLICATION (vvmplayer_application_get_type ())
+#define VVMPLAYER_TYPE_APPLICATION (vvmplayer_application_get_type())
 
-G_DECLARE_FINAL_TYPE (VvmApplication, vvmplayer_application, VVMPLAYER, APPLICATION, GtkApplication)
+G_DECLARE_FINAL_TYPE (VvmplayerApplication, vvmplayer_application, VVMPLAYER, APPLICATION, AdwApplication)
 
-VvmApplication *vvmplayer_application_new    (void);
+VvmplayerApplication *vvmplayer_application_new (const char        *application_id,
+                                                 GApplicationFlags  flags);
 
 G_END_DECLS
