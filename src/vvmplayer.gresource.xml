@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/org/kop316/vvmplayer">
-    <file preprocess="xml-stripblanks">vvmplayer-window.ui</file>
+    <file preprocess="xml-stripblanks">ui/vvmplayer-window.ui</file>
   </gresource>
 </gresources>

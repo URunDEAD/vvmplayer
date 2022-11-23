@@ -38,7 +38,7 @@ vvmplayer_window_class_init (VvmplayerWindowClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  gtk_widget_class_set_template_from_resource (widget_class, "/org/kop316/vvmplayer/vvmplayer-window.ui");
+  gtk_widget_class_set_template_from_resource (widget_class, "/org/kop316/vvmplayer/ui/vvmplayer-window.ui");
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, header_bar);
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, label);
 }
