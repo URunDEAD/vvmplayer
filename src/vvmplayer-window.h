@@ -28,4 +28,8 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (VvmplayerWindow, vvmplayer_window, VVMPLAYER, WINDOW, AdwApplicationWindow)
 
+void vvmplayer_window_add_row (VvmplayerWindow *self, GtkWidget *voicemail);
+
+void vvmplayer_window_set_speaker_button (VvmplayerWindow *self, gboolean setting);
+
 G_END_DECLS
