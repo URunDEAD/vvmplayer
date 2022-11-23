@@ -37,7 +37,7 @@
         <attribute name="action">app.preferences</attribute>
       </item>
       <item>
-        <attribute name="label" translatable="yes">_About Vvmplayer</attribute>
+        <attribute name="label" translatable="yes">_About Visual Voicemail</attribute>
         <attribute name="action">app.about</attribute>
       </item>
     </section>
