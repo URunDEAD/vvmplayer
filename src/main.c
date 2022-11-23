@@ -21,6 +21,7 @@
 #include "config.h"
 
 #include <glib/gi18n.h>
+#include <gst/gst.h>
 
 #include "vvmplayer-application.h"
 
@@ -28,21 +29,24 @@ int
 main (int   argc,
       char *argv[])
 {
-	g_autoptr(VvmplayerApplication) app = NULL;
-	int ret;
+  g_autoptr(VvmplayerApplication) app = NULL;
+  int ret;
 
-	bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
-	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-	textdomain (GETTEXT_PACKAGE);
+  /* Initialize GStreamer */
+  gst_init (&argc, &argv);
 
-	// Use G_APPLICATION_DEFAULT_FLAGS for GTK 2.74 or higher
+  bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
+  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+  textdomain (GETTEXT_PACKAGE);
 
-	#if GTK_CHECK_VERSION (2,74,0)
-		app = vvmplayer_application_new (PACKAGE_ID, G_APPLICATION_DEFAULT_FLAGS);
-	#else
-		app = vvmplayer_application_new (PACKAGE_ID, G_APPLICATION_FLAGS_NONE);
-	#endif
-	ret = g_application_run (G_APPLICATION (app), argc, argv);
+  // Use G_APPLICATION_DEFAULT_FLAGS for GTK 2.74 or higher
 
-	return ret;
+  #if GTK_CHECK_VERSION (2,74,0)
+    app = vvmplayer_application_new (PACKAGE_ID, G_APPLICATION_DEFAULT_FLAGS);
+  #else
+    app = vvmplayer_application_new (PACKAGE_ID, G_APPLICATION_FLAGS_NONE);
+  #endif
+  ret = g_application_run (G_APPLICATION (app), argc, argv);
+
+  return ret;
 }
