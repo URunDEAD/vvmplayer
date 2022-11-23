@@ -81,6 +81,53 @@ struct _VvmplayerPreferencesWindow
 G_DEFINE_TYPE (VvmplayerPreferencesWindow, vvm_player_preferences_window, ADW_TYPE_PREFERENCES_WINDOW)
 
 static void
+vvm_type_selected_cb (GObject                    *sender,
+                      GParamSpec                 *pspec,
+                      VvmplayerPreferencesWindow *self)
+{
+  VvmVvmd *backend = vvm_vvmd_get_default ();
+  VvmSettings *settings = vvm_settings_get_default ();
+  int row_selected;
+
+  row_selected = adw_combo_row_get_selected (self->vvm_type_combo_row);
+
+  if (row_selected == VVM_TYPE_UNKNOWN) {
+    //This is not a valid vvmd type, so don't set it
+    return;
+  }
+
+  if(vvm_settings_get_mm_available (settings)) {
+    g_autofree char *vvm_type = NULL;
+
+
+    vvm_type = vvmplayer_vvmd_decode_vvm_type (row_selected);
+
+    if(vvmplayer_vvmd_set_mm_setting (backend,
+                                      "VVMType",
+                                      vvm_type) == FALSE) {
+      g_warning ("Error changing setting in vvmd!");
+      adw_combo_row_set_selected (self->vvm_type_combo_row, VVM_TYPE_UNKNOWN);
+    } else {
+
+        if (row_selected == VVM_TYPE_ATTUSA) {
+           adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->carrier_prefix_text_row),
+                                                 "AT&amp;T USA Number (No dashes or spaces)");
+           gtk_entry_set_placeholder_text(self->carrier_prefix_text,
+                                                 "AT&T USA Number (No dashes or spaces)");
+
+        } else {
+           adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->carrier_prefix_text_row),
+                                          "Carrier Prefix");
+           gtk_entry_set_placeholder_text (self->carrier_prefix_text,
+                                           "Carrier Prefix");
+        }
+    }
+  } else {
+     adw_combo_row_set_selected (self->vvm_type_combo_row, VVM_TYPE_UNKNOWN);
+  }
+}
+
+static void
 vvm_preferences_window_populate (VvmplayerPreferencesWindow *self)
 {
   g_autofree char     *VVMDestinationNumber = NULL;
@@ -251,7 +298,7 @@ vvm_player_preferences_window_class_init (VvmplayerPreferencesWindowClass *klass
   gtk_widget_class_bind_template_child (widget_class, VvmplayerPreferencesWindow, carrier_prefix_text_buffer);
   gtk_widget_class_bind_template_child (widget_class, VvmplayerPreferencesWindow, vvm_type_combo_row);
 
-  //gtk_widget_class_bind_template_callback (widget_class, vvm_type_selected_cb);
+  gtk_widget_class_bind_template_callback (widget_class, vvm_type_selected_cb);
 }
 
 static void
