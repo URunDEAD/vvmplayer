@@ -29,7 +29,7 @@
                     <property name="label" translatable="yes">Apply</property>
                     <property name="halign">end</property>
                     <property name="valign">center</property>
-                    <!-- <signal name="clicked" handler="refresh_settings_button_clicked_cb" swapped="no"/> -->
+                    <signal name="clicked" handler="refresh_settings_button_clicked_cb" swapped="no"/>
                   </object>
                 </child>
               </object>
@@ -40,7 +40,7 @@
                 <child>
                   <object class="GtkSwitch" id="enable_vvm_switch">
                     <property name="valign">center</property>
-                    <!-- <signal name="state-set" handler="enable_vvm_switch_flipped_cb" swapped="no"/> -->
+                    <signal name="state-set" handler="enable_vvm_switch_flipped_cb" swapped="no"/>
                   </object>
                 </child>
               </object>
@@ -154,7 +154,7 @@
                     <property name="label" translatable="yes">Activate</property>
                     <property name="halign">end</property>
                     <property name="valign">center</property>
-                    <!-- <signal name="clicked" handler="activate_vvm_button_clicked_cb" swapped="no"/> -->
+                    <signal name="clicked" handler="activate_vvm_button_clicked_cb" swapped="no"/>
                     <style>
                       <class name="list-button"/>
                     </style>
@@ -170,24 +170,12 @@
             <property name="description" translatable="yes">These are settings related to the appearance of VVM Player.</property>
             <property name="title" translatable="yes">Appearance</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Override Global Preferences</property>
-                <child>
-                  <object class="GtkSwitch" id="override_global_pref_switch">
-                    <property name="valign">center</property>
-                    <!-- <signal name="state-set" handler="override_global_pref_switch_flipped_cb" swapped="no"/> -->
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
               <object class="AdwActionRow" id="enable_dark_theme_row">
-                <property name="visible">false</property>
                 <property name="title" translatable="yes">Enable Dark Theme</property>
                 <child>
                   <object class="GtkSwitch" id="enable_dark_theme_switch">
                     <property name="valign">center</property>
-                    <!-- <signal name="state-set" handler="enable_theme_switch_flipped_cb" swapped="no"/> -->
+                    <signal name="state-set" handler="enable_theme_switch_flipped_cb" swapped="no"/>
                   </object>
                 </child>
               </object>
@@ -208,7 +196,7 @@
                 <child>
                   <object class="GtkSwitch" id="spam_contact_switch">
                     <property name="valign">center</property>
-                    <!-- <signal name="state-set" handler="spam_contact_switch_flipped_cb" swapped="yes"/> -->
+                    <signal name="state-set" handler="spam_contact_switch_flipped_cb" swapped="yes"/>
                   </object>
                 </child>
               </object>
@@ -227,7 +215,7 @@
                 <child>
                   <object class="GtkButton" id="spam_contact_text_button">
                     <property name="valign">center</property>
-                    <!-- <signal name="clicked" handler="spam_contact_text_button_clicked_cb" swapped="no"/> -->
+                    <signal name="clicked" handler="spam_contact_text_button_clicked_cb" swapped="no"/>
                    <child>
                       <object class="GtkImage" id="spam_contact_text_button_image">
                         <property name="icon-name">object-select-symbolic</property>
@@ -253,7 +241,7 @@
                     <property name="label" translatable="yes">Sync</property>
                     <property name="halign">end</property>
                     <property name="valign">center</property>
-                    <!-- <signal name="clicked" handler="sync_vvm_button_clicked_cb" swapped="no"/> -->
+                    <signal name="clicked" handler="sync_vvm_button_clicked_cb" swapped="no"/>
                     <style>
                       <class name="list-button"/>
                     </style>

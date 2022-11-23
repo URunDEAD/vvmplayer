@@ -49,7 +49,6 @@ struct _VvmSettings
   GtkSettings *gtk_settings;
 
   //App Settings
-  int override_global_appearance_pref;
   int prefer_dark_theme;
   int default_dark_theme_pref;
 
@@ -160,25 +159,6 @@ vvm_settings_set_mm_available (VvmSettings *self, int ModemManagerAvailable)
   else
     g_debug ("Modem Manager not available through VVMD");
 
-}
-
-int
-vvmplayer_settings_get_override_global_appearance_pref (VvmSettings *self)
-{
-  return self->override_global_appearance_pref;
-}
-
-void
-vvmplayer_settings_set_override_global_appearance_pref (VvmSettings *self,
-                                            int override_global_appearance_pref)
-{
-  self->override_global_appearance_pref = override_global_appearance_pref;
-
-  /* Set the setting right away */
-  g_settings_set_boolean (self->app_settings,
-                          "override-global-appearance-pref",
-                          self->override_global_appearance_pref);
-  g_settings_apply (self->app_settings);
 }
 
 int
@@ -416,9 +396,6 @@ vvmplayer_settings_dispose (GObject *object)
   g_settings_set_string (self->app_settings, "spam-contact", self->spam_contact);
   g_settings_set_boolean (self->app_settings, "spam-contact-enabled", self->spam_contact_enabled);
   g_settings_set_boolean (self->app_settings, "dark-theme", self->prefer_dark_theme);
-  g_settings_set_boolean (self->app_settings,
-                          "override-global-appearance-pref",
-                          self->override_global_appearance_pref);
 
   g_settings_apply (self->app_settings);
   g_free (self->vvm_destination_number);
@@ -443,13 +420,17 @@ static void
 vvmplayer_settings_init (VvmSettings *self)
 {
   g_autofree char *version = NULL;
+  AdwStyleManager *adw_style_manager = adw_style_manager_get_default ();
   self->app_settings = g_settings_new (PACKAGE_ID);
   version = g_settings_get_string (self->app_settings, "version");
   self->spam_contact = g_settings_get_string (self->app_settings, "spam-contact");
   self->spam_contact_enabled = g_settings_get_boolean (self->app_settings, "spam-contact-enabled");
   self->prefer_dark_theme = g_settings_get_boolean (self->app_settings, "dark-theme");
-  self->override_global_appearance_pref = g_settings_get_boolean (self->app_settings,
-                                               "override-global-appearance-pref");
+
+  if (self->prefer_dark_theme)
+    adw_style_manager_set_color_scheme (adw_style_manager, ADW_COLOR_SCHEME_FORCE_DARK);
+  else
+    adw_style_manager_set_color_scheme (adw_style_manager, ADW_COLOR_SCHEME_DEFAULT);
 
 
   if (!g_str_equal (version, PACKAGE_VERSION))
