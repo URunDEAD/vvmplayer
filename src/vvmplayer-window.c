@@ -31,6 +31,9 @@ struct _VvmplayerWindow
   GtkListBox          *visual_voicemail;
   GtkToggleButton     *speaker_output_button;
   GtkImage            *speaker_output_image;
+
+  AdwToastOverlay *toast_overlay;
+  AdwToast *toast;
 };
 
 G_DEFINE_FINAL_TYPE (VvmplayerWindow, vvmplayer_window, ADW_TYPE_APPLICATION_WINDOW)
@@ -91,6 +94,7 @@ vvmplayer_window_class_init (VvmplayerWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, speaker_output_image);
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, speaker_output_button);
 
+  gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, toast_overlay);
   gtk_widget_class_bind_template_callback (widget_class, speaker_output_button_clicked_cb);
 }
 
