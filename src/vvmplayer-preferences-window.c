@@ -81,6 +81,15 @@ struct _VvmplayerPreferencesWindow
 G_DEFINE_TYPE (VvmplayerPreferencesWindow, vvm_player_preferences_window, ADW_TYPE_PREFERENCES_WINDOW)
 
 static void
+vvm_preferences_display_toast (const char                 *title,
+                               VvmplayerPreferencesWindow *self)
+{
+     AdwToast *toast = adw_toast_new (title);
+     adw_preferences_window_add_toast (ADW_PREFERENCES_WINDOW (self), toast);
+     adw_toast_set_timeout (toast, 1);
+}
+
+static void
 vvm_type_selected_cb (GObject                    *sender,
                       GParamSpec                 *pspec,
                       VvmplayerPreferencesWindow *self)
@@ -123,6 +132,7 @@ vvm_type_selected_cb (GObject                    *sender,
         }
     }
   } else {
+     vvm_preferences_display_toast ("Cannot Find VVMD", self);
      adw_combo_row_set_selected (self->vvm_type_combo_row, VVM_TYPE_UNKNOWN);
   }
 }
