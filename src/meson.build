@@ -6,6 +6,7 @@ vvmplayer_sources = [
   'vvmplayer-notification.c',
   'vvmplayer-preferences-window.c',
   'vvmplayer-settings.c',
+  'vvmplayer-voicemail-window.c',
   'vvmplayer-vvmd.c',
   'vvmplayer-window.c',
 ]

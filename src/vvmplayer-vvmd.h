@@ -24,11 +24,12 @@
 
 #pragma once
 
-#include <adwaita.h>
+#include <gtk/gtk.h>
 #include <gst/gst.h>
 #include <gst/pbutils/pbutils.h>
 #include "vvmplayer-window.h"
 #include "vvmplayer-settings.h"
+#include "vvmplayer-voicemail-window.h"
 #include "vvmplayer-contact-provider.h"
 #include "vvmplayer-notification.h"
 

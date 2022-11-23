@@ -20,6 +20,7 @@
 
 #include "config.h"
 #include "vvmplayer-window.h"
+#include "vvmplayer-voicemail-window.h"
 #include "vvmplayer-settings.h"
 
 struct _VvmplayerWindow

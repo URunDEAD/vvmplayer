@@ -17,18 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define G_LOG_DOMAIN "vvmplayer-vvmd"
-
-
 #include "config.h"
-
 #include "vvmplayer-vvmd.h"
 
 struct _VvmVvmd
 {
   GObject     parent_instance;
 
-  VvmplayerWindow    *visual_voicemail;
+  VvmplayerWindow  *visual_voicemail;
 
   GDBusConnection  *connection;
   unsigned int      vvmd_watch_id;
@@ -109,7 +105,7 @@ char
 }
 
 void
-vvmplayer_vvmd_set_mm_vvm_list_box (VvmVvmd    *self,
+vvmplayer_vvmd_set_mm_vvm_list_box (VvmVvmd          *self,
                                     VvmplayerWindow  *visual_voicemail)
 {
   self->visual_voicemail = visual_voicemail;
@@ -278,8 +274,7 @@ vvmplayer_vvmd_get_service_settings (VvmVvmd *self)
     return TRUE;
 }
 
-//TODO FIXME
-/*
+
 static void
 vvmplayer_vvmd_delete_vvm_cb (GObject      *interface,
                               GAsyncResult *result,
@@ -295,7 +290,6 @@ vvmplayer_vvmd_delete_vvm_cb (GObject      *interface,
     g_debug ("Couldn't delete VVM as read- error: %s", error ? error->message : "unknown");
   }
 }
-
 
 static int
 vvm_list_match_by_obj_path (VoicemailWindow  *old_voicemail,
@@ -340,7 +334,6 @@ vvmplayer_vvmd_delete_vvm (VvmVvmd     *self,
   return;
 
 }
-*/
 
 static void
 vvmplayer_vvmd_mark_message_read_cb (GObject      *interface,
@@ -374,8 +367,7 @@ vvmplayer_vvmd_mark_message_read (GDBusProxy      *message_proxy,
                      (GAsyncReadyCallback) vvmplayer_vvmd_mark_message_read_cb,
                      user_data);
 }
-//TODO FIXME
-/*
+
 static gboolean
 vvmplayer_vvmd_add_contact_name (VvmVvmd     *self,
                                  VoicemailWindow  *voicemail)
@@ -418,17 +410,16 @@ compare_dates (VoicemailWindow  *old_voicemail,
   return g_date_time_compare (voicemail_window_get_datetime (old_voicemail),
                               voicemail_window_get_datetime (voicemail));
 }
-*/
 
 static gboolean
 vvmplayer_vvmd_receive_message (VvmVvmd   *self,
                                 GVariant *message_t)
 {
-  GtkWidget     *voicemail;
-  GVariant      *properties;
-  char          *objectpath;
-  GDBusProxy    *message_proxy;
-  guint          n_items = g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list));
+  VoicemailWindow     *new_voicemail;
+  GVariant            *properties;
+  char                *objectpath;
+  GDBusProxy          *message_proxy;
+  guint               n_items = g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list));
 
   g_variant_get (message_t, "(o@a{?*})", &objectpath, &properties);
   g_debug ("Processing VVM: %s", objectpath);
@@ -437,14 +428,13 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
     unsigned int i = 0;
     for (i = 0; i < n_items; i = i + 1) {
        g_autofree char *temp_objectpath = NULL;
-//TODO FIXME
-      // g_autoptr(VoicemailWindow) voicemail = NULL;
-      // voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i);
-      // temp_objectpath = voicemail_window_get_objectpath (voicemail);
-      // if (g_strcmp0 (temp_objectpath, objectpath) == 0) {
-      //   g_debug("VVM Already exists!");
-      //   return FALSE;
-      // }
+       g_autoptr(VoicemailWindow) voicemail = NULL;
+       voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i);
+       temp_objectpath = voicemail_window_get_objectpath (voicemail);
+       if (g_strcmp0 (temp_objectpath, objectpath) == 0) {
+         g_debug("VVM Already exists!");
+         return FALSE;
+       }
     }
   }
   message_proxy =
@@ -461,26 +451,22 @@ vvmplayer_vvmd_receive_message (VvmVvmd   *self,
     g_warning ("Error connecting to the message Proxy!");
     return FALSE;
   }
-  //TODO FIXME
-  //voicemail = voicemail_window_new (message_t, message_proxy, self->discoverer);
-  //TODO REMOVE ME
-  voicemail = NULL;
-  if (voicemail == NULL) {
+
+  new_voicemail = voicemail_window_new (message_t, message_proxy, self->discoverer);
+  if (new_voicemail == NULL) {
     g_warning ("There was an error with making the VVM!");
     return FALSE;
   }
 
-  //if (vvmplayer_vvmd_add_contact_name (self, VVM_VOICEMAIL_WINDOW (voicemail)) == FALSE)
-  //  return FALSE;
-
-  //TODO FIXME
-  //g_list_store_insert_sorted (self->vvm_list,
-  //                            VVM_VOICEMAIL_WINDOW (voicemail),
-  //                            (GCompareDataFunc) compare_dates,
-  //                            NULL);
+  if (vvmplayer_vvmd_add_contact_name (self, VVM_VOICEMAIL_WINDOW (new_voicemail)) == FALSE) {
+    return FALSE;
+  }
+  g_list_store_insert_sorted (self->vvm_list,
+                              VVM_VOICEMAIL_WINDOW (new_voicemail),
+                              (GCompareDataFunc) compare_dates,
+                              NULL);
   return TRUE;
 }
-
 
 static void
 vvmplayer_vvmd_get_new_vvm_cb (GDBusConnection   *connection,
@@ -492,14 +478,14 @@ vvmplayer_vvmd_get_new_vvm_cb (GDBusConnection   *connection,
                                gpointer       user_data)
 {
   VvmVvmd *self = user_data;
-  //unsigned int last_position = g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list));
-  //g_autoptr(VoicemailWindow) voicemail = NULL;
+  unsigned int last_position = g_list_model_get_n_items(G_LIST_MODEL (self->vvm_list));
+  g_autoptr(VoicemailWindow) voicemail = NULL;
   int previous_unread = self->unread_vvms;
 
   g_debug ("%s", __func__);
   if (vvmplayer_vvmd_receive_message (self, parameters) == TRUE) {
-    //voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), last_position);
-    //vvmplayer_window_add_row (self->visual_voicemail, GTK_WIDGET (voicemail));
+    voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), last_position);
+    vvmplayer_window_add_row (self->visual_voicemail, GTK_WIDGET (voicemail));
     if (previous_unread < self->unread_vvms) {
       vvmplayer_notification_send_unread_vvm (self->unread_vvms);
     }
@@ -516,7 +502,6 @@ vvmplayer_vvmd_get_all_vvm_cb (GObject      *service,
   g_autoptr (GError) error = NULL;
   GVariant *ret;
   int previous_unread = self->unread_vvms;
-
   g_debug ("%s", __func__);
 
   ret = g_dbus_proxy_call_finish (self->service_proxy,
@@ -541,9 +526,9 @@ vvmplayer_vvmd_get_all_vvm_cb (GObject      *service,
       }
       n_items = g_list_model_get_n_items (G_LIST_MODEL (self->vvm_list));
       for (i = 0; i < n_items; i = i + 1) {
-        //g_autoptr(VoicemailWindow) voicemail = NULL;
-        //voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i);
-        //vvmplayer_window_add_row (self->visual_voicemail, GTK_WIDGET (voicemail));
+        g_autoptr(VoicemailWindow) voicemail = NULL;
+        voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i);
+        vvmplayer_window_add_row (self->visual_voicemail, GTK_WIDGET (voicemail));
        }
     }
 
@@ -1001,8 +986,8 @@ vvmd_vanished_cb (GDBusConnection *connection,
 {
   VvmVvmd *self = user_data;
   VvmSettings *settings = vvm_settings_get_default ();
-  g_assert (G_IS_DBUS_CONNECTION (connection));
 
+  g_assert (G_IS_DBUS_CONNECTION (connection));
   g_debug ("VVMD vanished");
 
   vvm_settings_set_mailbox_active (settings, FALSE);
@@ -1034,7 +1019,7 @@ vvmd_vanished_cb (GDBusConnection *connection,
   g_debug ("Sending emit to update settings");
   g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
 }
-/*
+
 static void
 vvm_vmd_eds_is_ready (VvmVvmd *self)
 {
@@ -1042,13 +1027,13 @@ vvm_vmd_eds_is_ready (VvmVvmd *self)
   if (n_items != 0) {
     unsigned int i = 0;
     for (i = 0; i < n_items; i = i + 1) {
-       //g_autoptr(VoicemailWindow) voicemail = NULL;
-       //voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i);
-       //vvmplayer_vvmd_add_contact_name (self, voicemail);
+       g_autoptr(VoicemailWindow) voicemail = NULL;
+       voicemail = g_list_model_get_item (G_LIST_MODEL (self->vvm_list), i);
+       vvmplayer_vvmd_add_contact_name (self, voicemail);
     }
   }
 }
-*/
+
 static void
 vvm_vvmd_constructed (GObject *object)
 {
@@ -1086,7 +1071,7 @@ vvm_vvmd_class_init (VvmVvmdClass *klass)
 static void
 vvm_vvmd_init (VvmVvmd *self)
 {
-    //self->vvm_list = g_list_store_new (GTK_TYPE_VOICEMAIL_WINDOW);
+    self->vvm_list = g_list_store_new (GTK_TYPE_VOICEMAIL_WINDOW);
 }
 
 VvmVvmd *
@@ -1114,10 +1099,9 @@ vvm_vvmd_get_default (void)
                                               self, NULL);
 
       self->contacts = vvm_eds_get_default ();
-      //TODO FIXME
-      //g_signal_connect_object (self->contacts, "notify::is-ready",
-      //                         G_CALLBACK (vvm_vmd_eds_is_ready), self,
-      //                         G_CONNECT_SWAPPED);
+      g_signal_connect_object (self->contacts, "notify::is-ready",
+                               G_CALLBACK (vvm_vmd_eds_is_ready), self,
+                               G_CONNECT_SWAPPED);
 
     }
   return self;

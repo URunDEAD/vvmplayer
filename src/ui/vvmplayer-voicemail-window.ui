@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="Adw" version="1.0"/>
+  <template class="VoicemailWindow" parent="AdwExpanderRow">
+    <property name="title">titleTest</property>
+    <property name="subtitle">SubtitleTest</property>
+
+    <child type="prefix">
+      <object class="GtkButton">
+        <property name="visible">True</property>
+        <property name="valign">center</property>
+        <!-- <signal name="clicked" handler="play_button_clicked_cb" swapped="no"/> -->
+          <child>
+            <object class="GtkImage" id="play_button_icon">
+              <property name="icon-name">media-playback-start-symbolic</property>
+            </object>
+          </child>
+        </object>
+      </child>
+
+      <child>
+        <object class="AdwActionRow" id="second_row">
+          <property name="title" translatable="yes">00:00/??:??</property>
+          <property name="visible">True</property>
+          <child type="prefix">
+            <object class="GtkButton" id="delete_button">
+              <property name="visible">True</property>
+              <property name="valign">center</property>
+              <signal name="clicked" handler="delete_button_clicked_cb" swapped="no"/>
+              <child>
+                <object class="GtkImage" id="delete_button_icon">
+                  <property name="visible">True</property>
+                  <property name="icon-name">user-trash-symbolic</property>
+                </object>
+              </child>
+            </object>
+          </child>
+        </object>
+      </child>
+
+      <child>
+        <object class="AdwActionRow" id="call_row">
+          <property name="title" translatable="yes">Call back</property>
+          <property name="visible">False</property>
+          <child type="prefix">
+            <object class="GtkButton">
+              <property name="valign">center</property>
+              <!-- <signal name="clicked" handler="call_button_clicked_cb" swapped="no"/> -->
+              <child>
+                <object class="GtkImage">
+                  <property name="icon-name">call-start-symbolic</property>
+                </object>
+              </child>
+            </object>
+          </child>
+        </object>
+      </child>
+
+      <child>
+        <object class="AdwActionRow" id="sms_row">
+          <property name="title" translatable="yes">Send an SMS back</property>
+          <property name="visible">False</property>
+          <child type="prefix">
+            <object class="GtkButton">
+              <property name="valign">center</property>
+              <signal name="clicked" handler="sms_button_clicked_cb" swapped="no"/>
+              <child>
+                <object class="GtkImage">
+                  <property name="visible">True</property>
+                  <property name="icon-name">user-available-symbolic</property>
+                </object>
+              </child>
+            </object>
+          </child>
+        </object>
+      </child>
+
+  </template>
+</interface>
