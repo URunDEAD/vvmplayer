@@ -96,6 +96,7 @@
                 <child>
                   <object class="GtkEntry" id="destination_number_text">
                     <property name="valign">center</property>
+                    <property name="buffer">destination_number_text_buffer</property>
                     <property name="placeholder-text" translatable="yes">Destination Number</property>
                   </object>
                 </child>
@@ -111,6 +112,7 @@
                 <child>
                   <object class="GtkEntry" id="carrier_prefix_text">
                     <property name="valign">center</property>
+                    <property name="buffer">carrier_prefix_text_buffer</property>
                     <property name="placeholder-text" translatable="yes">Carrier Prefix</property>
                   </object>
                 </child>
@@ -126,6 +128,7 @@
                 <child>
                   <object class="GtkEntry" id="modem_number_text">
                     <property name="valign">center</property>
+                    <property name="buffer">modem_number_text_buffer</property>
                     <property name="placeholder-text" translatable="yes">Only set for multiple Modems</property>
                   </object>
                 </child>
@@ -205,6 +208,7 @@
                 <child>
                   <object class="GtkEntry" id="spam_contact_text">
                     <property name="valign">center</property>
+                    <property name="buffer">spam_contact_text_buffer</property>
                     <property name="placeholder-text" translatable="yes">Spam Contact</property>
                   </object>
                 </child>
@@ -251,4 +255,9 @@
       </object> <!-- End AdwPreferencesPage -->
     </child>
   </template>
+
+<object class="GtkEntryBuffer" id="destination_number_text_buffer"/>
+<object class="GtkEntryBuffer" id="carrier_prefix_text_buffer"/>
+<object class="GtkEntryBuffer" id="modem_number_text_buffer"/>
+<object class="GtkEntryBuffer" id="spam_contact_text_buffer"/>
 </interface>
