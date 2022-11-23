@@ -22,6 +22,7 @@
 #include "version.h"
 
 #include "vvmplayer-application.h"
+#include "vvmplayer-preferences-window.h"
 #include "vvmplayer-window.h"
 
 struct _VvmplayerApplication
@@ -134,13 +135,27 @@ vvmplayer_application_class_init (VvmplayerApplicationClass *klass)
 }
 
 static void
+vvmplayer_application_show_preferences (GSimpleAction *action,
+                  GVariant      *state,
+                  gpointer       user_data)
+{
+  GtkApplication *app = GTK_APPLICATION (user_data);
+
+  GtkWindow *window = gtk_application_get_active_window (app);
+  VvmplayerPreferencesWindow *preferences = vvm_player_preferences_window_new ();
+
+  gtk_window_set_transient_for (GTK_WINDOW (preferences), window);
+  gtk_window_present (GTK_WINDOW (preferences));
+}
+
+static void
 vvmplayer_application_about_action (GSimpleAction *action,
                                     GVariant      *parameter,
                                     gpointer       user_data)
 {
   static const char *developers[] = {"Chris Talbot", NULL};
   static const char *artists[] = {"Asiya Morris <aitrisart@gmail.com>", NULL};
-  VvmplayerApplication *self = user_data;
+  VvmplayerApplication *self = (VvmplayerApplication *)user_data;
   GtkWindow *window = NULL;
 
   g_assert (VVMPLAYER_IS_APPLICATION (self));
@@ -178,6 +193,7 @@ static GOptionEntry cmd_options[] = {
 
 static const GActionEntry app_actions[] = {
   { "about", vvmplayer_application_about_action },
+  { "preferences", vvmplayer_application_show_preferences, NULL, NULL, NULL },
 };
 
 static void

@@ -1,6 +1,7 @@
 vvmplayer_sources = [
   'main.c',
   'vvmplayer-application.c',
+  'vvmplayer-preferences-window.c',
   'vvmplayer-window.c',
 ]
 
