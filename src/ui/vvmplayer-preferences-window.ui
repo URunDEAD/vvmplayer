@@ -9,19 +9,246 @@
         <property name="icon_name">preferences-window-layout-symbolic</property>
         <property name="title">L_ayout</property>
         <property name="use-underline">True</property>
+
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="description" translatable="yes">Preferences are organized in pages, this example has the following pages:</property>
-            <property name="title" translatable="yes">Pages</property>
+            <child>
+              <object class="AdwPreferencesRow">
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Visual Voicemail Settings &amp; Status</property>
+                  </object>
+                </child>
+              </object>
+            </child>
             <child>
               <object class="AdwActionRow">
-                <property name="title" translatable="yes">L_ayout</property>
-                <property name="use_underline">True</property>
+                <property name="title" translatable="yes">Refresh Page</property>
+                <child>
+                  <object class="GtkButton" id="refresh_settings_button">
+                    <property name="label" translatable="yes">Apply</property>
+                    <property name="halign">end</property>
+                    <property name="valign">center</property>
+                    <!-- <signal name="clicked" handler="refresh_settings_button_clicked_cb" swapped="no"/> -->
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="enable_vvm_text">
+                <property name="title" translatable="yes">Enable VVM</property>
+                <child>
+                  <object class="GtkSwitch" id="enable_vvm_switch">
+                    <property name="valign">center</property>
+                    <!-- <signal name="state-set" handler="enable_vvm_switch_flipped_cb" swapped="no"/> -->
+                  </object>
+                </child>
               </object>
             </child>
           </object>
         </child>
-      </object>
+
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="description" translatable="yes">This is the status of Visual Voicemail.</property>
+            <property name="title" translatable="yes">Status</property>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">VVMD Running</property>
+                <child>
+                  <object class="GtkImage"  id="vvmd_enabled_image"/>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Mailbox Active</property>
+                <child>
+                  <object class="GtkImage"  id="mailbox_active_image"/>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="provision_status_text">
+                <property name="title" translatable="yes">Provision Status: Unknown</property>
+              </object>
+            </child>
+          </object>
+        </child>
+
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="description" translatable="yes">These are settings related to setting up Visual Voicemail on your carrier.</property>
+            <property name="title" translatable="yes">Settings</property>
+            <child>
+              <object class="AdwComboRow" id="vvm_type_combo_row">
+                <property name="title" translatable="yes">VVM Type</property>
+                <!-- <signal name="notify::selected-index" handler="vvm_type_selected_cb" swapped="no"/> -->
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Destination Number</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <child>
+                  <object class="GtkEntry" id="destination_number_text">
+                    <property name="valign">center</property>
+                    <property name="placeholder-text" translatable="yes">Destination Number</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="carrier_prefix_text_row">
+                <property name="title" translatable="yes">Carrier Prefix</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <child>
+                  <object class="GtkEntry" id="carrier_prefix_text">
+                    <property name="valign">center</property>
+                    <property name="placeholder-text" translatable="yes">Carrier Prefix</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Default Modem Number</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <child>
+                  <object class="GtkEntry" id="modem_number_text">
+                    <property name="valign">center</property>
+                    <property name="placeholder-text" translatable="yes">Only set for multiple Modems</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Activate VVM</property>
+                <child>
+                  <object class="GtkButton" id="activate_vvm_button">
+                    <property name="label" translatable="yes">Activate</property>
+                    <property name="halign">end</property>
+                    <property name="valign">center</property>
+                    <!-- <signal name="clicked" handler="activate_vvm_button_clicked_cb" swapped="no"/> -->
+                    <style>
+                      <class name="list-button"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="description" translatable="yes">These are settings related to the appearance of VVM Player.</property>
+            <property name="title" translatable="yes">Appearance</property>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Override Global Preferences</property>
+                <child>
+                  <object class="GtkSwitch" id="override_global_pref_switch">
+                    <property name="valign">center</property>
+                    <!-- <signal name="state-set" handler="override_global_pref_switch_flipped_cb" swapped="no"/> -->
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="enable_dark_theme_row">
+                <property name="visible">false</property>
+                <property name="title" translatable="yes">Enable Dark Theme</property>
+                <child>
+                  <object class="GtkSwitch" id="enable_dark_theme_switch">
+                    <property name="valign">center</property>
+                    <!-- <signal name="state-set" handler="enable_theme_switch_flipped_cb" swapped="no"/> -->
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes">Delete Contact Voicemail</property>
+            <property name="description" translatable="yes">If enabled, this deletes voicemails from the specified contact below.</property>
+
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Enable</property>
+                <property name="subtitle" translatable="yes">Auto-Delete Voicemail</property>
+                <property name="use-underline">True</property>
+                <child>
+                  <object class="GtkSwitch" id="spam_contact_switch">
+                    <property name="valign">center</property>
+                    <!-- <signal name="state-set" handler="spam_contact_switch_flipped_cb" swapped="yes"/> -->
+                  </object>
+                </child>
+              </object>
+            </child>
+
+            <child>
+              <object class="AdwActionRow" id="spam_contact">
+                <property name="title" translatable="yes">Name</property>
+                <child>
+                  <object class="GtkEntry" id="spam_contact_text">
+                    <property name="valign">center</property>
+                    <property name="placeholder-text" translatable="yes">Spam Contact</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="spam_contact_text_button">
+                    <property name="valign">center</property>
+                    <!-- <signal name="clicked" handler="spam_contact_text_button_clicked_cb" swapped="no"/> -->
+                   <child>
+                      <object class="GtkImage" id="spam_contact_text_button_image">
+                        <property name="icon-name">object-select-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+
+          </object>
+        </child>
+
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="description" translatable="yes">This forces a synchronization event with vvmd. This should not be needed in normal operation, but it is provided here as a convenience.</property>
+            <property name="title" translatable="yes">Sync Visual Voicemails</property>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Sync VVM</property>
+                <child>
+                  <object class="GtkButton" id="sync_vvm_button">
+                    <property name="label" translatable="yes">Sync</property>
+                    <property name="halign">end</property>
+                    <property name="valign">center</property>
+                    <!-- <signal name="clicked" handler="sync_vvm_button_clicked_cb" swapped="no"/> -->
+                    <style>
+                      <class name="list-button"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+
+      </object> <!-- End AdwPreferencesPage -->
     </child>
   </template>
 </interface>
