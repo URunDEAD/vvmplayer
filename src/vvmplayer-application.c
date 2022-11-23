@@ -23,6 +23,7 @@
 
 #include "vvmplayer-application.h"
 #include "vvmplayer-preferences-window.h"
+#include "vvmplayer-settings.h"
 #include "vvmplayer-window.h"
 
 struct _VvmplayerApplication
@@ -32,6 +33,8 @@ struct _VvmplayerApplication
   gboolean        daemon_running;
   GtkWindow      *main_window;
   gboolean        app_debug;
+
+  VvmSettings  *settings;
 };
 
 G_DEFINE_TYPE (VvmplayerApplication, vvmplayer_application, ADW_TYPE_APPLICATION)
@@ -80,7 +83,7 @@ vvmplayer_handle_local_options (GApplication *application,
 static void
 vvmplayer_application_startup (GApplication *application)
 {
-  //VvmplayerApplication *self = (VvmplayerApplication *)application;
+  VvmplayerApplication *self = (VvmplayerApplication *)application;
 
   g_info ("%s %s, git version: %s", PACKAGE_NAME, PACKAGE_VERSION, PACKAGE_VCS_VERSION);
 
@@ -90,6 +93,7 @@ vvmplayer_application_startup (GApplication *application)
   gtk_window_set_default_icon_name (PACKAGE_ID);
 
   /* TODO: Add startup stuff here */
+  self->settings = vvm_settings_get_default ();
 }
 
 static gboolean
