@@ -27,6 +27,10 @@
 struct _VvmplayerApplication
 {
   AdwApplication parent_instance;
+  gboolean        daemon;
+  gboolean        daemon_running;
+  GtkWindow      *main_window;
+  gboolean        app_debug;
 };
 
 G_DEFINE_TYPE (VvmplayerApplication, vvmplayer_application, ADW_TYPE_APPLICATION)
@@ -43,20 +47,80 @@ vvmplayer_application_new (const char        *application_id,
                        NULL);
 }
 
+static int
+vvmplayer_handle_local_options (GApplication *application,
+                                      GVariantDict *options)
+{
+  VvmplayerApplication *self = (VvmplayerApplication *)application;
+  if (g_variant_dict_contains (options, "version")) {
+    g_print ("%s, git version: %s\n", PACKAGE_VERSION, PACKAGE_VCS_VERSION);
+    return 0;
+  }
+
+  if (g_variant_dict_contains (options, "debug")) {
+    g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
+    self->app_debug = TRUE;
+  }
+
+  self->daemon = FALSE;
+  self->app_debug = FALSE;
+  if (g_variant_dict_contains (options, "daemon")) {
+    /* Hold application only the first time daemon mode is set */
+    if (!self->daemon)
+      g_application_hold (application);
+
+    self->daemon = TRUE;
+    g_debug ("Application marked as daemon");
+  }
+
+  return -1;
+}
+
+static void
+vvmplayer_application_startup (GApplication *application)
+{
+  //VvmplayerApplication *self = (VvmplayerApplication *)application;
+
+  g_info ("%s %s, git version: %s", PACKAGE_NAME, PACKAGE_VERSION, PACKAGE_VCS_VERSION);
+
+  G_APPLICATION_CLASS (vvmplayer_application_parent_class)->startup (application);
+
+  g_set_application_name ("Visual Voicemail");
+  gtk_window_set_default_icon_name (PACKAGE_ID);
+
+  /* TODO: Add startup stuff here */
+}
+
+static gboolean
+on_widget_deleted(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+  /* Reset the window when closing */
+
+  return FALSE;
+}
+
 static void
 vvmplayer_application_activate (GApplication *app)
 {
-  GtkWindow *window;
+  VvmplayerApplication *self = (VvmplayerApplication *)app;
 
-  g_assert (VVMPLAYER_IS_APPLICATION (app));
+  if (!self->main_window) {
+    self->main_window = g_object_new (VVMPLAYER_TYPE_WINDOW, "application", app, NULL);
+    g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (app));
-  if (window == NULL)
-    window = g_object_new (VVMPLAYER_TYPE_WINDOW,
-                           "application", app,
-                           NULL);
+    g_signal_connect(G_OBJECT(self->main_window),
+        "close_request", G_CALLBACK(on_widget_deleted), app);
+  }
 
-  gtk_window_present (window);
+  if ((!self->daemon && !self->daemon_running) || (self->daemon_running)) {
+    self->main_window = gtk_application_get_active_window (GTK_APPLICATION (self));
+    gtk_window_present (GTK_WINDOW (self->main_window));
+  } else {
+    self->daemon_running = TRUE;
+    gtk_window_set_hide_on_close (GTK_WINDOW (self->main_window), self->daemon_running);
+  }
+
+
 }
 
 static void
@@ -64,6 +128,8 @@ vvmplayer_application_class_init (VvmplayerApplicationClass *klass)
 {
   GApplicationClass *app_class = G_APPLICATION_CLASS (klass);
 
+  app_class->handle_local_options = vvmplayer_handle_local_options;
+  app_class->startup = vvmplayer_application_startup;
   app_class->activate = vvmplayer_application_activate;
 }
 
@@ -94,6 +160,22 @@ vvmplayer_application_about_action (GSimpleAction *action,
                          NULL);
 }
 
+static GOptionEntry cmd_options[] = {
+  {
+    "daemon", 0, G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
+    ("Whether to present the main window on startup"),
+    NULL
+  },
+  { "debug", 'd', 0, G_OPTION_ARG_NONE, G_OPTION_ARG_NONE,
+     "Enable debugging output"
+  },
+  {
+    "version", 'v', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
+    ("Show release version"), NULL
+  },
+  { NULL }
+};
+
 static const GActionEntry app_actions[] = {
   { "about", vvmplayer_application_about_action },
 };
@@ -105,5 +187,6 @@ vvmplayer_application_init (VvmplayerApplication *self)
                                    app_actions,
                                    G_N_ELEMENTS (app_actions),
                                    self);
+  g_application_add_main_option_entries (G_APPLICATION (self), cmd_options);
 }
 
