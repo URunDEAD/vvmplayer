@@ -94,20 +94,7 @@ vvmplayer_application_about_action (GSimpleAction *action,
                          NULL);
 }
 
-static void
-vvmplayer_application_quit_action (GSimpleAction *action,
-                                   GVariant      *parameter,
-                                   gpointer       user_data)
-{
-  VvmplayerApplication *self = user_data;
-
-  g_assert (VVMPLAYER_IS_APPLICATION (self));
-
-  g_application_quit (G_APPLICATION (self));
-}
-
 static const GActionEntry app_actions[] = {
-  { "quit", vvmplayer_application_quit_action },
   { "about", vvmplayer_application_about_action },
 };
 
@@ -118,8 +105,5 @@ vvmplayer_application_init (VvmplayerApplication *self)
                                    app_actions,
                                    G_N_ELEMENTS (app_actions),
                                    self);
-  gtk_application_set_accels_for_action (GTK_APPLICATION (self),
-                                         "app.quit",
-                                         (const char *[]) { "<primary>q", NULL });
 }
 
