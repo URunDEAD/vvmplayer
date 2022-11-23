@@ -25,6 +25,7 @@
 #include "vvmplayer-preferences-window.h"
 #include "vvmplayer-settings.h"
 #include "vvmplayer-window.h"
+#include "vvmplayer-vvmd.h"
 
 struct _VvmplayerApplication
 {
@@ -34,6 +35,7 @@ struct _VvmplayerApplication
   GtkWindow      *main_window;
   gboolean        app_debug;
 
+  VvmVvmd      *backend;
   VvmSettings  *settings;
 };
 
@@ -92,7 +94,7 @@ vvmplayer_application_startup (GApplication *application)
   g_set_application_name ("Visual Voicemail");
   gtk_window_set_default_icon_name (PACKAGE_ID);
 
-  /* TODO: Add startup stuff here */
+  self->backend = vvm_vvmd_get_default ();
   self->settings = vvm_settings_get_default ();
 }
 
