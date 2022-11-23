@@ -83,6 +83,18 @@
             <child>
               <object class="AdwComboRow" id="vvm_type_combo_row">
                 <property name="title" translatable="yes">VVM Type</property>
+                <property name="model">
+                  <object class="GtkStringList">
+                    <items>
+                      <item translatable="yes">Unknown</item>
+                      <item translatable="yes">cvvm</item>
+                      <item translatable="yes">AT&amp;T USA</item>
+                      <item translatable="yes">otmp</item>
+                      <item translatable="yes">Free Mobile FR</item>
+                      <item translatable="yes">vvm3</item>
+                    </items>
+                  </object>
+                </property>
                 <!-- <signal name="notify::selected-index" handler="vvm_type_selected_cb" swapped="no"/> -->
               </object>
             </child>
