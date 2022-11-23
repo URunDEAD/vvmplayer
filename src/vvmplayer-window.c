@@ -19,8 +19,8 @@
  */
 
 #include "config.h"
-
 #include "vvmplayer-window.h"
+#include "vvmplayer-settings.h"
 
 struct _VvmplayerWindow
 {
@@ -56,30 +56,38 @@ vvmplayer_window_add_row (VvmplayerWindow *self, GtkWidget *voicemail)
 }
 
 static void
+select_mode_complete (gboolean success, GError *error, gpointer data)
+{
+  if (error) {
+    g_warning ("Failed to select audio mode: %s", error->message);
+    g_error_free (error);
+  }
+}
+
+static void
 speaker_output_button_clicked_cb (GtkToggleButton     *btn,
                                   VvmplayerWindow *self)
 {
   gboolean toggled;
-//  VvmSettings *settings = vvm_settings_get_default ();
+  VvmSettings *settings = vvm_settings_get_default ();
   toggled = gtk_toggle_button_get_active (btn);
-//  vvm_settings_set_speaker_button_state (settings, toggled);
+  vvm_settings_set_speaker_button_state (settings, toggled);
 
-  //TODO FIXME
   if (toggled) {
     g_debug ("Button Toggled");
-//    call_audio_select_mode_async (CALL_AUDIO_MODE_DEFAULT,
-//                                  select_mode_complete,
-//                                  NULL);
+    call_audio_select_mode_async (CALL_AUDIO_MODE_DEFAULT,
+                                  select_mode_complete,
+                                  NULL);
   } else {
     g_debug ("Button Untoggled");
-//    if (vvm_settings_get_stream_count (settings) > 0) {
-//      g_debug ("Setting audio profile to call");
-//      call_audio_select_mode_async (CALL_AUDIO_MODE_CALL,
-//                                    select_mode_complete,
-//                                    NULL);
-//    } else {
-//      g_debug ("No stream is playing, waiting to change profile.");
-//    }
+    if (vvm_settings_get_stream_count (settings) > 0) {
+      g_debug ("Setting audio profile to call");
+      call_audio_select_mode_async (CALL_AUDIO_MODE_CALL,
+                                    select_mode_complete,
+                                    NULL);
+    } else {
+      g_debug ("No stream is playing, waiting to change profile.");
+    }
   }
 }
 
