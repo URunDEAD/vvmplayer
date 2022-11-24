@@ -10,7 +10,7 @@
       <object class="GtkButton">
         <property name="visible">True</property>
         <property name="valign">center</property>
-        <!-- <signal name="clicked" handler="play_button_clicked_cb" swapped="no"/> -->
+        <signal name="clicked" handler="play_button_clicked_cb" swapped="no"/>
           <child>
             <object class="GtkImage" id="play_button_icon">
               <property name="icon-name">media-playback-start-symbolic</property>
@@ -46,7 +46,7 @@
           <child type="prefix">
             <object class="GtkButton">
               <property name="valign">center</property>
-              <!-- <signal name="clicked" handler="call_button_clicked_cb" swapped="no"/> -->
+              <signal name="clicked" handler="call_button_clicked_cb" swapped="no"/>
               <child>
                 <object class="GtkImage">
                   <property name="icon-name">call-start-symbolic</property>
@@ -65,6 +65,9 @@
             <object class="GtkButton">
               <property name="valign">center</property>
               <signal name="clicked" handler="sms_button_clicked_cb" swapped="no"/>
+              <style>
+                <class name="list-button"/>
+              </style>
               <child>
                 <object class="GtkImage">
                   <property name="visible">True</property>
