@@ -68,14 +68,18 @@ voicemail_window_set_title (VoicemailWindow *self)
 {
   g_autofree char *title = NULL;
 
-  if (self->contact_name) {
-    title = g_strdup(self->contact_name);
-  } else {
-    title = g_strdup(self->number);
-  }
-
   if (self->lifetime_status == VVM_LIFETIME_STATUS_NOT_READ) {
-    title = g_strdup_printf ("%s (Unread)", title);
+    if (self->contact_name)
+      title = g_strdup_printf ("%s (Unread)", self->contact_name);
+    else
+      title = g_strdup_printf ("%s (Unread)", self->number);
+
+  } else {
+    if (self->contact_name)
+      title = g_strdup(self->contact_name);
+    else
+      title = g_strdup(self->number);
+
   }
   adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self), title);
 }
