@@ -35,6 +35,8 @@ struct _VvmplayerWindow
 
   AdwToastOverlay *toast_overlay;
   AdwToast *toast;
+
+  gulong window_closed_id;
 };
 
 G_DEFINE_FINAL_TYPE (VvmplayerWindow, vvmplayer_window, ADW_TYPE_APPLICATION_WINDOW)
@@ -101,8 +103,26 @@ speaker_output_button_clicked_cb (GtkToggleButton *btn,
 }
 
 static void
+main_window_closed_cb (VvmplayerWindow *self)
+{
+  gtk_list_box_unselect_all (GTK_LIST_BOX (self->visual_voicemail));
+}
+
+static void
+vvmplayer_window_finalize (GObject *object)
+{
+  VvmplayerWindow *self = (VvmplayerWindow *)object;
+
+  g_signal_handler_disconnect (g_application_get_default (),
+                               self->window_closed_id);
+
+  G_OBJECT_CLASS (vvmplayer_window_parent_class)->finalize (object);
+}
+
+static void
 vvmplayer_window_class_init (VvmplayerWindowClass *klass)
 {
+  GObjectClass   *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   gtk_widget_class_set_template_from_resource (widget_class, "/org/kop316/vvmplayer/ui/vvmplayer-window.ui");
@@ -113,10 +133,23 @@ vvmplayer_window_class_init (VvmplayerWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, toast_overlay);
   gtk_widget_class_bind_template_callback (widget_class, speaker_output_button_clicked_cb);
+
+  object_class->finalize = vvmplayer_window_finalize;
 }
 
 static void
 vvmplayer_window_init (VvmplayerWindow *self)
 {
+  g_autoptr(GError) error = NULL;
+  VvmVvmd *backend = vvm_vvmd_get_default ();
   gtk_widget_init_template (GTK_WIDGET (self));
+  vvmplayer_vvmd_set_mm_vvm_list_box (backend, self);
+
+  if (!call_audio_init (&error))
+    g_warning ("Failed to init libcallaudio: %s", error->message);
+
+  self->window_closed_id = g_signal_connect_swapped (g_application_get_default (),
+                                                     "main-window-closed",
+                                                     G_CALLBACK (main_window_closed_cb),
+                                                     self);
 }

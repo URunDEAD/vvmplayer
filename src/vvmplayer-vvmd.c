@@ -261,7 +261,6 @@ vvmplayer_vvmd_get_service_settings (VvmVvmd *self)
         vvm_settings_set_vvm_country_code (settings, ModemCountryCode);
       if (g_variant_dict_lookup (&dict, "MailBoxActive", "b", &MailBoxActive))
         vvm_settings_set_mailbox_active (settings, MailBoxActive);
-
     }
   return TRUE;
 }
