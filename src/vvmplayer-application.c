@@ -117,7 +117,7 @@ on_widget_deleted(GtkWidget *widget, GdkEvent *event, gpointer data)
   if (self->daemon)
     vvmplayer_window_set_speaker_button (VVMPLAYER_WINDOW (self->main_window), FALSE);
 
-  g_signal_emit_by_name (self, "main-window-closed", 0);
+  g_signal_emit (self, signals[SIGNAL_MAIN_WINDOW_CLOSED], 0);
 
   /* Set audio profile back to default whether you are quitting or closing the window */
   g_debug ("Setting audio profile to back to default");
