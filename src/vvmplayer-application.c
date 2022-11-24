@@ -145,7 +145,6 @@ vvmplayer_application_activate (GApplication *app)
   }
 
   if ((!self->daemon && !self->daemon_running) || (self->daemon_running)) {
-    self->main_window = gtk_application_get_active_window (GTK_APPLICATION (self));
     gtk_window_present (GTK_WINDOW (self->main_window));
   } else {
     self->daemon_running = TRUE;
