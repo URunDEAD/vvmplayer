@@ -2,8 +2,9 @@
 <interface>
   <requires lib="Adw" version="1.0"/>
   <template class="VoicemailWindow" parent="AdwExpanderRow">
-    <property name="title">titleTest</property>
-    <property name="subtitle">SubtitleTest</property>
+    <property name="title">Unknown Contact</property>
+    <property name="subtitle">Unknown Time</property>
+    <property name="title-selectable">True</property>
 
     <child type="prefix">
       <object class="GtkButton">
