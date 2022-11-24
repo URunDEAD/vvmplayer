@@ -36,15 +36,6 @@ G_DECLARE_FINAL_TYPE (VvmSettings, vvmplayer_settings, VVMPLAYER, SETTINGS, GObj
 VvmSettings *vvm_settings_get_default                (void);
 void         vvmplayer_settings_save                 (VvmSettings *self);
 
-gboolean     vvmplayer_settings_get_is_first_run     (VvmSettings *self);
-gboolean     vvmplayer_settings_get_window_maximized (VvmSettings *self);
-void         vvmplayer_settings_set_window_maximized (VvmSettings *self,
-                                                      gboolean     maximized);
-void         vvmplayer_settings_get_window_geometry  (VvmSettings  *self,
-                                                      GdkRectangle *geometry);
-void         vvmplayer_settings_set_window_geometry  (VvmSettings  *self,
-                                                      GdkRectangle *geometry);
-
 void vvm_settings_load_mm_defaults (VvmSettings *self);
 void vvm_settings_load_service_defaults (VvmSettings *self);
 

@@ -159,7 +159,6 @@ enable_theme_switch_flipped_cb (GtkSwitch                  *widget,
                                 gboolean                    prefer_dark_theme,
                                 VvmplayerPreferencesWindow *self)
 {
-  AdwStyleManager *adw_style_manager = adw_style_manager_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
 
   vvmplayer_settings_set_dark_theme (settings, prefer_dark_theme);
