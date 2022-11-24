@@ -41,6 +41,13 @@ struct _VvmplayerApplication
 
 G_DEFINE_TYPE (VvmplayerApplication, vvmplayer_application, ADW_TYPE_APPLICATION)
 
+enum {
+  SIGNAL_MAIN_WINDOW_CLOSED,
+  N_SIGNALS
+};
+
+static guint signals[N_SIGNALS];
+
 VvmplayerApplication *
 vvmplayer_application_new (const char        *application_id,
                            GApplicationFlags  flags)
@@ -101,7 +108,22 @@ vvmplayer_application_startup (GApplication *application)
 static gboolean
 on_widget_deleted(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-  /* Reset the window when closing */
+  VvmplayerApplication *self = (VvmplayerApplication *)data;
+  g_autoptr (GError) error = NULL;
+  gboolean ret;
+
+  /* If we are not running in daemon mode, hide the window and reset speaker button */
+  if (self->daemon) {
+    vvmplayer_window_set_speaker_button (VVMPLAYER_WINDOW (self->main_window), FALSE);
+  }
+
+  g_signal_emit_by_name (self, "main-window-closed", 0);
+
+  g_debug ("Setting audio profile to back to default");
+  ret = call_audio_select_mode (CALL_AUDIO_MODE_DEFAULT, &error);
+
+  if (!ret && error)
+    g_warning ("Failed to switch profile: %s", error->message);
 
   return FALSE;
 }
@@ -131,9 +153,32 @@ vvmplayer_application_activate (GApplication *app)
 }
 
 static void
+vvmplayer_application_finalize (GObject *object)
+{
+  VvmplayerApplication *self = (VvmplayerApplication *)object;
+
+  g_debug ("disposing application");
+
+  g_clear_object (&self->settings);
+  g_clear_object (&self->backend);
+
+  G_OBJECT_CLASS (vvmplayer_application_parent_class)->finalize (object);
+}
+
+static void
 vvmplayer_application_class_init (VvmplayerApplicationClass *klass)
 {
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GApplicationClass *app_class = G_APPLICATION_CLASS (klass);
+
+  signals [SIGNAL_MAIN_WINDOW_CLOSED] =
+    g_signal_new ("main-window-closed",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
+
+  object_class->finalize = vvmplayer_application_finalize;
 
   app_class->handle_local_options = vvmplayer_handle_local_options;
   app_class->startup = vvmplayer_application_startup;
