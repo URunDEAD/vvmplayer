@@ -30,6 +30,7 @@
 #define ICON_PLAYBACK_START "media-playback-start-symbolic"
 #define ICON_PLAYBACK_PAUSE "media-playback-pause-symbolic"
 #define ICON_DELETE "user-trash-symbolic"
+#define NO_NUMBER "Anonymous"
 
 struct _VoicemailWindow
 {
@@ -333,14 +334,6 @@ voicemail_window_new (GVariant      *message_t,
   self->message_proxy = message_proxy;
   self->contact_name = NULL;
 
-  app_info_tel = g_app_info_get_default_for_uri_scheme ("tel");
-  if (app_info_tel)
-    gtk_widget_show (GTK_WIDGET (self->call_row));
-
-  app_info_sms = g_app_info_get_default_for_uri_scheme ("sms");
-  if (app_info_sms)
-    gtk_widget_show (GTK_WIDGET (self->sms_row));
-
   if (!discoverer)
     self->duration_formatted = g_strdup ("??:??");
 
@@ -500,6 +493,14 @@ voicemail_window_new (GVariant      *message_t,
       vvmplayer_vvmd_increment_unread (vvmd_object);
     }
 
+  app_info_tel = g_app_info_get_default_for_uri_scheme ("tel");
+  if (app_info_tel && (g_strcmp0 (NO_NUMBER, Sender) != 0))
+    gtk_widget_show (GTK_WIDGET (self->call_row));
+
+  app_info_sms = g_app_info_get_default_for_uri_scheme ("sms");
+  if (app_info_sms && (g_strcmp0 (NO_NUMBER, Sender) != 0))
+    gtk_widget_show (GTK_WIDGET (self->sms_row));
+
   voicemail_window_set_title (self);
 
   adw_expander_row_set_subtitle (ADW_EXPANDER_ROW (self), Date);
@@ -543,6 +544,8 @@ call_button_clicked_cb (GtkButton       *btn,
 {
   g_autofree char *uri = NULL;
 
+  g_debug ("Call Button Clicked");
+
   uri = g_strconcat ("tel://",
                      self->number,
                      NULL);
@@ -555,6 +558,8 @@ sms_button_clicked_cb (GtkButton       *btn,
                        VoicemailWindow *self)
 {
   g_autofree char *uri = NULL;
+
+  g_debug ("SMS Button Clicked");
 
   uri = g_strconcat ("sms://",
                      self->number,
