@@ -16,8 +16,8 @@ build-debian:
         libcallaudio-dev
         libgstreamer1.0-dev
         libebook1.2-dev
-        libgtk-3-dev
-        libhandy-1-dev
+        libgtk-4-dev
+        libadwaita-1-dev
         libgstreamer-plugins-base1.0-dev
         xvfb
   script:
@@ -37,7 +37,7 @@ build-alpine:
         glib-dev
         callaudiod-dev
         evolution-data-server-dev
-        libhandy1-dev
+        libadwaita-dev
         gst-plugins-base-dev
         meson
         xvfb-run
