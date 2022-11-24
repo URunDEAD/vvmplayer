@@ -1,6 +1,6 @@
 # Visual Voicemail Player (VVM Player)
 
-Copyright (C) 2021, Chris Talbot
+Copyright (C) 2021-2022, Chris Talbot
 
 ## About
 VVM Player is a front end GUI to display, play, and delete visual voicemails (VVMs).
@@ -38,8 +38,8 @@ Note: Default Modem Number can be left blank (whereas in vvmd, it must be
 ## Compiling VVM Player
 In order to compile VVM Player you need following software packages:
 	- GCC compiler
-	- GTK3 library
-	- libhandy
+	- GTK4 library
+	- libadwaita
 	- GStreamer
 	- GStreamer-pbutils
 
