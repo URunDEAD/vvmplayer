@@ -62,7 +62,7 @@ vvmplayer_application_new (const char        *application_id,
 
 static int
 vvmplayer_handle_local_options (GApplication *application,
-                                      GVariantDict *options)
+                                GVariantDict *options)
 {
   VvmplayerApplication *self = (VvmplayerApplication *)application;
   if (g_variant_dict_contains (options, "version")) {
@@ -108,17 +108,18 @@ vvmplayer_application_startup (GApplication *application)
 static gboolean
 on_widget_deleted(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-  VvmplayerApplication *self = (VvmplayerApplication *)data;
+  /* Passing app through g_signal_connect causes a segfault, so just find the default */
+  VvmplayerApplication *self = (VvmplayerApplication *)g_application_get_default ();
   g_autoptr (GError) error = NULL;
   gboolean ret;
 
   /* If we are not running in daemon mode, hide the window and reset speaker button */
-  if (self->daemon) {
+  if (self->daemon)
     vvmplayer_window_set_speaker_button (VVMPLAYER_WINDOW (self->main_window), FALSE);
-  }
 
   g_signal_emit_by_name (self, "main-window-closed", 0);
 
+  /* Set audio profile back to default whether you are quitting or closing the window */
   g_debug ("Setting audio profile to back to default");
   ret = call_audio_select_mode (CALL_AUDIO_MODE_DEFAULT, &error);
 
@@ -138,7 +139,9 @@ vvmplayer_application_activate (GApplication *app)
     g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
 
     g_signal_connect(G_OBJECT(self->main_window),
-        "close_request", G_CALLBACK(on_widget_deleted), app);
+                     "close_request",
+                     G_CALLBACK(on_widget_deleted),
+                     NULL);
   }
 
   if ((!self->daemon && !self->daemon_running) || (self->daemon_running)) {
