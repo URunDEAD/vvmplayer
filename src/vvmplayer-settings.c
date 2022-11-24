@@ -50,7 +50,6 @@ struct _VvmSettings
 
   //App Settings
   int prefer_dark_theme;
-  int default_dark_theme_pref;
 
   //Spam Contact
   char     *spam_contact;
@@ -209,18 +208,6 @@ vvmplayer_settings_set_spam_contact_enabled (VvmSettings *self, gboolean spam_co
   /* Set the setting right away */
   g_settings_set_boolean (self->app_settings, "spam-contact-enabled", self->spam_contact_enabled);
   g_settings_apply (self->app_settings);
-}
-
-void
-vvmplayer_settings_set_default_dark_theme_pref (VvmSettings *self, int default_dark_theme_pref)
-{
-  self->default_dark_theme_pref = default_dark_theme_pref;
-}
-
-int
-vvmplayer_settings_get_default_dark_theme_pref (VvmSettings *self)
-{
-  return self->default_dark_theme_pref;
 }
 
 int
