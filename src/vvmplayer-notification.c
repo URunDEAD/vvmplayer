@@ -43,8 +43,8 @@ void
 vvmplayer_notification_send_unread_vvm (int unread_vvms)
 {
   GNotification *notification;
-  gchar *title;
-  gchar *body;
+  g_autofree char *title = NULL;
+  g_autofree char *body = NULL;
   GApplication *vvm_player = g_application_get_default ();
 
   /* If the notification is already there, withdraw it */
@@ -62,8 +62,6 @@ vvmplayer_notification_send_unread_vvm (int unread_vvms)
   g_application_send_notification (vvm_player, "unread-message", notification);
 
   g_object_unref (notification);
-  g_free (title);
-  g_free (body);
 }
 
 void
