@@ -428,7 +428,7 @@ vvmplayer_settings_init (VvmSettings *self)
   self->prefer_dark_theme = g_settings_get_boolean (self->app_settings, "dark-theme");
 
   if (self->prefer_dark_theme)
-    adw_style_manager_set_color_scheme (adw_style_manager, ADW_COLOR_SCHEME_FORCE_DARK);
+    adw_style_manager_set_color_scheme (adw_style_manager, ADW_COLOR_SCHEME_PREFER_DARK);
   else
     adw_style_manager_set_color_scheme (adw_style_manager, ADW_COLOR_SCHEME_DEFAULT);
 
