@@ -65,3 +65,11 @@ vvmplayer_notification_send_unread_vvm (int unread_vvms)
   g_free (title);
   g_free (body);
 }
+
+void
+vvmplayer_notification_withdraw_unread_vvm (void)
+{
+  GApplication *vvm_player = g_application_get_default ();
+
+  g_application_withdraw_notification (vvm_player, "unread-message");
+}

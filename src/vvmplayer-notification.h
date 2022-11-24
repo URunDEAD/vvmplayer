@@ -30,5 +30,6 @@
 G_BEGIN_DECLS
 
 void vvmplayer_notification_send_unread_vvm (int unread_vvms);
+void vvmplayer_notification_withdraw_unread_vvm (void);
 
 G_END_DECLS

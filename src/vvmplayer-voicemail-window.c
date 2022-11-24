@@ -183,6 +183,9 @@ play_button_clicked_cb (GtkButton       *btn,
       return;
     }
 
+  /* The user probably saw the notification, so dismiss it */
+  vvmplayer_notification_withdraw_unread_vvm ();
+
   switch (self->lifetime_status)
     {
     case VVM_TYPE_UNKNOWN:
