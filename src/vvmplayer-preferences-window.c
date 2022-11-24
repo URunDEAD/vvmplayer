@@ -303,6 +303,9 @@ enable_vvm_switch_flipped_cb (GtkSwitch                  *widget,
     {
       g_debug ("Enabling VVM");
       vvm_preferences_display_toast ("Enabling VVM...", self);
+      set_destination_number (self);
+      set_default_modem_number (self);
+      set_carrier_prefix (self);
     }
   else {
       g_debug ("Disabling VVM");
@@ -310,11 +313,6 @@ enable_vvm_switch_flipped_cb (GtkSwitch                  *widget,
     }
 
   g_timeout_add_seconds (10, enable_vvm_switch_timeout, self);
-
-  set_destination_number (self);
-  set_default_modem_number (self);
-  set_carrier_prefix (self);
-  update_settings_cb (self);
 
   vvmplayer_vvmd_set_mm_vvm_enabled (backend, state);
 
@@ -385,7 +383,6 @@ activate_vvm_button_clicked_cb (GtkButton                  *btn,
   set_destination_number (self);
   set_default_modem_number (self);
   set_carrier_prefix (self);
-  update_settings_cb (self);
 
   vvmplayer_vvmd_check_subscription_status (backend);
 }
