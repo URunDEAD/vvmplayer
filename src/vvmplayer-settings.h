@@ -39,7 +39,8 @@ void         vvmplayer_settings_save                 (VvmSettings *self);
 void vvm_settings_load_mm_defaults (VvmSettings *self);
 void vvm_settings_load_service_defaults (VvmSettings *self);
 
-void vvm_settings_set_vvm_enabled (VvmSettings *self, int VVMEnabled);
+void vvm_settings_set_vvm_enabled (VvmSettings *self,
+                                   int          VVMEnabled);
 int vvm_settings_get_vvm_enabled (VvmSettings *self);
 
 void vvm_settings_incriment_stream_count (VvmSettings *self);
@@ -47,52 +48,55 @@ void vvm_settings_decriment_stream_count (VvmSettings *self);
 
 unsigned int vvm_settings_get_stream_count (VvmSettings *self);
 
-void vvm_settings_set_speaker_button_state (VvmSettings *self, gboolean setting);
+void vvm_settings_set_speaker_button_state (VvmSettings *self,
+                                            gboolean     setting);
 
-void vvm_settings_set_vvm_type (VvmSettings *self, const char *VVMType);
+void vvm_settings_set_vvm_type (VvmSettings *self,
+                                const char  *VVMType);
 char *vvm_settings_get_vvm_type (VvmSettings *self);
 
 void vvm_settings_set_vvm_destination_number (VvmSettings *self,
-                                              const char *VVMDestinationNumber);
+                                              const char  *VVMDestinationNumber);
 char *vvm_settings_get_vvm_destination_number (VvmSettings *self);
 
 void vvm_settings_set_vvm_default_number (VvmSettings *self,
-                                          const char *DefaultModemNumber);
+                                          const char  *DefaultModemNumber);
 char *vvm_settings_get_vvm_default_number (VvmSettings *self);
 
 void vvm_settings_set_vvm_provision_status (VvmSettings *self,
-                                            const char *ProvisionStatus);
+                                            const char  *ProvisionStatus);
 char *vvm_settings_get_vvm_provision_status (VvmSettings *self);
 
 void vvm_settings_set_vvm_carrier_prefix (VvmSettings *self,
-                                          const char *CarrierPrefix);
+                                          const char  *CarrierPrefix);
 char *vvm_settings_get_vvm_carrier_prefix (VvmSettings *self);
 
 void vvm_settings_set_mm_available  (VvmSettings *self,
-                                     int ModemManagerAvailable);
+                                     int          ModemManagerAvailable);
 int vvm_settings_get_mm_available (VvmSettings *self);
 
 void vvm_settings_set_service_available (VvmSettings *self,
-                                         int ServiceAvailable);
+                                         int          ServiceAvailable);
 int vvm_settings_get_service_available (VvmSettings *self);
 
 void vvm_settings_set_vvm_country_code (VvmSettings *self,
-                                        const char *CountryCode);
+                                        const char  *CountryCode);
 const char *vvm_settings_get_vvm_country_code (VvmSettings *self);
 
-void vvm_settings_set_mailbox_active (VvmSettings *self, int MailboxActive);
+void vvm_settings_set_mailbox_active (VvmSettings *self,
+                                      int          MailboxActive);
 int vvm_settings_get_mailbox_active (VvmSettings *self);
 
 void vvmplayer_settings_set_dark_theme (VvmSettings *self,
-                                        int prefer_dark_theme);
+                                        int          prefer_dark_theme);
 int vvmplayer_settings_get_dark_theme (VvmSettings *self);
 
 gboolean vvmplayer_settings_get_spam_contact_enabled (VvmSettings *self);
 void vvmplayer_settings_set_spam_contact_enabled (VvmSettings *self,
-                                                  gboolean spam_contact_enabled);
+                                                  gboolean     spam_contact_enabled);
 
 char *vvm_settings_get_spam_contact (VvmSettings *self);
 void  vvm_settings_set_spam_contact (VvmSettings *self,
-                                     const char *spam_contact);
+                                     const char  *spam_contact);
 
 G_END_DECLS

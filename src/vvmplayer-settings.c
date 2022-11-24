@@ -79,14 +79,14 @@ struct _VvmSettings
 G_DEFINE_TYPE (VvmSettings, vvmplayer_settings, G_TYPE_OBJECT)
 
 void
-vvm_settings_set_vvm_enabled (VvmSettings *self, int VVMEnabled)
+vvm_settings_set_vvm_enabled (VvmSettings *self,
+                              int          VVMEnabled)
 {
   self->enable_vvm = VVMEnabled;
   if (self->enable_vvm)
     g_debug ("VVM Enabled is set to TRUE");
   else
     g_debug ("VVM Enabled is set to FALSE");
-
 }
 
 int
@@ -95,30 +95,33 @@ vvm_settings_get_vvm_enabled (VvmSettings *self)
   return self->enable_vvm;
 }
 
-void vvm_settings_set_speaker_button_state (VvmSettings *self,
-                                            gboolean setting)
+void
+vvm_settings_set_speaker_button_state (VvmSettings *self,
+                                       gboolean     setting)
 {
   self->speaker_active = setting;
   g_debug ("speaker button state is now %d", self->speaker_active);
 }
 
-unsigned int vvm_settings_get_stream_count (VvmSettings *self)
+unsigned int
+vvm_settings_get_stream_count (VvmSettings *self)
 {
- return self->stream_count;
+  return self->stream_count;
 }
 
 void
 vvm_settings_incriment_stream_count (VvmSettings *self)
 {
-  if (self->stream_count == 0 && self->speaker_active == FALSE) {
-    g_autoptr (GError) error = NULL;
-    gboolean ret;
-    g_debug ("Setting audio profile to call");
-    ret = call_audio_select_mode (CALL_AUDIO_MODE_CALL, &error);
+  if (self->stream_count == 0 && self->speaker_active == FALSE)
+    {
+      g_autoptr(GError) error = NULL;
+      gboolean ret;
+      g_debug ("Setting audio profile to call");
+      ret = call_audio_select_mode (CALL_AUDIO_MODE_CALL, &error);
 
-    if (!ret && error)
-      g_warning ("Failed to switch profile: %s", error->message);
-  }
+      if (!ret && error)
+        g_warning ("Failed to switch profile: %s", error->message);
+    }
 
   self->stream_count = self->stream_count + 1;
   g_debug ("Stream count is imcrimented to %d", self->stream_count);
@@ -128,35 +131,36 @@ vvm_settings_incriment_stream_count (VvmSettings *self)
 void
 vvm_settings_decriment_stream_count (VvmSettings *self)
 {
-  if (self->stream_count == 0) {
-    g_warning ("Stream count is already at 0!");
-    return;
-  }
+  if (self->stream_count == 0)
+    {
+      g_warning ("Stream count is already at 0!");
+      return;
+    }
 
   self->stream_count = self->stream_count - 1;
   g_debug ("Stream count is decrimented to %d", self->stream_count);
 
-  if (self->stream_count == 0 && self->speaker_active == FALSE) {
-    g_autoptr (GError) error = NULL;
-    gboolean ret;
-    g_debug ("Setting audio profile to back to default");
-    ret = call_audio_select_mode (CALL_AUDIO_MODE_DEFAULT, &error);
+  if (self->stream_count == 0 && self->speaker_active == FALSE)
+    {
+      g_autoptr(GError) error = NULL;
+      gboolean ret;
+      g_debug ("Setting audio profile to back to default");
+      ret = call_audio_select_mode (CALL_AUDIO_MODE_DEFAULT, &error);
 
-    if (!ret && error)
-      g_warning ("Failed to switch profile: %s", error->message);
-  }
-
+      if (!ret && error)
+        g_warning ("Failed to switch profile: %s", error->message);
+    }
 }
 
 void
-vvm_settings_set_mm_available (VvmSettings *self, int ModemManagerAvailable)
+vvm_settings_set_mm_available (VvmSettings *self,
+                               int          ModemManagerAvailable)
 {
   self->mm_available = ModemManagerAvailable;
   if (self->mm_available)
     g_debug ("Modem Manager available through VVMD");
   else
     g_debug ("Modem Manager not available through VVMD");
-
 }
 
 int
@@ -166,7 +170,8 @@ vvmplayer_settings_get_dark_theme (VvmSettings *self)
 }
 
 static void
-adw_style_manager_set_dark_theme (int prefer_dark_theme) {
+adw_style_manager_set_dark_theme (int prefer_dark_theme)
+{
   AdwStyleManager *adw_style_manager = adw_style_manager_get_default ();
 
   if (prefer_dark_theme)
@@ -176,7 +181,8 @@ adw_style_manager_set_dark_theme (int prefer_dark_theme) {
 }
 
 void
-vvmplayer_settings_set_dark_theme (VvmSettings *self, int prefer_dark_theme)
+vvmplayer_settings_set_dark_theme (VvmSettings *self,
+                                   int          prefer_dark_theme)
 {
   self->prefer_dark_theme = prefer_dark_theme;
 
@@ -184,20 +190,21 @@ vvmplayer_settings_set_dark_theme (VvmSettings *self, int prefer_dark_theme)
   g_settings_set_boolean (self->app_settings, "dark-theme", self->prefer_dark_theme);
   g_settings_apply (self->app_settings);
   adw_style_manager_set_dark_theme (self->prefer_dark_theme);
-
 }
 
 char
-*vvm_settings_get_spam_contact (VvmSettings *self)
+*
+vvm_settings_get_spam_contact (VvmSettings *self)
 {
-  return g_strdup(self->spam_contact);
+  return g_strdup (self->spam_contact);
 }
 
 void
-vvm_settings_set_spam_contact (VvmSettings *self, const char *spam_contact)
+vvm_settings_set_spam_contact (VvmSettings *self,
+                               const char  *spam_contact)
 {
-  g_free(self->spam_contact);
-  self->spam_contact = g_strdup(spam_contact);
+  g_free (self->spam_contact);
+  self->spam_contact = g_strdup (spam_contact);
   g_debug ("Spam Contact is set to %s", self->spam_contact);
 
   /* Set the setting right away */
@@ -212,7 +219,8 @@ vvmplayer_settings_get_spam_contact_enabled (VvmSettings *self)
 }
 
 void
-vvmplayer_settings_set_spam_contact_enabled (VvmSettings *self, gboolean spam_contact_enabled)
+vvmplayer_settings_set_spam_contact_enabled (VvmSettings *self,
+                                             gboolean     spam_contact_enabled)
 {
   self->spam_contact_enabled = spam_contact_enabled;
 
@@ -228,95 +236,95 @@ vvm_settings_get_mm_available (VvmSettings *self)
 }
 
 void
-vvm_settings_set_vvm_type (VvmSettings *self, const char *VVMType)
+vvm_settings_set_vvm_type (VvmSettings *self,
+                           const char  *VVMType)
 {
-  g_free(self->vvm_type);
-  self->vvm_type = g_strdup(VVMType);
+  g_free (self->vvm_type);
+  self->vvm_type = g_strdup (VVMType);
   g_debug ("VVM Type is set to %s", self->vvm_type);
-
 }
 
 char
-*vvm_settings_get_vvm_type (VvmSettings *self)
+*
+vvm_settings_get_vvm_type (VvmSettings *self)
 {
-  return g_strdup(self->vvm_type);
+  return g_strdup (self->vvm_type);
 }
 
 void
 vvm_settings_set_vvm_destination_number (VvmSettings *self,
-                                         const char *VVMDestinationNumber)
+                                         const char  *VVMDestinationNumber)
 {
-  g_free(self->vvm_destination_number);
-  self->vvm_destination_number = g_strdup(VVMDestinationNumber);
+  g_free (self->vvm_destination_number);
+  self->vvm_destination_number = g_strdup (VVMDestinationNumber);
   g_debug ("VVM Destination Number is set to %s", self->vvm_destination_number);
-
 }
 
 char
-*vvm_settings_get_vvm_destination_number (VvmSettings *self)
+*
+vvm_settings_get_vvm_destination_number (VvmSettings *self)
 {
-  return g_strdup(self->vvm_destination_number);
+  return g_strdup (self->vvm_destination_number);
 }
 
 void
 vvm_settings_set_vvm_carrier_prefix (VvmSettings *self,
-                                     const char *CarrierPrefix)
+                                     const char  *CarrierPrefix)
 {
-  g_free(self->carrier_prefix);
-  self->carrier_prefix = g_strdup(CarrierPrefix);
+  g_free (self->carrier_prefix);
+  self->carrier_prefix = g_strdup (CarrierPrefix);
   g_debug ("VVM Carrier Prefix is set to %s", self->carrier_prefix);
-
 }
 
 char
-*vvm_settings_get_vvm_carrier_prefix (VvmSettings *self)
+*
+vvm_settings_get_vvm_carrier_prefix (VvmSettings *self)
 {
-  return g_strdup(self->carrier_prefix);
+  return g_strdup (self->carrier_prefix);
 }
 
 void
 vvm_settings_set_vvm_default_number (VvmSettings *self,
-                                     const char *DefaultModemNumber)
+                                     const char  *DefaultModemNumber)
 {
-
-  g_free(self->default_number);
-  self->default_number = g_strdup(DefaultModemNumber);
+  g_free (self->default_number);
+  self->default_number = g_strdup (DefaultModemNumber);
 
   g_debug ("VVM Modem Default Number is set to %s", self->default_number);
-
 }
 
 char
-*vvm_settings_get_vvm_default_number (VvmSettings *self)
+*
+vvm_settings_get_vvm_default_number (VvmSettings *self)
 {
-  return g_strdup(self->default_number);
+  return g_strdup (self->default_number);
 }
 
 void
 vvm_settings_set_vvm_provision_status (VvmSettings *self,
-                                       const char *ProvisionStatus)
+                                       const char  *ProvisionStatus)
 {
-  g_free(self->provision_status);
-  self->provision_status = g_strdup(ProvisionStatus);
+  g_free (self->provision_status);
+  self->provision_status = g_strdup (ProvisionStatus);
   g_debug ("VVM ProvisionStatus is set to %s", self->provision_status);
-
 }
 
 char
-*vvm_settings_get_vvm_provision_status (VvmSettings *self)
+*
+vvm_settings_get_vvm_provision_status (VvmSettings *self)
 {
-  return g_strdup(self->provision_status);
+  return g_strdup (self->provision_status);
 }
 
 void
-vvm_settings_set_service_available (VvmSettings *self, int ServiceAvailable)
+vvm_settings_set_service_available (VvmSettings *self,
+                                    int          ServiceAvailable)
 {
   self->service_available = ServiceAvailable;
   if (self->service_available)
     g_debug ("VVMD Service available");
   else
     g_debug ("VVMD Service not available");
-
 }
 
 int
@@ -327,29 +335,29 @@ vvm_settings_get_service_available (VvmSettings *self)
 
 void
 vvm_settings_set_vvm_country_code (VvmSettings *self,
-                                   const char *CountryCode)
+                                   const char  *CountryCode)
 {
-  g_free(self->country_code);
-  self->country_code = g_strdup(CountryCode);
+  g_free (self->country_code);
+  self->country_code = g_strdup (CountryCode);
   g_debug ("VVM Modem Country Code is set to %s", self->country_code);
-
 }
 
 const char
-*vvm_settings_get_vvm_country_code (VvmSettings *self)
+*
+vvm_settings_get_vvm_country_code (VvmSettings *self)
 {
   return self->country_code;
 }
 
 void
-vvm_settings_set_mailbox_active (VvmSettings *self, int MailboxActive)
+vvm_settings_set_mailbox_active (VvmSettings *self,
+                                 int          MailboxActive)
 {
   self->mailbox_active = MailboxActive;
   if (self->mailbox_active)
     g_debug ("VVM Mailbox active");
   else
     g_debug ("VVM Mailbox not active");
-
 }
 
 int
@@ -364,23 +372,23 @@ vvm_settings_load_mm_defaults (VvmSettings *self)
   self->mm_available = FALSE;
   self->enable_vvm = FALSE;
   g_free (self->vvm_destination_number);
-  self->vvm_destination_number = g_strdup("Destination Number invalid");
+  self->vvm_destination_number = g_strdup ("Destination Number invalid");
   g_free (self->vvm_type);
-  self->vvm_type = g_strdup("Unknown");
+  self->vvm_type = g_strdup ("Unknown");
   g_free (self->default_number);
-  self->default_number = g_strdup("NULL");
+  self->default_number = g_strdup ("NULL");
   g_free (self->provision_status);
-  self->provision_status = g_strdup("Unknown");
+  self->provision_status = g_strdup ("Unknown");
   g_free (self->carrier_prefix);
-  self->carrier_prefix = g_strdup("Carrier Prefix invalid");
+  self->carrier_prefix = g_strdup ("Carrier Prefix invalid");
 }
 
 void
 vvm_settings_load_service_defaults (VvmSettings *self)
 {
   self->mailbox_active = FALSE;
-  g_free(self->country_code);
-  self->country_code = g_strdup("Country Code invalid");
+  g_free (self->country_code);
+  self->country_code = g_strdup ("Country Code invalid");
 }
 
 static void

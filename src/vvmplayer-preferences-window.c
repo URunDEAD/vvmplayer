@@ -79,9 +79,9 @@ static void
 vvm_preferences_display_toast (const char                 *title,
                                VvmplayerPreferencesWindow *self)
 {
-     AdwToast *toast = adw_toast_new (title);
-     adw_preferences_window_add_toast (ADW_PREFERENCES_WINDOW (self), toast);
-     adw_toast_set_timeout (toast, 1);
+  AdwToast *toast = adw_toast_new (title);
+  adw_preferences_window_add_toast (ADW_PREFERENCES_WINDOW (self), toast);
+  adw_toast_set_timeout (toast, 1);
 }
 
 static void
@@ -117,41 +117,44 @@ vvm_type_selected_cb (GObject                    *sender,
 
   row_selected = adw_combo_row_get_selected (self->vvm_type_combo_row);
 
-  if (row_selected == VVM_TYPE_UNKNOWN) {
+  if (row_selected == VVM_TYPE_UNKNOWN)
     //This is not a valid vvmd type, so don't set it
     return;
-  }
 
-  if(vvm_settings_get_mm_available (settings)) {
-    g_autofree char *vvm_type = NULL;
+  if (vvm_settings_get_mm_available (settings))
+    {
+      g_autofree char *vvm_type = NULL;
 
 
-    vvm_type = vvmplayer_vvmd_decode_vvm_type (row_selected);
+      vvm_type = vvmplayer_vvmd_decode_vvm_type (row_selected);
 
-    if(vvmplayer_vvmd_set_mm_setting (backend,
-                                      "VVMType",
-                                      vvm_type) == FALSE) {
-      g_warning ("Error changing setting in vvmd!");
-      adw_combo_row_set_selected (self->vvm_type_combo_row, VVM_TYPE_UNKNOWN);
-    } else {
-
-        if (row_selected == VVM_TYPE_ATTUSA) {
-           adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->carrier_prefix_text_row),
-                                                 "AT&amp;T USA Number (No dashes or spaces)");
-           gtk_entry_set_placeholder_text(self->carrier_prefix_text,
-                                                 "AT&T USA Number (No dashes or spaces)");
-
-        } else {
-           adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->carrier_prefix_text_row),
-                                          "Carrier Prefix");
-           gtk_entry_set_placeholder_text (self->carrier_prefix_text,
-                                           "Carrier Prefix");
+      if (vvmplayer_vvmd_set_mm_setting (backend,
+                                         "VVMType",
+                                         vvm_type) == FALSE)
+        {
+          g_warning ("Error changing setting in vvmd!");
+          adw_combo_row_set_selected (self->vvm_type_combo_row, VVM_TYPE_UNKNOWN);
+        }
+      else {
+          if (row_selected == VVM_TYPE_ATTUSA)
+            {
+              adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->carrier_prefix_text_row),
+                                             "AT&amp;T USA Number (No dashes or spaces)");
+              gtk_entry_set_placeholder_text (self->carrier_prefix_text,
+                                              "AT&T USA Number (No dashes or spaces)");
+            }
+          else {
+              adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->carrier_prefix_text_row),
+                                             "Carrier Prefix");
+              gtk_entry_set_placeholder_text (self->carrier_prefix_text,
+                                              "Carrier Prefix");
+            }
         }
     }
-  } else {
-     vvm_preferences_display_toast ("Cannot Find VVMD", self);
-     adw_combo_row_set_selected (self->vvm_type_combo_row, VVM_TYPE_UNKNOWN);
-  }
+  else {
+      vvm_preferences_display_toast ("Cannot Find VVMD", self);
+      adw_combo_row_set_selected (self->vvm_type_combo_row, VVM_TYPE_UNKNOWN);
+    }
 }
 
 static gboolean
@@ -169,8 +172,8 @@ static void
 refresh_settings_button_clicked_cb (GtkButton                  *btn,
                                     VvmplayerPreferencesWindow *self)
 {
-    vvm_preferences_display_toast ("Refreshing Settings", self);
-    update_settings_cb (self);
+  vvm_preferences_display_toast ("Refreshing Settings", self);
+  update_settings_cb (self);
 }
 
 static void
@@ -179,20 +182,20 @@ set_destination_number (VvmplayerPreferencesWindow *self)
   VvmVvmd *backend = vvm_vvmd_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
 
-  if (vvm_settings_get_mm_available (settings)) {
-    const char *dest_number = NULL;
+  if (vvm_settings_get_mm_available (settings))
+    {
+      const char *dest_number = NULL;
 
-    dest_number = gtk_entry_buffer_get_text (self->destination_number_text_buffer);
+      dest_number = gtk_entry_buffer_get_text (self->destination_number_text_buffer);
 
-    vvm_settings_set_vvm_destination_number (settings, dest_number);
-    if (vvmplayer_vvmd_set_mm_setting (backend,
-                                      "VVMDestinationNumber",
-                                      dest_number) == FALSE) {
-
-      vvm_preferences_display_toast ("Changing setting failed", self);
+      vvm_settings_set_vvm_destination_number (settings, dest_number);
+      if (vvmplayer_vvmd_set_mm_setting (backend,
+                                         "VVMDestinationNumber",
+                                         dest_number) == FALSE)
+        vvm_preferences_display_toast ("Changing setting failed", self);
     }
-  } else
-    g_warning("VVMD Modem Manager settings not available!");
+  else
+    g_warning ("VVMD Modem Manager settings not available!");
 }
 
 static void
@@ -201,25 +204,23 @@ set_default_modem_number (VvmplayerPreferencesWindow *self)
   VvmVvmd *backend = vvm_vvmd_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
 
-  if(vvm_settings_get_mm_available (settings)) {
-    const char *modem_number = NULL;
+  if (vvm_settings_get_mm_available (settings))
+    {
+      const char *modem_number = NULL;
 
-    modem_number = gtk_entry_buffer_get_text (self->modem_number_text_buffer);
+      modem_number = gtk_entry_buffer_get_text (self->modem_number_text_buffer);
 
-    if (strlen (modem_number) < 1) {
-      modem_number = "NULL";
+      if (strlen (modem_number) < 1)
+        modem_number = "NULL";
+
+      vvm_settings_set_vvm_default_number (settings, modem_number);
+      if (vvmplayer_vvmd_set_mm_setting (backend,
+                                         "DefaultModemNumber",
+                                         modem_number) == FALSE)
+        vvm_preferences_display_toast ("Changing setting failed", self);
     }
-
-    vvm_settings_set_vvm_default_number (settings, modem_number);
-    if(vvmplayer_vvmd_set_mm_setting (backend,
-                                      "DefaultModemNumber",
-                                      modem_number) == FALSE) {
-
-      vvm_preferences_display_toast ("Changing setting failed", self);
-    }
-  } else
-    g_warning("VVMD Modem Manager settings not available!");
-
+  else
+    g_warning ("VVMD Modem Manager settings not available!");
 }
 
 static void
@@ -228,26 +229,27 @@ set_carrier_prefix (VvmplayerPreferencesWindow *self)
   VvmVvmd *backend = vvm_vvmd_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
 
-  if(vvm_settings_get_mm_available (settings)) {
-    const char *carrier_prefix = NULL;
+  if (vvm_settings_get_mm_available (settings))
+    {
+      const char *carrier_prefix = NULL;
 
-    carrier_prefix = gtk_entry_buffer_get_text (self->carrier_prefix_text_buffer);
+      carrier_prefix = gtk_entry_buffer_get_text (self->carrier_prefix_text_buffer);
 
-    vvm_settings_set_vvm_carrier_prefix (settings, carrier_prefix);
-    if(vvmplayer_vvmd_set_mm_setting (backend,
-                                      "CarrierPrefix",
-                                      carrier_prefix) == FALSE) {
-
-      g_warning ("Error changing setting in vvmd!");
-      vvm_preferences_display_toast ("Changing setting failed", self);
+      vvm_settings_set_vvm_carrier_prefix (settings, carrier_prefix);
+      if (vvmplayer_vvmd_set_mm_setting (backend,
+                                         "CarrierPrefix",
+                                         carrier_prefix) == FALSE)
+        {
+          g_warning ("Error changing setting in vvmd!");
+          vvm_preferences_display_toast ("Changing setting failed", self);
+        }
     }
-  } else
-    g_warning("VVMD Modem Manager settings not available!");
-
+  else
+    g_warning ("VVMD Modem Manager settings not available!");
 }
 
 static gboolean
-enable_vvm_switch_timeout(gpointer user_data)
+enable_vvm_switch_timeout (gpointer user_data)
 {
   VvmplayerPreferencesWindow *self = user_data;
   VvmSettings *settings = vvm_settings_get_default ();
@@ -281,29 +283,29 @@ enable_vvm_switch_flipped_cb (GtkSwitch                  *widget,
   int VVMEnabled = vvm_settings_get_vvm_enabled (settings);
   VvmVvmd *backend = vvm_vvmd_get_default ();
 
-  if (VVMEnabled == state) {
+  if (VVMEnabled == state)
     return FALSE;
-  }
 
   gtk_widget_set_sensitive (GTK_WIDGET (widget), FALSE);
 
-  if(vvm_settings_get_mm_available (settings) == FALSE) {
-    g_debug ("Cannot find vvmd!");
-    vvm_preferences_display_toast ("Cannot find vvmd", self);
-    g_timeout_add_seconds (2, enable_vvm_switch_timeout, self);
-    return FALSE;
-  }
+  if (vvm_settings_get_mm_available (settings) == FALSE)
+    {
+      g_debug ("Cannot find vvmd!");
+      vvm_preferences_display_toast ("Cannot find vvmd", self);
+      g_timeout_add_seconds (2, enable_vvm_switch_timeout, self);
+      return FALSE;
+    }
 
 
-
-  if (state) {
-    g_debug ("Enabling VVM");
-    vvm_preferences_display_toast ("Enabling VVM...", self);
-
-  } else {
-    g_debug ("Disabling VVM");
-    vvm_preferences_display_toast ("Disabling VVM...", self);
-  }
+  if (state)
+    {
+      g_debug ("Enabling VVM");
+      vvm_preferences_display_toast ("Enabling VVM...", self);
+    }
+  else {
+      g_debug ("Disabling VVM");
+      vvm_preferences_display_toast ("Disabling VVM...", self);
+    }
 
   g_timeout_add_seconds (10, enable_vvm_switch_timeout, self);
 
@@ -318,7 +320,7 @@ enable_vvm_switch_flipped_cb (GtkSwitch                  *widget,
 }
 
 static gboolean
-activate_vvm_button_timeout(gpointer user_data)
+activate_vvm_button_timeout (gpointer user_data)
 {
   VvmplayerPreferencesWindow *self = user_data;
   VvmSettings *settings = vvm_settings_get_default ();
@@ -344,7 +346,7 @@ activate_vvm_button_timeout(gpointer user_data)
 }
 
 static void
-activate_vvm_button_clicked_cb (GtkButton     *btn,
+activate_vvm_button_clicked_cb (GtkButton                  *btn,
                                 VvmplayerPreferencesWindow *self)
 {
   VvmSettings *settings = vvm_settings_get_default ();
@@ -353,23 +355,26 @@ activate_vvm_button_clicked_cb (GtkButton     *btn,
 
   VvmVvmd *backend = vvm_vvmd_get_default ();
 
-  if(vvm_settings_get_mm_available (settings) == FALSE) {
-    g_debug ("Cannot find VVMD!");
-    vvm_preferences_display_toast ("Cannot find VVMD", self);
-    return;
-  }
+  if (vvm_settings_get_mm_available (settings) == FALSE)
+    {
+      g_debug ("Cannot find VVMD!");
+      vvm_preferences_display_toast ("Cannot find VVMD", self);
+      return;
+    }
 
-  if (VVMEnabled == FALSE) {
-    g_debug ("VVM not Active!");
-    vvm_preferences_display_toast ("VVM not enabled in VVM Player", self);
-    return;
-  }
+  if (VVMEnabled == FALSE)
+    {
+      g_debug ("VVM not Active!");
+      vvm_preferences_display_toast ("VVM not enabled in VVM Player", self);
+      return;
+    }
 
-  if (MailboxActive == TRUE) {
-    g_debug ("Mailbox already Active!");
-    vvm_preferences_display_toast ("Mailbox already active", self);
-    return;
-  }
+  if (MailboxActive == TRUE)
+    {
+      g_debug ("Mailbox already Active!");
+      vvm_preferences_display_toast ("Mailbox already active", self);
+      return;
+    }
   g_debug ("Activating VVM.....");
   vvm_preferences_display_toast ("Activating VVM", self);
   gtk_widget_set_sensitive (GTK_WIDGET (self->activate_vvm_button), FALSE);
@@ -384,7 +389,7 @@ activate_vvm_button_clicked_cb (GtkButton     *btn,
 }
 
 static gboolean
-sync_vvm_button_timeout(gpointer user_data)
+sync_vvm_button_timeout (gpointer user_data)
 {
   VvmplayerPreferencesWindow *self = user_data;
   gtk_widget_set_sensitive (GTK_WIDGET (self->sync_vvm_button), TRUE);
@@ -401,23 +406,26 @@ sync_vvm_button_clicked_cb (GtkButton                  *btn,
   int MailboxActive = vvm_settings_get_mailbox_active (settings);
   VvmVvmd *backend = vvm_vvmd_get_default ();
 
-  if(vvm_settings_get_mm_available (settings) == FALSE) {
-    g_debug ("Cannot find vvmd!");
-    vvm_preferences_display_toast ("Cannot find VVMD", self);
-    return;
-  }
+  if (vvm_settings_get_mm_available (settings) == FALSE)
+    {
+      g_debug ("Cannot find vvmd!");
+      vvm_preferences_display_toast ("Cannot find VVMD", self);
+      return;
+    }
 
-  if (VVMEnabled == FALSE) {
-    g_debug ("VVM not Active!");
-    vvm_preferences_display_toast ("VVM not enabled", self);
-    return;
-  }
+  if (VVMEnabled == FALSE)
+    {
+      g_debug ("VVM not Active!");
+      vvm_preferences_display_toast ("VVM not enabled", self);
+      return;
+    }
 
-  if (MailboxActive == FALSE) {
-    g_debug ("Mailbox not Active!");
-    vvm_preferences_display_toast ("Mailbox not active", self);
-    return;
-  }
+  if (MailboxActive == FALSE)
+    {
+      g_debug ("Mailbox not Active!");
+      vvm_preferences_display_toast ("Mailbox not active", self);
+      return;
+    }
 
   g_debug ("Syncing VVM.....");
   vvm_preferences_display_toast ("Syncing...", self);
@@ -459,50 +467,44 @@ vvm_preferences_window_populate (VvmplayerPreferencesWindow *self)
 
   //Modem Manager settings
   VVMDestinationNumber = vvm_settings_get_vvm_destination_number (settings);
-  if (strstr (VVMDestinationNumber, "invalid") == NULL) { //Don't populate invalid settings
+  if (strstr (VVMDestinationNumber, "invalid") == NULL)   //Don't populate invalid settings
     gtk_entry_buffer_set_text (self->destination_number_text_buffer, VVMDestinationNumber, -1);
-  } else {
+  else
     gtk_entry_buffer_set_text (self->destination_number_text_buffer, "", -1);
-  }
 
   VVMDefaultModemNumber = vvm_settings_get_vvm_default_number (settings);
-  if (g_strcmp0 (VVMDefaultModemNumber, "NULL") != 0) { //Don't populate invalid settings
+  if (g_strcmp0 (VVMDefaultModemNumber, "NULL") != 0)   //Don't populate invalid settings
     gtk_entry_buffer_set_text (self->modem_number_text_buffer, VVMDefaultModemNumber, -1);
-  } else {
+  else
     gtk_entry_buffer_set_text (self->modem_number_text_buffer, "", -1);
-  }
 
   VVMCarrierPrefix = vvm_settings_get_vvm_carrier_prefix (settings);
-  if (strstr (VVMCarrierPrefix, "invalid") == NULL) { //Don't populate invalid settings
+  if (strstr (VVMCarrierPrefix, "invalid") == NULL)   //Don't populate invalid settings
     gtk_entry_buffer_set_text (self->carrier_prefix_text_buffer, VVMCarrierPrefix, -1);
-  } else {
+  else
     gtk_entry_buffer_set_text (self->carrier_prefix_text_buffer, "", -1);
-  }
 
   VVMType = vvm_settings_get_vvm_type (settings);
   VVMType_encoded = vvmplayer_vvmd_encode_vvm_type (VVMType);
-  g_debug("VVMType: %s, VVMType_encoded: %d", VVMType, VVMType_encoded);
+  g_debug ("VVMType: %s, VVMType_encoded: %d", VVMType, VVMType_encoded);
   vvm_type_combo_row_state = adw_combo_row_get_selected (self->vvm_type_combo_row);
   if (vvm_type_combo_row_state != VVMType_encoded)
     adw_combo_row_set_selected (self->vvm_type_combo_row, VVMType_encoded);
 
   //Status
-  if(vvm_settings_get_mm_available (settings)) {
+  if (vvm_settings_get_mm_available (settings))
     gtk_image_set_from_icon_name (self->vvmd_enabled_image, STATUS_GOOD);
-  } else {
+  else
     gtk_image_set_from_icon_name (self->vvmd_enabled_image, STATUS_BAD);
-  }
 
-  if (vvm_settings_get_mailbox_active (settings)) {
+  if (vvm_settings_get_mailbox_active (settings))
     gtk_image_set_from_icon_name (self->mailbox_active_image, STATUS_GOOD);
-  } else {
+  else
     gtk_image_set_from_icon_name (self->mailbox_active_image, STATUS_BAD);
-  }
 
   VVMProvisionStatus = vvm_settings_get_vvm_provision_status (settings);
   VVMProvisionStatus = g_strdup_printf ("Provision Status: %s", VVMProvisionStatus);
   adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->provision_status_text), VVMProvisionStatus);
-
 }
 
 static void
@@ -511,25 +513,31 @@ vvm_preferences_refresh_settings (void)
   VvmVvmd *backend = vvm_vvmd_get_default ();
   VvmSettings *settings = vvm_settings_get_default ();
 
-  if(vvm_settings_get_mm_available (settings)) {
-    if (vvmplayer_vvmd_get_mm_settings(backend) == FALSE) {
-      g_debug ("Error getting VVMD Modem Manager Settings");
+  if (vvm_settings_get_mm_available (settings))
+    {
+      if (vvmplayer_vvmd_get_mm_settings (backend) == FALSE)
+        {
+          g_debug ("Error getting VVMD Modem Manager Settings");
+          vvm_settings_load_mm_defaults (settings);
+        }
+    }
+  else {
+      g_debug ("Loading VVMD MM Defaults");
       vvm_settings_load_mm_defaults (settings);
     }
-  } else {
-    g_debug ("Loading VVMD MM Defaults");
-    vvm_settings_load_mm_defaults (settings);
-  }
 
-  if (vvm_settings_get_service_available (settings)) {
-    if (vvmplayer_vvmd_get_service_settings (backend) == FALSE) {
-      g_debug ("Error getting VVMD Service Settings");
+  if (vvm_settings_get_service_available (settings))
+    {
+      if (vvmplayer_vvmd_get_service_settings (backend) == FALSE)
+        {
+          g_debug ("Error getting VVMD Service Settings");
+          vvm_settings_load_service_defaults (settings);
+        }
+    }
+  else {
+      g_debug ("Loading VVMD service Defaults");
       vvm_settings_load_service_defaults (settings);
     }
-  } else {
-    g_debug ("Loading VVMD service Defaults");
-    vvm_settings_load_service_defaults (settings);
-  }
 }
 
 VvmplayerPreferencesWindow *
@@ -601,8 +609,8 @@ vvm_player_preferences_window_class_init (VvmplayerPreferencesWindowClass *klass
 static void
 update_settings_cb (VvmplayerPreferencesWindow *self)
 {
-    vvm_preferences_refresh_settings ();
-    vvm_preferences_window_populate (self);
+  vvm_preferences_refresh_settings ();
+  vvm_preferences_window_populate (self);
 }
 
 static void

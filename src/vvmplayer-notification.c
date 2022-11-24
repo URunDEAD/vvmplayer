@@ -50,12 +50,11 @@ vvmplayer_notification_send_unread_vvm (int unread_vvms)
   /* If the notification is already there, withdraw it */
   g_application_withdraw_notification (vvm_player, "unread-message");
 
-  title = g_strdup("New Voicemail");
-  if (unread_vvms == 1) {
+  title = g_strdup ("New Voicemail");
+  if (unread_vvms == 1)
     body = g_strdup_printf ("You have %d new voicemail", unread_vvms);
-  } else {
+  else
     body = g_strdup_printf ("You have %d new voicemails", unread_vvms);
-  }
   notification = g_notification_new (title);
   g_notification_set_body (notification, body);
   g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_HIGH);
@@ -66,4 +65,3 @@ vvmplayer_notification_send_unread_vvm (int unread_vvms)
   g_free (title);
   g_free (body);
 }
-

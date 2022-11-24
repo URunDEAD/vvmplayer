@@ -36,18 +36,18 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (VvmContact, vvm_contact, VVM, CONTACT, GObject)
 
-VvmContact        *vvm_contact_new                   (EContact          *contact,
-                                                         EVCardAttribute   *attr);
-void               vvm_contact_set_name              (VvmContact     *self,
-                                                         const char        *name);
-const char        *vvm_contact_get_value             (VvmContact     *self);
-void               vvm_contact_set_value             (VvmContact     *self,
-                                                         const char        *value);
-const char        *vvm_contact_get_value_type        (VvmContact     *self);
-const char        *vvm_contact_get_uid               (VvmContact     *self);
-gboolean           vvm_contact_is_dummy              (VvmContact     *self);
+VvmContact        *vvm_contact_new                   (EContact        *contact,
+                                                      EVCardAttribute *attr);
+void               vvm_contact_set_name              (VvmContact *self,
+                                                      const char *name);
+const char        *vvm_contact_get_value             (VvmContact *self);
+void               vvm_contact_set_value             (VvmContact *self,
+                                                      const char *value);
+const char        *vvm_contact_get_value_type        (VvmContact *self);
+const char        *vvm_contact_get_uid               (VvmContact *self);
+gboolean           vvm_contact_is_dummy              (VvmContact *self);
 const char        *vvm_contact_get_name              (VvmContact *self);
-gboolean           vvm_contact_matches               (VvmContact     *self,
-                                                      const char     *needle);
+gboolean           vvm_contact_matches               (VvmContact *self,
+                                                      const char *needle);
 
 G_END_DECLS

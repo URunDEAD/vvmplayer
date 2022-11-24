@@ -39,34 +39,39 @@ struct _VvmplayerWindow
 
 G_DEFINE_FINAL_TYPE (VvmplayerWindow, vvmplayer_window, ADW_TYPE_APPLICATION_WINDOW)
 
-void vvmplayer_window_set_speaker_button (VvmplayerWindow *self, gboolean setting)
+void
+vvmplayer_window_set_speaker_button (VvmplayerWindow *self,
+                                     gboolean         setting)
 {
   gtk_toggle_button_set_active (self->speaker_output_button,
                                 setting);
 }
 
 void
-vvmplayer_window_add_row (VvmplayerWindow *self, GtkWidget *voicemail)
+vvmplayer_window_add_row (VvmplayerWindow *self,
+                          GtkWidget       *voicemail)
 {
-  if (gtk_widget_get_parent (voicemail) == NULL) {
+  if (gtk_widget_get_parent (voicemail) == NULL)
     gtk_list_box_prepend (GTK_LIST_BOX (self->visual_voicemail),
                           GTK_WIDGET (voicemail));
-  } else {
+  else
     g_warning ("Voicemail already has a parent!");
-  }
 }
 
 static void
-select_mode_complete (gboolean success, GError *error, gpointer data)
+select_mode_complete (gboolean success,
+                      GError  *error,
+                      gpointer data)
 {
-  if (error) {
-    g_warning ("Failed to select audio mode: %s", error->message);
-    g_error_free (error);
-  }
+  if (error)
+    {
+      g_warning ("Failed to select audio mode: %s", error->message);
+      g_error_free (error);
+    }
 }
 
 static void
-speaker_output_button_clicked_cb (GtkToggleButton     *btn,
+speaker_output_button_clicked_cb (GtkToggleButton *btn,
                                   VvmplayerWindow *self)
 {
   gboolean toggled;
@@ -74,22 +79,25 @@ speaker_output_button_clicked_cb (GtkToggleButton     *btn,
   toggled = gtk_toggle_button_get_active (btn);
   vvm_settings_set_speaker_button_state (settings, toggled);
 
-  if (toggled) {
-    g_debug ("Button Toggled");
-    call_audio_select_mode_async (CALL_AUDIO_MODE_DEFAULT,
-                                  select_mode_complete,
-                                  NULL);
-  } else {
-    g_debug ("Button Untoggled");
-    if (vvm_settings_get_stream_count (settings) > 0) {
-      g_debug ("Setting audio profile to call");
-      call_audio_select_mode_async (CALL_AUDIO_MODE_CALL,
+  if (toggled)
+    {
+      g_debug ("Button Toggled");
+      call_audio_select_mode_async (CALL_AUDIO_MODE_DEFAULT,
                                     select_mode_complete,
                                     NULL);
-    } else {
-      g_debug ("No stream is playing, waiting to change profile.");
     }
-  }
+  else {
+      g_debug ("Button Untoggled");
+      if (vvm_settings_get_stream_count (settings) > 0)
+        {
+          g_debug ("Setting audio profile to call");
+          call_audio_select_mode_async (CALL_AUDIO_MODE_CALL,
+                                        select_mode_complete,
+                                        NULL);
+        }
+      else
+        g_debug ("No stream is playing, waiting to change profile.");
+    }
 }
 
 static void

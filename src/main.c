@@ -41,10 +41,10 @@ main (int   argc,
 
   // Use G_APPLICATION_DEFAULT_FLAGS for GTK 2.74 or higher
 
-  #if GTK_CHECK_VERSION (2,74,0)
-    app = vvmplayer_application_new (PACKAGE_ID, G_APPLICATION_DEFAULT_FLAGS);
+  #if GTK_CHECK_VERSION (2, 74, 0)
+  app = vvmplayer_application_new (PACKAGE_ID, G_APPLICATION_DEFAULT_FLAGS);
   #else
-    app = vvmplayer_application_new (PACKAGE_ID, G_APPLICATION_FLAGS_NONE);
+  app = vvmplayer_application_new (PACKAGE_ID, G_APPLICATION_FLAGS_NONE);
   #endif
   ret = g_application_run (G_APPLICATION (app), argc, argv);
 

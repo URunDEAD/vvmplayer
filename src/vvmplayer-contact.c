@@ -54,8 +54,8 @@ G_DEFINE_TYPE (VvmContact, vvm_contact, G_TYPE_OBJECT)
 
 
 gboolean
-vvm_contact_matches (VvmContact     *self,
-                        const char     *needle)
+vvm_contact_matches (VvmContact *self,
+                     const char *needle)
 {
   const char *value;
   VvmSettings *vvm_setting;
@@ -87,14 +87,15 @@ vvm_contact_get_name (VvmContact *self)
   if (self->name)
     return self->name;
 
-  if (self->e_contact) {
-    const char *value;
+  if (self->e_contact)
+    {
+      const char *value;
 
-    value = e_contact_get_const (self->e_contact, E_CONTACT_FULL_NAME);
+      value = e_contact_get_const (self->e_contact, E_CONTACT_FULL_NAME);
 
-    if (value)
-      return value;
-  }
+      if (value)
+        return value;
+    }
 
   return "";
 }
@@ -103,7 +104,6 @@ static void
 vvm_contact_class_init (VvmContactClass *klass)
 {
   //GObjectClass *object_class  = G_OBJECT_CLASS (klass);
-
 }
 
 
@@ -115,7 +115,7 @@ vvm_contact_init (VvmContact *self)
 
 VvmContact *
 vvm_contact_new (EContact        *contact,
-                    EVCardAttribute *attr)
+                 EVCardAttribute *attr)
 {
   VvmContact *self;
 
@@ -128,7 +128,7 @@ vvm_contact_new (EContact        *contact,
 
 void
 vvm_contact_set_name (VvmContact *self,
-                         const char    *name)
+                      const char *name)
 {
   g_return_if_fail (VVM_IS_CONTACT (self));
 
@@ -163,7 +163,7 @@ vvm_contact_get_value (VvmContact *self)
 
 void
 vvm_contact_set_value (VvmContact *self,
-                          const char    *value)
+                       const char *value)
 {
   g_return_if_fail (VVM_IS_CONTACT (self));
 

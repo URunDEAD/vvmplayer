@@ -66,7 +66,7 @@ enum {
 static GParamSpec *properties[N_PROPS];
 
 static void
-eds_find_contact_index (VvmEds  *self,
+eds_find_contact_index (VvmEds     *self,
                         const char *uid,
                         guint      *position,
                         guint      *count)
@@ -82,27 +82,28 @@ eds_find_contact_index (VvmEds  *self,
   n_items = g_list_model_get_n_items (G_LIST_MODEL (self->contacts_list));
   *position = *count = 0;
 
-  for (i = 0; i < n_items; i++) {
-    g_autoptr(VvmContact) contact = NULL;
+  for (i = 0; i < n_items; i++)
+    {
+      g_autoptr(VvmContact) contact = NULL;
 
-    contact = g_list_model_get_item (G_LIST_MODEL (self->contacts_list), i);
-    old_uid = vvm_contact_get_uid (contact);
-    match = g_str_equal (old_uid, uid);
+      contact = g_list_model_get_item (G_LIST_MODEL (self->contacts_list), i);
+      old_uid = vvm_contact_get_uid (contact);
+      match = g_str_equal (old_uid, uid);
 
-    /* The list is sorted.  Find the first match and total count. */
-    if (!*count && match)
-      *position = i, *count = 1;
-    else if (match) /* Subsequent matches */
-      ++*count;
-    else if (*position) /* We moved past the last match */
-      break;
-  }
+      /* The list is sorted.  Find the first match and total count. */
+      if (!*count && match)
+        *position = i, *count = 1;
+      else if (match) /* Subsequent matches */
+        ++*count;
+      else if (*position) /* We moved past the last match */
+        break;
+    }
 }
 
 static void
-vvm_eds_load_contact (VvmEds     *self,
-                      EContact      *contact,
-                      EContactField  field_id)
+vvm_eds_load_contact (VvmEds       *self,
+                      EContact     *contact,
+                      EContactField field_id)
 {
   g_autoptr(GList) attributes = NULL;
 
@@ -112,20 +113,20 @@ vvm_eds_load_contact (VvmEds     *self,
   /* Only container should be freed, attribute is freed in VvmContact */
   attributes = e_contact_get_attributes (contact, field_id);
 
-  for (GSList *l = (GSList *)attributes; l != NULL; l = l->next) {
-    g_autofree char *value = NULL;
+  for (GSList *l = (GSList *)attributes; l != NULL; l = l->next)
+    {
+      g_autofree char *value = NULL;
 
-    value = e_vcard_attribute_get_value (l->data);
+      value = e_vcard_attribute_get_value (l->data);
 
-    if (value && *value)
-      g_ptr_array_add (self->contacts_array,
-                       vvm_contact_new (contact, l->data));
-
+      if (value && *value)
+        g_ptr_array_add (self->contacts_array,
+                         vvm_contact_new (contact, l->data));
     }
 }
 
 static void
-vvm_eds_remove_contact (VvmEds  *self,
+vvm_eds_remove_contact (VvmEds     *self,
                         const char *uid)
 {
   guint position, count;
@@ -139,7 +140,7 @@ vvm_eds_remove_contact (VvmEds  *self,
 }
 
 static void
-vvm_eds_objects_added_cb (VvmEds       *self,
+vvm_eds_objects_added_cb (VvmEds          *self,
                           const GSList    *objects,
                           EBookClientView *view)
 {
@@ -149,15 +150,13 @@ vvm_eds_objects_added_cb (VvmEds       *self,
     self->contacts_array = g_ptr_array_new_full (100, g_object_unref);
 
   for (GSList *l = (GSList *)objects; l != NULL; l = l->next)
-    {
-        vvm_eds_load_contact (self, l->data, E_CONTACT_TEL);
-    }
+    vvm_eds_load_contact (self, l->data, E_CONTACT_TEL);
 
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_IS_READY]);
 }
 
 static void
-vvm_eds_objects_modified_cb (VvmEds       *self,
+vvm_eds_objects_modified_cb (VvmEds          *self,
                              const GSList    *objects,
                              EBookClientView *view)
 {
@@ -172,7 +171,7 @@ vvm_eds_objects_modified_cb (VvmEds       *self,
 }
 
 static void
-vvm_eds_objects_removed_cb (VvmEds       *self,
+vvm_eds_objects_removed_cb (VvmEds          *self,
                             const GSList    *objects,
                             EBookClientView *view)
 {
@@ -422,16 +421,17 @@ vvm_eds_get_default (void)
 {
   static VvmEds *self;
 
-  if (!self) {
-    self = g_object_new (VVM_TYPE_EDS, NULL);
-    g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&self);
-  }
+  if (!self)
+    {
+      self = g_object_new (VVM_TYPE_EDS, NULL);
+      g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&self);
+    }
 
   return self;
 }
 
 gboolean
-vvm_eds_is_ready (VvmEds  *self)
+vvm_eds_is_ready (VvmEds *self)
 {
   g_return_val_if_fail (VVM_IS_EDS (self), FALSE);
 
@@ -450,8 +450,8 @@ vvm_eds_is_ready (VvmEds  *self)
  * Returns: (transfer none) (nullable): A #VvmContact.
  */
 VvmContact *
-vvm_eds_find_by_number (VvmEds  *self,
-                           const char *phone_number)
+vvm_eds_find_by_number (VvmEds     *self,
+                        const char *phone_number)
 {
   GListModel *model;
   guint n_items;

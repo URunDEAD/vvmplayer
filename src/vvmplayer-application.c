@@ -49,8 +49,8 @@ enum {
 static guint signals[N_SIGNALS];
 
 VvmplayerApplication *
-vvmplayer_application_new (const char        *application_id,
-                           GApplicationFlags  flags)
+vvmplayer_application_new (const char       *application_id,
+                           GApplicationFlags flags)
 {
   g_return_val_if_fail (application_id != NULL, NULL);
 
@@ -65,26 +65,29 @@ vvmplayer_handle_local_options (GApplication *application,
                                 GVariantDict *options)
 {
   VvmplayerApplication *self = (VvmplayerApplication *)application;
-  if (g_variant_dict_contains (options, "version")) {
-    g_print ("%s, git version: %s\n", PACKAGE_VERSION, PACKAGE_VCS_VERSION);
-    return 0;
-  }
+  if (g_variant_dict_contains (options, "version"))
+    {
+      g_print ("%s, git version: %s\n", PACKAGE_VERSION, PACKAGE_VCS_VERSION);
+      return 0;
+    }
 
-  if (g_variant_dict_contains (options, "debug")) {
-    g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
-    self->app_debug = TRUE;
-  }
+  if (g_variant_dict_contains (options, "debug"))
+    {
+      g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
+      self->app_debug = TRUE;
+    }
 
   self->daemon = FALSE;
   self->app_debug = FALSE;
-  if (g_variant_dict_contains (options, "daemon")) {
-    /* Hold application only the first time daemon mode is set */
-    if (!self->daemon)
-      g_application_hold (application);
+  if (g_variant_dict_contains (options, "daemon"))
+    {
+      /* Hold application only the first time daemon mode is set */
+      if (!self->daemon)
+        g_application_hold (application);
 
-    self->daemon = TRUE;
-    g_debug ("Application marked as daemon");
-  }
+      self->daemon = TRUE;
+      g_debug ("Application marked as daemon");
+    }
 
   return -1;
 }
@@ -106,11 +109,13 @@ vvmplayer_application_startup (GApplication *application)
 }
 
 static gboolean
-on_widget_deleted(GtkWidget *widget, GdkEvent *event, gpointer data)
+on_widget_deleted (GtkWidget *widget,
+                   GdkEvent  *event,
+                   gpointer   data)
 {
   /* Passing app through g_signal_connect causes a segfault, so just find the default */
   VvmplayerApplication *self = (VvmplayerApplication *)g_application_get_default ();
-  g_autoptr (GError) error = NULL;
+  g_autoptr(GError) error = NULL;
   gboolean ret;
 
   /* If we are not running in daemon mode, hide the window and reset speaker button */
@@ -134,24 +139,23 @@ vvmplayer_application_activate (GApplication *app)
 {
   VvmplayerApplication *self = (VvmplayerApplication *)app;
 
-  if (!self->main_window) {
-    self->main_window = g_object_new (VVMPLAYER_TYPE_WINDOW, "application", app, NULL);
-    g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
+  if (!self->main_window)
+    {
+      self->main_window = g_object_new (VVMPLAYER_TYPE_WINDOW, "application", app, NULL);
+      g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
 
-    g_signal_connect(G_OBJECT(self->main_window),
-                     "close_request",
-                     G_CALLBACK(on_widget_deleted),
-                     NULL);
-  }
+      g_signal_connect (G_OBJECT (self->main_window),
+                        "close_request",
+                        G_CALLBACK (on_widget_deleted),
+                        NULL);
+    }
 
-  if ((!self->daemon && !self->daemon_running) || (self->daemon_running)) {
+  if ((!self->daemon && !self->daemon_running) || (self->daemon_running))
     gtk_window_present (GTK_WINDOW (self->main_window));
-  } else {
-    self->daemon_running = TRUE;
-    gtk_window_set_hide_on_close (GTK_WINDOW (self->main_window), self->daemon_running);
-  }
-
-
+  else {
+      self->daemon_running = TRUE;
+      gtk_window_set_hide_on_close (GTK_WINDOW (self->main_window), self->daemon_running);
+    }
 }
 
 static void
@@ -189,8 +193,8 @@ vvmplayer_application_class_init (VvmplayerApplicationClass *klass)
 
 static void
 vvmplayer_application_show_preferences (GSimpleAction *action,
-                  GVariant      *state,
-                  gpointer       user_data)
+                                        GVariant      *state,
+                                        gpointer       user_data)
 {
   GtkApplication *app = GTK_APPLICATION (user_data);
 
@@ -235,8 +239,7 @@ static GOptionEntry cmd_options[] = {
     NULL
   },
   { "debug", 'd', 0, G_OPTION_ARG_NONE, G_OPTION_ARG_NONE,
-     "Enable debugging output"
-  },
+    "Enable debugging output"},
   {
     "version", 'v', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
     ("Show release version"), NULL
@@ -258,4 +261,3 @@ vvmplayer_application_init (VvmplayerApplication *self)
                                    self);
   g_application_add_main_option_entries (G_APPLICATION (self), cmd_options);
 }
-

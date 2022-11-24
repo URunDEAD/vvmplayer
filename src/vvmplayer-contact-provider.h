@@ -36,8 +36,8 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (VvmEds, vvm_eds, VVM, EDS, GObject)
 
 VvmEds     *vvm_eds_get_default            (void);
-gboolean       vvm_eds_is_ready       (VvmEds  *self);
-VvmContact *vvm_eds_find_by_number    (VvmEds  *self,
+gboolean       vvm_eds_is_ready       (VvmEds *self);
+VvmContact *vvm_eds_find_by_number    (VvmEds     *self,
                                        const char *phone_number);
 GListModel *vvm_eds_get_model         (VvmEds *self);
 int vvm_eds_get_is_ready (VvmEds *self);
