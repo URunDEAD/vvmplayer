@@ -44,7 +44,6 @@ struct _VvmSettings
   GObject    parent_instance;
 
   GSettings *app_settings;
-  gboolean   first_run;
 
   GtkSettings *gtk_settings;
 
@@ -427,10 +426,6 @@ vvmplayer_settings_init (VvmSettings *self)
 
   adw_style_manager_set_dark_theme (self->prefer_dark_theme);
 
-
-  if (!g_str_equal (version, PACKAGE_VERSION))
-    self->first_run = TRUE;
-
   g_settings_delay (self->app_settings);
 }
 
@@ -474,24 +469,6 @@ vvmplayer_settings_save (VvmSettings *self)
   g_return_if_fail (VVMPLAYER_IS_SETTINGS (self));
 
   g_settings_apply (self->app_settings);
-}
-
-/**
- * vvmplayer_settings_get_is_first_run:
- * @self: A #VvmSettings
- *
- * Get if the application has ever launched after install
- * or update.
- *
- * Returns: %TRUE for the first launch of application after
- * install or update.  %FALSE otherwise.
- */
-gboolean
-vvmplayer_settings_get_is_first_run (VvmSettings *self)
-{
-  g_return_val_if_fail (VVMPLAYER_IS_SETTINGS (self), FALSE);
-
-  return self->first_run;
 }
 
 /**
