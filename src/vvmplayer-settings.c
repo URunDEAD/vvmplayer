@@ -166,6 +166,16 @@ vvmplayer_settings_get_dark_theme (VvmSettings *self)
   return self->prefer_dark_theme;
 }
 
+static void
+adw_style_manager_set_dark_theme (int prefer_dark_theme) {
+  AdwStyleManager *adw_style_manager = adw_style_manager_get_default ();
+
+  if (prefer_dark_theme)
+    adw_style_manager_set_color_scheme (adw_style_manager, ADW_COLOR_SCHEME_PREFER_DARK);
+  else
+    adw_style_manager_set_color_scheme (adw_style_manager, ADW_COLOR_SCHEME_DEFAULT);
+}
+
 void
 vvmplayer_settings_set_dark_theme (VvmSettings *self, int prefer_dark_theme)
 {
@@ -174,6 +184,8 @@ vvmplayer_settings_set_dark_theme (VvmSettings *self, int prefer_dark_theme)
   /* Set the setting right away */
   g_settings_set_boolean (self->app_settings, "dark-theme", self->prefer_dark_theme);
   g_settings_apply (self->app_settings);
+  adw_style_manager_set_dark_theme (self->prefer_dark_theme);
+
 }
 
 char
@@ -407,17 +419,13 @@ static void
 vvmplayer_settings_init (VvmSettings *self)
 {
   g_autofree char *version = NULL;
-  AdwStyleManager *adw_style_manager = adw_style_manager_get_default ();
   self->app_settings = g_settings_new (PACKAGE_ID);
   version = g_settings_get_string (self->app_settings, "version");
   self->spam_contact = g_settings_get_string (self->app_settings, "spam-contact");
   self->spam_contact_enabled = g_settings_get_boolean (self->app_settings, "spam-contact-enabled");
   self->prefer_dark_theme = g_settings_get_boolean (self->app_settings, "dark-theme");
 
-  if (self->prefer_dark_theme)
-    adw_style_manager_set_color_scheme (adw_style_manager, ADW_COLOR_SCHEME_PREFER_DARK);
-  else
-    adw_style_manager_set_color_scheme (adw_style_manager, ADW_COLOR_SCHEME_DEFAULT);
+  adw_style_manager_set_dark_theme (self->prefer_dark_theme);
 
 
   if (!g_str_equal (version, PACKAGE_VERSION))
