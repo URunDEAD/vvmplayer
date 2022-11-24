@@ -253,12 +253,14 @@ enable_vvm_switch_timeout (gpointer user_data)
 {
   VvmplayerPreferencesWindow *self = user_data;
   VvmSettings *settings = vvm_settings_get_default ();
-  int VVMActive = vvm_settings_get_mailbox_active (settings);
+  int VVMActive;
   int EnableVVMSwitch = gtk_switch_get_state (self->enable_vvm_switch);
   const char *toast_message = NULL;
 
   gtk_widget_set_sensitive (GTK_WIDGET (self->enable_vvm_switch), TRUE);
   update_settings_cb (self);
+
+  VVMActive = vvm_settings_get_mailbox_active (settings);
 
   if (!VVMActive && !EnableVVMSwitch)
     toast_message = "VVM Disabled";
