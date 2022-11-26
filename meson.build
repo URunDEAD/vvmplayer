@@ -109,4 +109,16 @@ subdir('data')
 subdir('src')
 subdir('po')
 
-meson.add_install_script('build-aux/meson_post_install.py')
+# gnome.post_install() is available since meson 0.59.0
+# Distributions use their own tooling (e.g. postinst, triggers, etc)
+# so it is okay if the post_install() is not run on distro builds
+m_ver = meson.version().split('.')
+if m_ver[0].to_int() > 0 or m_ver[1].to_int() > 58
+  gnome.post_install(
+    glib_compile_schemas: true,
+    gtk_update_icon_cache: true,
+    update_desktop_database: true,
+  )
+else
+  meson.add_install_script('build-aux/meson_post_install.py')
+endif
