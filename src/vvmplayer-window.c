@@ -39,7 +39,7 @@ struct _VvmplayerWindow
   gulong window_closed_id;
 };
 
-G_DEFINE_FINAL_TYPE (VvmplayerWindow, vvmplayer_window, ADW_TYPE_APPLICATION_WINDOW)
+G_DEFINE_TYPE (VvmplayerWindow, vvmplayer_window, ADW_TYPE_APPLICATION_WINDOW)
 
 void
 vvmplayer_window_set_speaker_button (VvmplayerWindow *self,
