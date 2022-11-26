@@ -210,7 +210,7 @@ vvmplayer_application_about_action (GSimpleAction *action,
                                     GVariant      *parameter,
                                     gpointer       user_data)
 {
-  static const char *developers[] = {"Chris Talbot", NULL};
+  static const char *developers[] = {"Chris Talbot https://www.gitlab.com/kop316/", NULL};
   static const char *artists[] = {"Asiya Morris <aitrisart@gmail.com>", NULL};
   VvmplayerApplication *self = (VvmplayerApplication *)user_data;
   GtkWindow *window = NULL;
@@ -219,16 +219,14 @@ vvmplayer_application_about_action (GSimpleAction *action,
 
   window = gtk_application_get_active_window (GTK_APPLICATION (self));
 
-  adw_show_about_window (window,
-                         "application-name", "Visual Voicemail",
-                         "application-icon", PACKAGE_ID,
-                         "version", PACKAGE_VCS_VERSION,
-                         "developers", developers,
-                         "artists", artists,
-                         "copyright", "© 2021-2022 Chris Talbot",
+  gtk_show_about_dialog (GTK_WINDOW (window),
                          "website", "https://gitlab.com/kop316/vvmplayer",
-                         "issue-url", "https://gitlab.com/kop316/vvmplayer/-/issues",
+                         "version", PACKAGE_VCS_VERSION,
+                         "copyright", "Copyright © 2021-2022 Chris Talbot",
                          "license-type", GTK_LICENSE_GPL_3_0,
+                         "authors", developers,
+                         "artists", artists,
+                         "logo-icon-name", PACKAGE_ID,
                          NULL);
 }
 
