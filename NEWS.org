@@ -1,3 +1,8 @@
+vvmplayer (2.0~beta1)
+
+  [ Chris Talbot ]
+  * Various bug fixes
+
 vvmplayer (2.0~beta)
 
   [ Chris Talbot ]
