@@ -39,9 +39,9 @@ main (int   argc,
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
 
-  // Use G_APPLICATION_DEFAULT_FLAGS for GTK 2.74 or higher
+  // Use G_APPLICATION_DEFAULT_FLAGS for GLIB 2.74 or higher
 
-  #if GTK_CHECK_VERSION (2, 74, 0)
+  #if GLIB_CHECK_VERSION (2, 74, 0)
   app = vvmplayer_application_new (PACKAGE_ID, G_APPLICATION_DEFAULT_FLAGS);
   #else
   app = vvmplayer_application_new (PACKAGE_ID, G_APPLICATION_FLAGS_NONE);
