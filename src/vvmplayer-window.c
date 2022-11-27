@@ -107,7 +107,14 @@ speaker_output_button_clicked_cb (GtkToggleButton *btn,
 static void
 main_window_closed_cb (VvmplayerWindow *self)
 {
+  GtkAdjustment *vadjustment = NULL;
+
   gtk_list_box_unselect_all (GTK_LIST_BOX (self->visual_voicemail));
+
+  /* Reset scrolling to the top */
+  vadjustment = gtk_scrolled_window_get_vadjustment (self->scroll_window);
+  gtk_adjustment_set_value (vadjustment,
+                            gtk_adjustment_get_lower (vadjustment));
 }
 
 static void
