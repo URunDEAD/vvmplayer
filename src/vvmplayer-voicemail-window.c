@@ -40,9 +40,9 @@ struct _VoicemailWindow
   GstState state;
 
   GtkImage *play_button_icon;
-  GtkImage *delete_button_icon;
 
   GtkButton *delete_button;
+  GtkButton *stop_button;
 
   AdwActionRow *second_row;
   AdwActionRow *call_row;
@@ -101,6 +101,33 @@ voicemail_window_delete_self (VoicemailWindow *self)
   gtk_list_box_remove (GTK_LIST_BOX (list_box), (GTK_WIDGET (self)));
 }
 
+
+static void
+stop_button_clicked_cb (GtkButton       *btn,
+                        VoicemailWindow *self)
+{
+  GstStateChangeReturn ret;
+  GstState old_state = self->state;
+
+  ret = gst_element_set_state (self->playbin, GST_STATE_READY);
+  if (ret == GST_STATE_CHANGE_FAILURE)
+    g_printerr ("Unable to set the pipeline to the stopped state.\n");
+  else {
+      g_autofree char *duration = NULL;
+      VvmSettings *settings = vvm_settings_get_default ();
+
+      if (old_state == GST_STATE_PLAYING)
+        vvm_settings_decriment_stream_count (settings);
+
+      gtk_image_set_from_icon_name (self->play_button_icon, ICON_PLAYBACK_START);
+      self->state = GST_STATE_READY;
+      self->minutes = 0;
+      self->seconds = 0;
+      duration = g_strdup_printf ("%02lu:%02lu/%s", (long unsigned) self->minutes, (long unsigned) self->seconds, self->duration_formatted);
+      adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->second_row), duration);
+    }
+}
+
 static void
 delete_button_clicked_cb (GtkButton       *btn,
                           VoicemailWindow *self)
@@ -111,41 +138,16 @@ delete_button_clicked_cb (GtkButton       *btn,
       return;
     }
 
-  if (self->state != GST_STATE_PLAYING)   //We are stopped
-    {
-      voicemail_window_delete_self (self);
-      return;
-    }
-  else {   //We are playing or paused
-      GstStateChangeReturn ret;
-      ret = gst_element_set_state (self->playbin, GST_STATE_READY);
-      if (ret == GST_STATE_CHANGE_FAILURE)
-        g_printerr ("Unable to set the pipeline to the stopped state.\n");
-      else {
-          g_autofree char *duration = NULL;
-          VvmSettings *settings = vvm_settings_get_default ();
-          vvm_settings_decriment_stream_count (settings);
-          gst_element_set_state (self->playbin, GST_STATE_READY);
-          gtk_image_set_from_icon_name (self->play_button_icon, ICON_PLAYBACK_START);
-          gtk_image_set_from_icon_name (self->delete_button_icon, ICON_DELETE);
-          self->state = GST_STATE_PAUSED;
-          self->minutes = 0;
-          self->seconds = 0;
-          duration = g_strdup_printf ("%02lu:%02lu/%s", (long unsigned) self->minutes, (long unsigned) self->seconds, self->duration_formatted);
-          adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->second_row), duration);
-        }
-    }
+  if (self->state == GST_STATE_PLAYING)   //We are stopped
+    stop_button_clicked_cb (btn, self);
+
+  voicemail_window_delete_self (self);
 }
 
 static void
 main_window_closed_cb (VoicemailWindow *self)
 {
-  if (self->state == GST_STATE_PLAYING)
-    {
-      g_debug ("Stopping Playback");
-      delete_button_clicked_cb (self->delete_button, self);
-    }
-
+  stop_button_clicked_cb (self->stop_button, self);
   adw_expander_row_set_expanded (ADW_EXPANDER_ROW (self), FALSE);
 }
 
@@ -208,7 +210,6 @@ play_button_clicked_cb (GtkButton       *btn,
   if (self->state != GST_STATE_PLAYING)
     {
       GstStateChangeReturn ret;
-      gtk_image_set_from_icon_name (self->delete_button_icon, ICON_PLAYBACK_STOP);
       ret = gst_element_set_state (self->playbin, GST_STATE_PLAYING);
       if (ret == GST_STATE_CHANGE_FAILURE)
         g_printerr ("Unable to set the pipeline to the playing state.\n");
@@ -224,7 +225,6 @@ play_button_clicked_cb (GtkButton       *btn,
     }
   else {
       GstStateChangeReturn ret;
-      gtk_image_set_from_icon_name (self->delete_button_icon, ICON_DELETE);
       ret = gst_element_set_state (self->playbin, GST_STATE_PAUSED);
       if (ret == GST_STATE_CHANGE_FAILURE)
         g_printerr ("Unable to set the pipeline to the playing state.\n");
@@ -275,7 +275,6 @@ eos_cb (GstBus          *bus,
   self->minutes = 0;
   self->seconds = 0;
   duration = g_strdup_printf ("%02lu:%02lu/%s", (long unsigned) self->minutes, (long unsigned) self->seconds, self->duration_formatted);
-  gtk_image_set_from_icon_name (self->delete_button_icon, ICON_DELETE);
   adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->second_row), duration);
 }
 
@@ -599,13 +598,14 @@ voicemail_window_class_init (VoicemailWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, play_button_icon);
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, delete_button);
-  gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, delete_button_icon);
+  gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, stop_button);
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, second_row);
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, call_row);
   gtk_widget_class_bind_template_child (widget_class, VoicemailWindow, sms_row);
 
   gtk_widget_class_bind_template_callback (widget_class, play_button_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, delete_button_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, stop_button_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, call_button_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, sms_button_clicked_cb);
 
