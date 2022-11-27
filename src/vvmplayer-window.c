@@ -36,6 +36,8 @@ struct _VvmplayerWindow
   AdwToastOverlay *toast_overlay;
   AdwToast *toast;
 
+  GtkScrolledWindow   *scroll_window;
+
   gulong window_closed_id;
 };
 
@@ -132,6 +134,7 @@ vvmplayer_window_class_init (VvmplayerWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, speaker_output_button);
 
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, toast_overlay);
+  gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, scroll_window);
   gtk_widget_class_bind_template_callback (widget_class, speaker_output_button_clicked_cb);
 
   object_class->finalize = vvmplayer_window_finalize;
