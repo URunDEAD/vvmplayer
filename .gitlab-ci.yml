@@ -19,6 +19,7 @@ build-debian:
         libgtk-4-dev
         libadwaita-1-dev
         libgstreamer-plugins-base1.0-dev
+        desktop-file-utils
         xvfb
   script:
     - meson -Dwerror=true _build
@@ -39,6 +40,7 @@ build-alpine:
         evolution-data-server-dev
         libadwaita-dev
         gst-plugins-base-dev
+        desktop-file-utils
         meson
         xvfb-run
   script:
