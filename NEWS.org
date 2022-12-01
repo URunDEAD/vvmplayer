@@ -1,3 +1,9 @@
+vvmplayer (2.0.0)
+
+  [ Chris Talbot ]
+  * Add seperate delete button
+  * UI fixes
+
 vvmplayer (2.0~beta1)
 
   [ Chris Talbot ]
