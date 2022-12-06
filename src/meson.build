@@ -13,7 +13,7 @@ vvmplayer_sources = [
 
 vvmplayer_deps = [
   dependency('gtk4'),
-  dependency('libadwaita-1'),
+  dependency('libadwaita-1', version : '>=1.2.0'),
   dependency('libebook-contacts-1.2'),
   dependency('libebook-1.2'),
   dependency('gstreamer-1.0', version : '>1.16'),
