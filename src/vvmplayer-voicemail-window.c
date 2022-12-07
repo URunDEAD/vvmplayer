@@ -123,7 +123,7 @@ stop_button_clicked_cb (GtkButton       *btn,
       self->state = GST_STATE_READY;
       self->minutes = 0;
       self->seconds = 0;
-      duration = g_strdup_printf ("%02lu:%02lu/%s", (long unsigned) self->minutes, (long unsigned) self->seconds, self->duration_formatted);
+      duration = g_strdup_printf ("%02" G_GINT64_FORMAT ":%02" G_GINT64_FORMAT "/%s", self->minutes, self->seconds, self->duration_formatted);
       adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->second_row), duration);
     }
 }
@@ -167,7 +167,7 @@ refresh_ui (VoicemailWindow *self)
       self->seconds = 0;
       self->minutes = self->minutes + 1;
     }
-  duration = g_strdup_printf ("%02lu:%02lu/%s", (long unsigned) self->minutes, (long unsigned) self->seconds, self->duration_formatted);
+  duration = g_strdup_printf ("%02" G_GINT64_FORMAT ":%02" G_GINT64_FORMAT "/%s", self->minutes, self->seconds, self->duration_formatted);
   adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->second_row), duration);
 
   return TRUE;
@@ -274,7 +274,7 @@ eos_cb (GstBus          *bus,
 
   self->minutes = 0;
   self->seconds = 0;
-  duration = g_strdup_printf ("%02lu:%02lu/%s", (long unsigned) self->minutes, (long unsigned) self->seconds, self->duration_formatted);
+  duration = g_strdup_printf ("%02" G_GINT64_FORMAT ":%02" G_GINT64_FORMAT "/%s", self->minutes, self->seconds, self->duration_formatted);
   adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->second_row), duration);
 }
 
@@ -466,13 +466,13 @@ voicemail_window_new (GVariant      *message_t,
               else {
                   self->minutes = (self->duration / (GST_SECOND * 60)) % 60;
                   self->seconds = GST_TIME_AS_SECONDS (self->duration) - self->minutes * 60;
-                  self->duration_formatted = g_strdup_printf ("%02lu:%02lu", (long unsigned) self->minutes, (long unsigned) self->seconds);
+                  self->duration_formatted = g_strdup_printf ("%02" G_GINT64_FORMAT ":%02" G_GINT64_FORMAT, self->minutes, self->seconds);
                 }
             }
         }
       self->minutes = 0;
       self->seconds = 0;
-      duration = g_strdup_printf ("%02lu:%02lu/%s", (long unsigned) self->minutes, (long unsigned) self->seconds, self->duration_formatted);
+      duration = g_strdup_printf ("%02" G_GINT64_FORMAT ":%02" G_GINT64_FORMAT "/%s", self->minutes, self->seconds, self->duration_formatted);
       adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->second_row), duration);
       self->state = GST_STATE_READY;
 
