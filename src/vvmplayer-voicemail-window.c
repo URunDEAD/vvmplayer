@@ -116,7 +116,7 @@ dialog_finished (VoicemailWindow *self,
       if (g_strcmp0 (self->voicemail_file, g_file_peek_path (save_filename)))
         {
           vvm_file = g_file_new_for_path (self->voicemail_file);
-          g_file_copy_async (vvm_file, save_filename, 0, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, NULL, NULL);
+          g_file_copy_async (vvm_file, save_filename, G_FILE_COPY_OVERWRITE, G_PRIORITY_DEFAULT, NULL, NULL, NULL, NULL, NULL);
           g_debug ("Saving at %s", g_file_peek_path (save_filename));
         }
     }
