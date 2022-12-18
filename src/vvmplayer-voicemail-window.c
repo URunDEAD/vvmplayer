@@ -54,11 +54,13 @@ struct _VoicemailWindow
   char *objectpath;
   char *contact_name;
   char *number;
+  char *voicemail_file;
   int lifetime_status;
   GDBusProxy *message_proxy;
   GDateTime *time_local;
 
   gulong window_closed_id;
+  GtkWidget *dialog;
 };
 
 G_DEFINE_TYPE (VoicemailWindow, voicemail_window, ADW_TYPE_EXPANDER_ROW)
@@ -101,6 +103,65 @@ voicemail_window_delete_self (VoicemailWindow *self)
   gtk_list_box_remove (GTK_LIST_BOX (list_box), (GTK_WIDGET (self)));
 }
 
+static void
+dialog_finished (VoicemailWindow *self,
+                 int              response)
+{
+  if (response == GTK_RESPONSE_ACCEPT)
+    {
+      g_autoptr(GFile) save_filename = NULL;
+      g_autoptr(GFile) vvm_file = NULL;
+
+      save_filename = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (self->dialog));
+      if (g_strcmp0 (self->voicemail_file, g_file_peek_path (save_filename)))
+        {
+          vvm_file = g_file_new_for_path (self->voicemail_file);
+          g_file_copy_async (vvm_file, save_filename, 0, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, NULL, NULL);
+          g_debug ("Saving at %s", g_file_peek_path (save_filename));
+        }
+    }
+
+  gtk_window_destroy (GTK_WINDOW (self->dialog));
+  self->dialog = NULL;
+}
+
+static void
+save_button_clicked_cb (GtkButton       *btn,
+                        VoicemailWindow *self)
+{
+  GtkWindow *window;
+  GtkWidget *dialog;
+  g_autoptr(GFile) vvm_file = NULL;
+
+  if (self->dialog)
+    g_warning ("Save Dialog already open!");
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_file_chooser_dialog_new ("Select File...",
+                                        window,
+                                        GTK_FILE_CHOOSER_ACTION_SAVE,
+                                        "Cancel", GTK_RESPONSE_CANCEL,
+                                        "Save", GTK_RESPONSE_ACCEPT,
+                                        NULL);
+
+  gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
+
+  vvm_file = g_file_new_for_path (self->voicemail_file);
+  gtk_file_chooser_set_file (GTK_FILE_CHOOSER (dialog), vvm_file, NULL);
+
+  /* Make sure the dialog stays on top */
+  gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
+  gtk_window_present (GTK_WINDOW (dialog));
+
+  /* Save dialog looks weird on mobile unless maximized */
+  gtk_window_maximize (GTK_WINDOW (dialog));
+
+  self->dialog = dialog;
+  g_signal_connect_swapped (GTK_DIALOG (dialog),
+                            "response",
+                            G_CALLBACK (dialog_finished),
+                            self);
+}
 
 static void
 stop_button_clicked_cb (GtkButton       *btn,
@@ -421,6 +482,8 @@ voicemail_window_new (GVariant      *message_t,
         }
       self->duration = GST_CLOCK_TIME_NONE;
 
+      if (!self->voicemail_file)
+        self->voicemail_file = g_strdup (Attachment_list[attachment_counter]);
 
       attachment_uri = g_strdup_printf ("file://%s", Attachment_list[attachment_counter]);
       /*
@@ -581,7 +644,11 @@ voicemail_window_finalize (GObject *object)
   g_free (self->objectpath);
   g_free (self->number);
   g_free (self->contact_name);
+  g_free (self->voicemail_file);
   g_date_time_unref (self->time_local);
+  if (self->dialog)
+    gtk_window_destroy (GTK_WINDOW (self->dialog));
+
   G_OBJECT_CLASS (voicemail_window_parent_class)->finalize (object);
 }
 
@@ -608,6 +675,7 @@ voicemail_window_class_init (VoicemailWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, stop_button_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, call_button_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, sms_button_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, save_button_clicked_cb);
 
   object_class->finalize = voicemail_window_finalize;
 }
