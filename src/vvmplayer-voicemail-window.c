@@ -60,7 +60,6 @@ struct _VoicemailWindow
   GDateTime *time_local;
 
   gulong window_closed_id;
-  GtkWidget *dialog;
 };
 
 G_DEFINE_TYPE (VoicemailWindow, voicemail_window, ADW_TYPE_EXPANDER_ROW)
@@ -104,15 +103,18 @@ voicemail_window_delete_self (VoicemailWindow *self)
 }
 
 static void
-dialog_finished (VoicemailWindow *self,
-                 int              response)
+dialog_finished (GtkDialog       *dialog,
+                 int              response,
+                 gpointer        *user_data)
 {
+  VoicemailWindow *self = VVM_VOICEMAIL_WINDOW (user_data);
+
   if (response == GTK_RESPONSE_ACCEPT)
     {
       g_autoptr(GFile) save_filename = NULL;
       g_autoptr(GFile) vvm_file = NULL;
 
-      save_filename = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (self->dialog));
+      save_filename = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
       if (g_strcmp0 (self->voicemail_file, g_file_peek_path (save_filename)))
         {
           vvm_file = g_file_new_for_path (self->voicemail_file);
@@ -121,8 +123,7 @@ dialog_finished (VoicemailWindow *self,
         }
     }
 
-  gtk_window_destroy (GTK_WINDOW (self->dialog));
-  self->dialog = NULL;
+  gtk_window_destroy (GTK_WINDOW (dialog));
 }
 
 static void
@@ -132,9 +133,6 @@ save_button_clicked_cb (GtkButton       *btn,
   GtkWindow *window;
   GtkWidget *dialog;
   g_autoptr(GFile) vvm_file = NULL;
-
-  if (self->dialog)
-    g_warning ("Save Dialog already open!");
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
   dialog = gtk_file_chooser_dialog_new ("Select File...",
@@ -156,11 +154,10 @@ save_button_clicked_cb (GtkButton       *btn,
   /* Save dialog looks weird on mobile unless maximized */
   gtk_window_maximize (GTK_WINDOW (dialog));
 
-  self->dialog = dialog;
-  g_signal_connect_swapped (GTK_DIALOG (dialog),
-                            "response",
-                            G_CALLBACK (dialog_finished),
-                            self);
+  g_signal_connect (GTK_DIALOG (dialog),
+                    "response",
+                    G_CALLBACK (dialog_finished),
+                    self);
 }
 
 static void
@@ -646,8 +643,6 @@ voicemail_window_finalize (GObject *object)
   g_free (self->contact_name);
   g_free (self->voicemail_file);
   g_date_time_unref (self->time_local);
-  if (self->dialog)
-    gtk_window_destroy (GTK_WINDOW (self->dialog));
 
   G_OBJECT_CLASS (voicemail_window_parent_class)->finalize (object);
 }
