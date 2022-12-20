@@ -228,6 +228,7 @@ vvmplayer_application_about_action (GSimpleAction *action,
                          "copyright", "© 2021-2022 Chris Talbot",
                          "website", "https://gitlab.com/kop316/vvmplayer",
                          "issue-url", "https://gitlab.com/kop316/vvmplayer/-/issues",
+                         "support-url", "https://gitlab.com/kop316/vvmplayer/-/wikis/home",
                          "license-type", GTK_LICENSE_GPL_3_0,
                          NULL);
 }
