@@ -30,7 +30,6 @@
 #define ICON_PLAYBACK_START "media-playback-start-symbolic"
 #define ICON_PLAYBACK_PAUSE "media-playback-pause-symbolic"
 #define ICON_DELETE "user-trash-symbolic"
-#define NO_NUMBER "Anonymous"
 
 struct _VoicemailWindow
 {
@@ -336,6 +335,16 @@ eos_cb (GstBus          *bus,
   adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->second_row), duration);
 }
 
+static gboolean
+phone_utils_simple_is_valid (const char *number)
+{
+  if (strspn (number, "+()- 0123456789") != strlen (number))
+    return false;
+
+  return true;
+}
+
+
 /* This function is called when an error message is posted on the bus */
 static void
 error_cb (GstBus          *bus,
@@ -556,11 +565,11 @@ voicemail_window_new (GVariant      *message_t,
     }
 
   app_info_tel = g_app_info_get_default_for_uri_scheme ("tel");
-  if (app_info_tel && (g_strcmp0 (NO_NUMBER, Sender) != 0))
+  if (app_info_tel && phone_utils_simple_is_valid (Sender))
     gtk_widget_show (GTK_WIDGET (self->call_row));
 
   app_info_sms = g_app_info_get_default_for_uri_scheme ("sms");
-  if (app_info_sms && (g_strcmp0 (NO_NUMBER, Sender) != 0))
+  if (app_info_sms && phone_utils_simple_is_valid (Sender))
     gtk_widget_show (GTK_WIDGET (self->sms_row));
 
   voicemail_window_set_title (self);
