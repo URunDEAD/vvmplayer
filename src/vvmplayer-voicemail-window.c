@@ -114,7 +114,7 @@ dialog_finished (GtkDialog       *dialog,
       g_autoptr(GFile) vvm_file = NULL;
 
       save_filename = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
-      if (g_strcmp0 (self->voicemail_file, g_file_peek_path (save_filename)))
+      if (g_strcmp0 (self->voicemail_file, g_file_peek_path (save_filename)) != 0)
         {
           vvm_file = g_file_new_for_path (self->voicemail_file);
           g_file_copy_async (vvm_file, save_filename, G_FILE_COPY_OVERWRITE, G_PRIORITY_DEFAULT, NULL, NULL, NULL, NULL, NULL);
