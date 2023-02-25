@@ -527,7 +527,7 @@ vvm_preferences_refresh_settings (void)
 
   if (vvm_settings_get_service_available (settings))
     {
-      if (vvmplayer_vvmd_get_service_settings (backend) == FALSE)
+      if (vvmplayer_vvmd_update_service_settings (backend) == FALSE)
         {
           g_debug ("Error getting VVMD Service Settings");
           vvm_settings_load_service_defaults (settings);

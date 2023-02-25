@@ -38,6 +38,10 @@ struct _VvmplayerWindow
 
   GtkScrolledWindow   *scroll_window;
 
+  AdwStatusPage *window_status_page;
+
+  //Watch ID
+  gulong vvm_settings_watch_id;
   gulong window_closed_id;
 };
 
@@ -105,6 +109,40 @@ speaker_output_button_clicked_cb (GtkToggleButton *btn,
 }
 
 static void
+update_settings_cb (VvmplayerWindow *self)
+{
+  VvmSettings *settings = vvm_settings_get_default ();
+
+  const char *vvm_disabled_text =
+  "Go to Preferences to "
+  "enable and see "
+  "<a href=\"https://gitlab.com/kop316/vvmplayer/-/wikis/home\">"
+  "here</a> for "
+  "configuration help.";
+
+  const char *no_vvmd_text =
+  "Please install or enable "
+  "<a href=\"https://gitlab.com/kop316/vvmd/\">"
+  "vvmd</a>";
+
+
+  if (vvm_settings_get_mm_available (settings) == FALSE)
+    {
+      adw_status_page_set_title (self->window_status_page, "vvmd not active");
+      adw_status_page_set_description (self->window_status_page, no_vvmd_text);
+  } else if (vvm_settings_get_mailbox_active (settings) == TRUE)
+    {
+      adw_status_page_set_title (self->window_status_page, "No Voicemails!");
+      adw_status_page_set_description (self->window_status_page, no_vvmd_text);
+  } else
+    {
+      adw_status_page_set_title (self->window_status_page, "Visual Voicemail disabled");
+      adw_status_page_set_description (self->window_status_page, vvm_disabled_text);
+    }
+
+}
+
+static void
 main_window_closed_cb (VvmplayerWindow *self)
 {
   GtkAdjustment *vadjustment = NULL;
@@ -121,9 +159,13 @@ static void
 vvmplayer_window_finalize (GObject *object)
 {
   VvmplayerWindow *self = (VvmplayerWindow *)object;
+  VvmVvmd *backend = vvm_vvmd_get_default ();
 
   g_signal_handler_disconnect (g_application_get_default (),
                                self->window_closed_id);
+
+  g_signal_handler_disconnect (backend,
+                               self->vvm_settings_watch_id);
 
   G_OBJECT_CLASS (vvmplayer_window_parent_class)->finalize (object);
 }
@@ -142,6 +184,7 @@ vvmplayer_window_class_init (VvmplayerWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, toast_overlay);
   gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, scroll_window);
+  gtk_widget_class_bind_template_child (widget_class, VvmplayerWindow, window_status_page);
   gtk_widget_class_bind_template_callback (widget_class, speaker_output_button_clicked_cb);
 
   object_class->finalize = vvmplayer_window_finalize;
@@ -162,4 +205,7 @@ vvmplayer_window_init (VvmplayerWindow *self)
                                                      "main-window-closed",
                                                      G_CALLBACK (main_window_closed_cb),
                                                      self);
+
+  self->vvm_settings_watch_id = g_signal_connect_swapped (backend, "settings-updated",
+                                                          G_CALLBACK (update_settings_cb), self);
 }
