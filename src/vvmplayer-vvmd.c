@@ -835,6 +835,38 @@ vvmplayer_vvmd_provision_settings_changed_cb (GDBusConnection *connection,
     }
 }
 
+static int
+vvmplayer_vvmd_sub_to_mm_settings (VvmVvmd *self)
+{
+
+  if (vvmplayer_vvmd_get_mm_settings (self) == FALSE)
+    return FALSE;
+
+  self->vvmd_mm_provision_watch_id = g_dbus_connection_signal_subscribe (self->connection,
+                                                                         VVMD_SERVICE,
+                                                                         VVMD_MODEMMANAGER_INTERFACE,
+                                                                         "ProvisionStatusChanged",
+                                                                         VVMD_PATH,
+                                                                         NULL,
+                                                                         G_DBUS_SIGNAL_FLAGS_NONE,
+                                                                         (GDBusSignalCallback)vvmplayer_vvmd_provision_status_changed_cb,
+                                                                         self,
+                                                                         NULL);
+
+  self->vvmd_mm_settings_watch_id = g_dbus_connection_signal_subscribe (self->connection,
+                                                                        VVMD_SERVICE,
+                                                                        VVMD_MODEMMANAGER_INTERFACE,
+                                                                        "SettingsChanged",
+                                                                        VVMD_PATH,
+                                                                        NULL,
+                                                                        G_DBUS_SIGNAL_FLAGS_NONE,
+                                                                        (GDBusSignalCallback)vvmplayer_vvmd_provision_settings_changed_cb,
+                                                                        self,
+                                                                        NULL);
+
+  return TRUE;
+}
+
 int
 vvmplayer_vvmd_get_mm_settings (VvmVvmd *self)
 {
@@ -883,28 +915,6 @@ vvmplayer_vvmd_get_mm_settings (VvmVvmd *self)
         vvm_settings_set_vvm_provision_status (settings, ProvisionStatus);
     }
 
-  self->vvmd_mm_provision_watch_id = g_dbus_connection_signal_subscribe (self->connection,
-                                                                         VVMD_SERVICE,
-                                                                         VVMD_MODEMMANAGER_INTERFACE,
-                                                                         "ProvisionStatusChanged",
-                                                                         VVMD_PATH,
-                                                                         NULL,
-                                                                         G_DBUS_SIGNAL_FLAGS_NONE,
-                                                                         (GDBusSignalCallback)vvmplayer_vvmd_provision_status_changed_cb,
-                                                                         self,
-                                                                         NULL);
-
-  self->vvmd_mm_settings_watch_id = g_dbus_connection_signal_subscribe (self->connection,
-                                                                        VVMD_SERVICE,
-                                                                        VVMD_MODEMMANAGER_INTERFACE,
-                                                                        "SettingsChanged",
-                                                                        VVMD_PATH,
-                                                                        NULL,
-                                                                        G_DBUS_SIGNAL_FLAGS_NONE,
-                                                                        (GDBusSignalCallback)vvmplayer_vvmd_provision_settings_changed_cb,
-                                                                        self,
-                                                                        NULL);
-
   return TRUE;
 }
 
@@ -914,7 +924,7 @@ vvmplayer_vvmd_retry_mm_settings (gpointer user_data)
   VvmVvmd *self = user_data;
   g_debug ("Retrying...");
 
-  if (vvmplayer_vvmd_get_mm_settings (self) == FALSE)
+  if (vvmplayer_vvmd_sub_to_mm_settings (self) == FALSE)
     {
       g_warning ("Error getting VVMD Modem Manager Settings");
 
@@ -949,7 +959,7 @@ vvmplayer_vvmd_get_modemmanager_cb (GObject      *simple,
   if (error != NULL)
     g_warning ("Error in VVMD Modem Manager Proxy call: %s\n", error->message);
   else {
-      if (vvmplayer_vvmd_get_mm_settings (self) == FALSE)
+      if (vvmplayer_vvmd_sub_to_mm_settings (self) == FALSE)
         {
           g_warning ("Error getting VVMD Modem Manager Settings");
 
