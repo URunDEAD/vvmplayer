@@ -546,9 +546,24 @@ vvm_player_preferences_window_new (void)
 }
 
 static void
+vvm_player_preferences_window_finalize (GObject *object)
+{
+  VvmplayerPreferencesWindow *self = (VvmplayerPreferencesWindow *)object;
+  VvmVvmd *backend = vvm_vvmd_get_default ();
+
+  g_signal_handler_disconnect (backend,
+                               self->vvm_settings_watch_id);
+
+  G_OBJECT_CLASS (vvm_player_preferences_window_parent_class)->finalize (object);
+}
+
+static void
 vvm_player_preferences_window_class_init (VvmplayerPreferencesWindowClass *klass)
 {
+  GObjectClass   *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+  object_class->finalize = vvm_player_preferences_window_finalize;
 
   gtk_widget_class_set_template_from_resource (widget_class, "/org/kop316/vvmplayer/ui/vvmplayer-preferences-window.ui");
 
