@@ -230,6 +230,28 @@ vvmplayer_vvmd_set_mm_setting (VvmVvmd    *self,
 }
 
 int
+vvmplayer_vvmd_update_service_settings (VvmVvmd *self)
+{
+  int MailBoxActiveOld, MailBoxActive;
+  VvmSettings *settings = vvm_settings_get_default ();
+
+  MailBoxActiveOld = vvm_settings_get_mailbox_active (settings);
+  if (vvmplayer_vvmd_get_service_settings (self) == FALSE)
+    {
+      g_debug ("Error getting VVMD Service Settings");
+      return FALSE;
+    }
+
+  MailBoxActive = vvm_settings_get_mailbox_active (settings);
+
+  /* Send a signal out if this is different */
+  if (MailBoxActiveOld != MailBoxActive)
+    g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
+
+  return TRUE;
+}
+
+int
 vvmplayer_vvmd_get_service_settings (VvmVvmd *self)
 {
   g_autoptr(GError) error = NULL;

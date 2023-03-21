@@ -71,6 +71,8 @@ int vvmplayer_vvmd_set_mm_vvm_enabled (VvmVvmd *self,
 
 int vvmplayer_vvmd_get_service_settings (VvmVvmd *self);
 
+int vvmplayer_vvmd_update_service_settings (VvmVvmd *self);
+
 int vvmplayer_vvmd_check_subscription_status (VvmVvmd *self);
 
 int vvmplayer_vvmd_sync_vvm (VvmVvmd *self);
