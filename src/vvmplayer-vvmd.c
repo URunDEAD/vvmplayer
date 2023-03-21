@@ -685,9 +685,6 @@ vvmplayer_vvmd_service_removed_cb (GDBusConnection *connection,
   g_debug ("%s", __func__);
   g_debug ("Service Removed g_variant: %s", g_variant_print (parameters, TRUE));
   vvmplayer_vvmd_remove_service (self);
-
-  g_debug ("Emitting update settings signal");
-  g_signal_emit (self, signals[SETTINGS_UPDATED], 0);
 }
 
 static void
