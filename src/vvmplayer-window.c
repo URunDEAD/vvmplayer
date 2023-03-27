@@ -133,7 +133,7 @@ update_settings_cb (VvmplayerWindow *self)
   } else if (vvm_settings_get_mailbox_active (settings) == TRUE)
     {
       adw_status_page_set_title (self->window_status_page, "No Voicemails!");
-      adw_status_page_set_description (self->window_status_page, no_vvmd_text);
+      adw_status_page_set_description (self->window_status_page, "");
   } else
     {
       adw_status_page_set_title (self->window_status_page, "Visual Voicemail disabled");
