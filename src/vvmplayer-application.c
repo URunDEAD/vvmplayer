@@ -22,6 +22,7 @@
 #include "version.h"
 
 #include "vvmplayer-application.h"
+#include "vvmplayer-debug-info.h"
 #include "vvmplayer-preferences-window.h"
 #include "vvmplayer-settings.h"
 #include "vvmplayer-window.h"
@@ -214,10 +215,13 @@ vvmplayer_application_about_action (GSimpleAction *action,
   static const char *artists[] = {"Asiya Morris <aitrisart@gmail.com>", NULL};
   VvmplayerApplication *self = (VvmplayerApplication *)user_data;
   GtkWindow *window = NULL;
+  g_autofree char *debug_info = NULL;
 
   g_assert (VVMPLAYER_IS_APPLICATION (self));
 
   window = gtk_application_get_active_window (GTK_APPLICATION (self));
+
+  debug_info = vvm_generate_debug_info ();
 
   adw_show_about_window (window,
                          "application-name", "Visual Voicemail",
@@ -229,6 +233,7 @@ vvmplayer_application_about_action (GSimpleAction *action,
                          "website", "https://gitlab.com/kop316/vvmplayer",
                          "issue-url", "https://gitlab.com/kop316/vvmplayer/-/issues",
                          "support-url", "https://gitlab.com/kop316/vvmplayer/-/wikis/home",
+                         "debug-info", debug_info,
                          "license-type", GTK_LICENSE_GPL_3_0,
                          NULL);
 }

@@ -3,6 +3,7 @@ vvmplayer_sources = [
   'vvmplayer-application.c',
   'vvmplayer-contact.c',
   'vvmplayer-contact-provider.c',
+  'vvmplayer-debug-info.c',
   'vvmplayer-notification.c',
   'vvmplayer-preferences-window.c',
   'vvmplayer-settings.c',
