@@ -1,3 +1,8 @@
+vvmplayer (2.3.0)
+
+  [ Chris Talbot ]
+  * Make Main UI more intuitive on voicemail status
+
 vvmplayer (2.2.0)
 
   [ Chris Talbot ]
