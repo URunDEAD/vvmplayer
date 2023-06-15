@@ -85,13 +85,14 @@
                 <property name="title" translatable="yes">VVM Type</property>
                 <property name="model">
                   <object class="GtkStringList">
-                    <items>
+                    <items> <!-- This has to align with vvm_type enum -->
                       <item translatable="yes">Unknown</item>
                       <item translatable="yes">cvvm</item>
                       <item translatable="yes">AT&amp;T USA</item>
                       <item translatable="yes">otmp</item>
                       <item translatable="yes">Free Mobile FR</item>
                       <item translatable="yes">vvm3</item>
+                      <item translatable="yes">iOS</item>
                     </items>
                   </object>
                 </property>

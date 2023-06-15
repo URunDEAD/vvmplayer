@@ -54,6 +54,7 @@ enum vvm_type {
   VVM_TYPE_OTMP,
   VVM_TYPE_FREEMOBILEFRA,
   VVM_TYPE_VVM_THREE,
+  VVM_TYPE_IOS,
 };
 
 VvmVvmd *vvm_vvmd_get_default                  (void);

@@ -66,6 +66,8 @@ vvmplayer_vvmd_encode_vvm_type (const char *vvm_type)
     return VVM_TYPE_OTMP;
   else if (g_strcmp0 (vvm_type, "vvm3") == 0)
     return VVM_TYPE_VVM_THREE;
+  else if (g_strcmp0 (vvm_type, "ios") == 0)
+    return VVM_TYPE_IOS;
   else
     return VVM_TYPE_UNKNOWN;
   return VVM_TYPE_UNKNOWN;
@@ -94,6 +96,9 @@ vvmplayer_vvmd_decode_vvm_type (int vvm_type)
 
     case VVM_TYPE_VVM_THREE:
       return g_strdup ("vvm3");
+
+    case VVM_TYPE_IOS:
+      return g_strdup ("ios");
 
     default:
       return g_strdup ("Unknown");
