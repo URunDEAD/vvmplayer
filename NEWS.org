@@ -1,3 +1,8 @@
+vvmplayer (2.3.1)
+
+  [ Chris Talbot ]
+  * Add iOS to VVM standards
+
 vvmplayer (2.3.0)
 
   [ Chris Talbot ]
