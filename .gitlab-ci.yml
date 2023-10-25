@@ -6,7 +6,7 @@
     - tags
 
 build-debian:
-  image: debian:bookworm
+  image: debian:trixie
   <<: *only-default
   before_script:
     - apt update
