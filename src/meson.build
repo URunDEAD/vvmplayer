@@ -13,7 +13,7 @@ vvmplayer_sources = [
 ]
 
 vvmplayer_deps = [
-  dependency('gtk4'),
+  dependency('gtk4', version : '>=4.10'),
   dependency('libadwaita-1', version : '>=1.2.0'),
   dependency('libebook-contacts-1.2'),
   dependency('libebook-1.2'),
