@@ -102,61 +102,53 @@ voicemail_window_delete_self (VoicemailWindow *self)
 }
 
 static void
-dialog_finished (GtkDialog       *dialog,
-                 int              response,
-                 gpointer        *user_data)
+save_dialog_finished (GObject         *dialog,
+                      GAsyncResult    *response,
+                      gpointer        user_data)
 {
   VoicemailWindow *self = VVM_VOICEMAIL_WINDOW (user_data);
+  g_autoptr(GError) error = NULL;
+  g_autoptr(GFile) save_filename = NULL;
 
-  if (response == GTK_RESPONSE_ACCEPT)
+  save_filename = gtk_file_dialog_save_finish (GTK_FILE_DIALOG (dialog), response, &error);
+  g_clear_object (&dialog);
+
+  if (error != NULL)
     {
-      g_autoptr(GFile) save_filename = NULL;
-      g_autoptr(GFile) vvm_file = NULL;
-
-      save_filename = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
-      if (g_strcmp0 (self->voicemail_file, g_file_peek_path (save_filename)) != 0)
-        {
-          vvm_file = g_file_new_for_path (self->voicemail_file);
-          g_file_copy_async (vvm_file, save_filename, G_FILE_COPY_OVERWRITE, G_PRIORITY_DEFAULT, NULL, NULL, NULL, NULL, NULL);
-          g_debug ("Saving at %s", g_file_peek_path (save_filename));
-        }
+      g_warning ("Error saving: %s", error->message);
+      return;
     }
 
-  gtk_window_destroy (GTK_WINDOW (dialog));
+  if (g_strcmp0 (self->voicemail_file, g_file_peek_path (save_filename)) != 0)
+    {
+      g_autoptr(GFile) vvm_file = NULL;
+
+      vvm_file = g_file_new_for_path (self->voicemail_file);
+      g_file_copy_async (vvm_file, save_filename, G_FILE_COPY_OVERWRITE, G_PRIORITY_DEFAULT, NULL, NULL, NULL, NULL, NULL);
+      g_debug ("Saving at %s", g_file_peek_path (save_filename));
+    }
 }
+
 
 static void
 save_button_clicked_cb (GtkButton       *btn,
                         VoicemailWindow *self)
 {
-  GtkWindow *window;
-  GtkWidget *dialog;
+  GtkFileDialog *dialog;
   g_autoptr(GFile) vvm_file = NULL;
+  GtkWindow *window;
 
+  g_debug ("Saving Voicemail...");
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = gtk_file_chooser_dialog_new ("Select File...",
-                                        window,
-                                        GTK_FILE_CHOOSER_ACTION_SAVE,
-                                        "Cancel", GTK_RESPONSE_CANCEL,
-                                        "Save", GTK_RESPONSE_ACCEPT,
-                                        NULL);
 
-  gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
-
+  dialog = gtk_file_dialog_new ();
   vvm_file = g_file_new_for_path (self->voicemail_file);
-  gtk_file_chooser_set_file (GTK_FILE_CHOOSER (dialog), vvm_file, NULL);
 
-  /* Make sure the dialog stays on top */
-  gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
-  gtk_window_present (GTK_WINDOW (dialog));
+  gtk_file_dialog_set_initial_file (dialog, vvm_file);
+  gtk_file_dialog_set_modal (dialog, TRUE);
+  gtk_file_dialog_set_title (dialog, "Save Voicemail as....");
 
-  /* Save dialog looks weird on mobile unless maximized */
-  gtk_window_maximize (GTK_WINDOW (dialog));
-
-  g_signal_connect (GTK_DIALOG (dialog),
-                    "response",
-                    G_CALLBACK (dialog_finished),
-                    self);
+  gtk_file_dialog_save (dialog, window, NULL, save_dialog_finished, self);
 }
 
 static void
@@ -566,11 +558,11 @@ voicemail_window_new (GVariant      *message_t,
 
   app_info_tel = g_app_info_get_default_for_uri_scheme ("tel");
   if (app_info_tel && phone_utils_simple_is_valid (Sender))
-    gtk_widget_show (GTK_WIDGET (self->call_row));
+    gtk_widget_set_visible (GTK_WIDGET (self->call_row), TRUE);
 
   app_info_sms = g_app_info_get_default_for_uri_scheme ("sms");
   if (app_info_sms && phone_utils_simple_is_valid (Sender))
-    gtk_widget_show (GTK_WIDGET (self->sms_row));
+    gtk_widget_set_visible (GTK_WIDGET (self->sms_row), TRUE);
 
   voicemail_window_set_title (self);
 
@@ -614,14 +606,21 @@ call_button_clicked_cb (GtkButton       *btn,
                         VoicemailWindow *self)
 {
   g_autofree char *uri = NULL;
+  GtkUriLauncher *uri_launcher = NULL;
+  GtkWindow *window;
 
   g_debug ("Call Button Clicked");
-
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
   uri = g_strconcat ("tel://",
                      self->number,
                      NULL);
 
-  gtk_show_uri (NULL, uri, GDK_CURRENT_TIME);
+  uri_launcher = gtk_uri_launcher_new (uri);
+
+  gtk_uri_launcher_launch (uri_launcher,
+                           window, NULL, NULL, NULL);
+
+  g_clear_object (&uri_launcher);
 }
 
 static void
@@ -629,14 +628,21 @@ sms_button_clicked_cb (GtkButton       *btn,
                        VoicemailWindow *self)
 {
   g_autofree char *uri = NULL;
+  GtkUriLauncher *uri_launcher = NULL;
+  GtkWindow *window;
 
   g_debug ("SMS Button Clicked");
-
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
   uri = g_strconcat ("sms://",
                      self->number,
                      NULL);
 
-  gtk_show_uri (NULL, uri, GDK_CURRENT_TIME);
+  uri_launcher = gtk_uri_launcher_new (uri);
+
+  gtk_uri_launcher_launch (uri_launcher,
+                           window, NULL, NULL, NULL);
+
+  g_clear_object (&uri_launcher);
 }
 
 static void
