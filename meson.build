@@ -37,7 +37,11 @@ config_h.set_quoted('PACKAGE_NAME', pkg_name)
 config_h.set_quoted('PACKAGE_ID', pkg_id)
 config_h.set_quoted('PACKAGE_LOCALE_DIR', pkg_localedir)
 configure_file(output: 'config.h', configuration: config_h)
-add_project_arguments(['-I' + meson.project_build_root()], language: 'c')
+
+add_project_arguments([
+  '-I' + meson.project_build_root(),
+  '-DHAVE_CONFIG_H',
+], language: 'c')
 
 project_c_args = []
 test_c_args = [

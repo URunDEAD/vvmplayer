@@ -2,5 +2,11 @@ data/org.kop316.vvmplayer.desktop.in
 data/org.kop316.vvmplayer.appdata.xml.in
 data/org.kop316.vvmplayer.gschema.xml
 src/main.c
+src/vvmplayer-contact.c
+src/vvmplayer-notification.c
+src/vvmplayer-preferences-window.c
+src/vvmplayer-voicemail-window.c
 src/vvmplayer-window.c
-src/vvmplayer-window.ui
+src/ui/vvmplayer-preferences-window.ui
+src/ui/vvmplayer-voicemail-window.ui
+src/ui/vvmplayer-window.ui

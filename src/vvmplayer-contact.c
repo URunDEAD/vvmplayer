@@ -190,11 +190,11 @@ vvm_contact_get_value_type (VvmContact *self)
     return "";
 
   if (e_vcard_attribute_has_type (self->attribute, "cell"))
-    return _("Mobile: ");
+    return _("Mobile:");
   if (e_vcard_attribute_has_type (self->attribute, "work"))
-    return _("Work: ");
+    return _("Work:");
   if (e_vcard_attribute_has_type (self->attribute, "other"))
-    return _("Other: ");
+    return _("Other:");
 
   return "";
 }

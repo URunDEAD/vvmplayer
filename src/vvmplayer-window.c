@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#include <glib/gi18n.h>
 #include "config.h"
 #include "vvmplayer-window.h"
 #include "vvmplayer-voicemail-window.h"
@@ -28,7 +29,7 @@ struct _VvmplayerWindow
   AdwApplicationWindow  parent_instance;
 
   /* Template widgets */
-  GtkWidget        *header_bar;
+  GtkWidget           *header_bar;
   GtkListBox          *visual_voicemail;
   GtkToggleButton     *speaker_output_button;
   GtkImage            *speaker_output_image;
@@ -114,29 +115,29 @@ update_settings_cb (VvmplayerWindow *self)
   VvmSettings *settings = vvm_settings_get_default ();
 
   const char *vvm_disabled_text =
-  "Go to Preferences to "
+  _("Go to Preferences to "
   "enable and see "
   "<a href=\"https://gitlab.com/kop316/vvmplayer/-/wikis/home\">"
   "here</a> for "
-  "configuration help.";
+  "configuration help.");
 
   const char *no_vvmd_text =
-  "Please install or enable "
+  _("Please install or enable "
   "<a href=\"https://gitlab.com/kop316/vvmd/\">"
-  "vvmd</a>";
+  "vvmd</a>");
 
 
   if (vvm_settings_get_mm_available (settings) == FALSE)
     {
-      adw_status_page_set_title (self->window_status_page, "vvmd not active");
+      adw_status_page_set_title (self->window_status_page, _("vvmd not active"));
       adw_status_page_set_description (self->window_status_page, no_vvmd_text);
   } else if (vvm_settings_get_mailbox_active (settings) == TRUE)
     {
-      adw_status_page_set_title (self->window_status_page, "No Voicemails!");
+      adw_status_page_set_title (self->window_status_page, _("No Voicemails!"));
       adw_status_page_set_description (self->window_status_page, "");
   } else
     {
-      adw_status_page_set_title (self->window_status_page, "Visual Voicemail disabled");
+      adw_status_page_set_title (self->window_status_page, _("Visual Voicemail disabled"));
       adw_status_page_set_description (self->window_status_page, vvm_disabled_text);
     }
 

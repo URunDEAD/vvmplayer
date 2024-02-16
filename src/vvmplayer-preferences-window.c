@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#include <glib/gi18n.h>
 #include "vvmplayer-preferences-window.h"
 #include "vvmplayer-settings.h"
 #include "vvmplayer-vvmd.h"
@@ -139,15 +140,15 @@ vvm_type_selected_cb (GObject                    *sender,
           if (row_selected == VVM_TYPE_ATTUSA)
             {
               adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->carrier_prefix_text_row),
-                                             "AT&amp;T USA Number (No dashes or spaces)");
+                                             _("AT&amp;T USA Number (No dashes or spaces)"));
               gtk_entry_set_placeholder_text (self->carrier_prefix_text,
-                                              "AT&T USA Number (No dashes or spaces)");
+                                              _("AT&T USA Number (No dashes or spaces)"));
             }
           else {
               adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->carrier_prefix_text_row),
-                                             "Carrier Prefix");
+                                             _("Carrier Prefix"));
               gtk_entry_set_placeholder_text (self->carrier_prefix_text,
-                                              "Carrier Prefix");
+                                              _("Carrier Prefix"));
             }
         }
     }
@@ -172,7 +173,7 @@ static void
 refresh_settings_button_clicked_cb (GtkButton                  *btn,
                                     VvmplayerPreferencesWindow *self)
 {
-  vvm_preferences_display_toast ("Refreshing Settings", self);
+  vvm_preferences_display_toast (_("Refreshing Settings"), self);
   update_settings_cb (self);
 }
 
@@ -217,7 +218,7 @@ set_default_modem_number (VvmplayerPreferencesWindow *self)
       if (vvmplayer_vvmd_set_mm_setting (backend,
                                          "DefaultModemNumber",
                                          modem_number) == FALSE)
-        vvm_preferences_display_toast ("Changing setting failed", self);
+        vvm_preferences_display_toast (_("Changing setting failed"), self);
     }
   else
     g_warning ("VVMD Modem Manager settings not available!");
@@ -241,7 +242,7 @@ set_carrier_prefix (VvmplayerPreferencesWindow *self)
                                          carrier_prefix) == FALSE)
         {
           g_warning ("Error changing setting in vvmd!");
-          vvm_preferences_display_toast ("Changing setting failed", self);
+          vvm_preferences_display_toast (_("Changing setting failed"), self);
         }
     }
   else
@@ -263,13 +264,13 @@ enable_vvm_switch_timeout (gpointer user_data)
   VVMActive = vvm_settings_get_mailbox_active (settings);
 
   if (!VVMActive && !EnableVVMSwitch)
-    toast_message = "VVM Disabled";
+    toast_message = _("VVM Disabled");
   else if (!VVMActive && EnableVVMSwitch)
-    toast_message = "Could not enable VVM";
+    toast_message = _("Could not enable VVM");
   else if (VVMActive && !EnableVVMSwitch)
-    toast_message = "Could not disable VVM";
+    toast_message = _("Could not disable VVM");
   else if (VVMActive && EnableVVMSwitch)
-    toast_message = "VVM Enabled";
+    toast_message = _("VVM Enabled");
 
   vvm_preferences_display_toast (toast_message, self);
 
@@ -293,7 +294,7 @@ enable_vvm_switch_flipped_cb (GtkSwitch                  *widget,
   if (vvm_settings_get_mm_available (settings) == FALSE)
     {
       g_debug ("Cannot find vvmd!");
-      vvm_preferences_display_toast ("Cannot find vvmd", self);
+      vvm_preferences_display_toast (_("Cannot find vvmd"), self);
       g_timeout_add_seconds (2, enable_vvm_switch_timeout, self);
       return FALSE;
     }
@@ -302,14 +303,14 @@ enable_vvm_switch_flipped_cb (GtkSwitch                  *widget,
   if (state)
     {
       g_debug ("Enabling VVM");
-      vvm_preferences_display_toast ("Enabling VVM...", self);
+      vvm_preferences_display_toast (_("Enabling VVM…"), self);
       set_destination_number (self);
       set_default_modem_number (self);
       set_carrier_prefix (self);
     }
   else {
       g_debug ("Disabling VVM");
-      vvm_preferences_display_toast ("Disabling VVM...", self);
+      vvm_preferences_display_toast (_("Disabling VVM…"), self);
     }
 
   g_timeout_add_seconds (10, enable_vvm_switch_timeout, self);
@@ -332,13 +333,13 @@ activate_vvm_button_timeout (gpointer user_data)
   update_settings_cb (self);
 
   if (!VVMActive && !EnableVVMSwitch)
-    toast_message = "VVM Disabled";
+    toast_message = _("VVM Disabled");
   else if (!VVMActive && EnableVVMSwitch)
-    toast_message = "Could not activate VVM";
+    toast_message = _("Could not activate VVM");
   else if (VVMActive && !EnableVVMSwitch)
-    toast_message = "Could not deactivate VVM";
+    toast_message = _("Could not deactivate VVM");
   else if (VVMActive && EnableVVMSwitch)
-    toast_message = "VVM Enabled";
+    toast_message = _("VVM Enabled");
 
   vvm_preferences_display_toast (toast_message, self);
 
@@ -358,25 +359,25 @@ activate_vvm_button_clicked_cb (GtkButton                  *btn,
   if (vvm_settings_get_mm_available (settings) == FALSE)
     {
       g_debug ("Cannot find VVMD!");
-      vvm_preferences_display_toast ("Cannot find VVMD", self);
+      vvm_preferences_display_toast (_("Cannot find VVMD"), self);
       return;
     }
 
   if (VVMEnabled == FALSE)
     {
       g_debug ("VVM not Active!");
-      vvm_preferences_display_toast ("VVM not enabled in VVM Player", self);
+      vvm_preferences_display_toast (_("VVM not enabled in VVM Player"), self);
       return;
     }
 
   if (MailboxActive == TRUE)
     {
       g_debug ("Mailbox already Active!");
-      vvm_preferences_display_toast ("Mailbox already active", self);
+      vvm_preferences_display_toast (_("Mailbox already active"), self);
       return;
     }
   g_debug ("Activating VVM.....");
-  vvm_preferences_display_toast ("Activating VVM", self);
+  vvm_preferences_display_toast (_("Activating VVM"), self);
   gtk_widget_set_sensitive (GTK_WIDGET (self->activate_vvm_button), FALSE);
   g_timeout_add_seconds (10, activate_vvm_button_timeout, self);
 
@@ -408,26 +409,26 @@ sync_vvm_button_clicked_cb (GtkButton                  *btn,
   if (vvm_settings_get_mm_available (settings) == FALSE)
     {
       g_debug ("Cannot find vvmd!");
-      vvm_preferences_display_toast ("Cannot find VVMD", self);
+      vvm_preferences_display_toast (_("Cannot find VVMD"), self);
       return;
     }
 
   if (VVMEnabled == FALSE)
     {
       g_debug ("VVM not Active!");
-      vvm_preferences_display_toast ("VVM not enabled", self);
+      vvm_preferences_display_toast (_("VVM not enabled"), self);
       return;
     }
 
   if (MailboxActive == FALSE)
     {
       g_debug ("Mailbox not Active!");
-      vvm_preferences_display_toast ("Mailbox not active", self);
+      vvm_preferences_display_toast (_("Mailbox not active"), self);
       return;
     }
 
   g_debug ("Syncing VVM.....");
-  vvm_preferences_display_toast ("Syncing...", self);
+  vvm_preferences_display_toast (_("Syncing…"), self);
   gtk_widget_set_sensitive (GTK_WIDGET (self->sync_vvm_button), FALSE);
   g_timeout_add_seconds (10, sync_vvm_button_timeout, self);
   vvmplayer_vvmd_sync_vvm (backend);
@@ -502,7 +503,7 @@ vvm_preferences_window_populate (VvmplayerPreferencesWindow *self)
     gtk_image_set_from_icon_name (self->mailbox_active_image, STATUS_BAD);
 
   VVMProvisionStatus = vvm_settings_get_vvm_provision_status (settings);
-  VVMProvisionStatus = g_strdup_printf ("Provision Status: %s", VVMProvisionStatus);
+  VVMProvisionStatus = g_strdup_printf (_("Provision Status: %s"), VVMProvisionStatus);
   adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self->provision_status_text), VVMProvisionStatus);
 }
 

@@ -25,9 +25,10 @@
 #define G_LOG_DOMAIN "vvmplayer-notification"
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include "config.h"
 #endif
 
+#include <glib/gi18n.h>
 #include "vvmplayer-notification.h"
 
 /**
@@ -51,10 +52,11 @@ vvmplayer_notification_send_unread_vvm (int unread_vvms)
   g_application_withdraw_notification (vvm_player, "unread-message");
 
   title = g_strdup ("New Voicemail");
-  if (unread_vvms == 1)
-    body = g_strdup_printf ("You have %d new voicemail", unread_vvms);
-  else
-    body = g_strdup_printf ("You have %d new voicemails", unread_vvms);
+  body = g_strdup_printf (g_dngettext (GETTEXT_PACKAGE,
+                                       "You have %d new voicemail",
+                                       "You have %d new voicemails",
+                                       unread_vvms),
+                          unread_vvms);
   notification = g_notification_new (title);
   g_notification_set_body (notification, body);
   g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_HIGH);

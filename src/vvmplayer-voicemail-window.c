@@ -24,6 +24,7 @@
 # include "config.h"
 #endif
 
+#include <glib/gi18n.h>
 #include "vvmplayer-voicemail-window.h"
 
 #define ICON_PLAYBACK_STOP "media-playback-stop-symbolic"
@@ -71,9 +72,9 @@ voicemail_window_set_title (VoicemailWindow *self)
   if (self->lifetime_status == VVM_LIFETIME_STATUS_NOT_READ)
     {
       if (self->contact_name)
-        title = g_strdup_printf ("%s (Unread)", self->contact_name);
+        title = g_strdup_printf (_("%s (Unread)"), self->contact_name);
       else
-        title = g_strdup_printf ("%s (Unread)", self->number);
+        title = g_strdup_printf (_("%s (Unread)"), self->number);
     }
   else {
       if (self->contact_name)
@@ -404,7 +405,7 @@ voicemail_window_new (GVariant      *message_t,
   g_debug ("%s: Making row for voicemail", __func__);
   g_variant_dict_init (&dict, properties);
   if (!g_variant_dict_lookup (&dict, "Date", "s", &Date))
-    Date = g_strdup ("Invalid Date");
+    Date = g_strdup (_("Invalid Date"));
   else {
       GDateTime *time_utc;
       GTimeZone *here = g_time_zone_new_local ();
@@ -413,7 +414,10 @@ voicemail_window_new (GVariant      *message_t,
       self->time_local = g_date_time_to_timezone (time_utc, here);
       g_date_time_unref (time_utc);
 
-      Date = g_date_time_format (self->time_local, "%a, %d %b %Y %I:%M:%S %p");
+      /* TRANSLATORS: Timestamp for minute accuracy, e.g. “2020-08-11 15:27”.
+       * See https://developer.gnome.org/glib/stable/glib-GDateTime.html#g-date-time-format
+       */
+      Date = g_date_time_format (self->time_local, _("%a, %d %b %Y %I:%M:%S %p"));
       g_time_zone_unref (here);
     }
 
