@@ -3,8 +3,6 @@
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.0"/>
   <template class="VvmplayerWindow" parent="AdwApplicationWindow">
-    <property name="default-width">600</property>
-    <property name="default-height">300</property>
     <child>
     <object class="GtkScrolledWindow" id="scroll_window">
       <property name="hscrollbar_policy">never</property>
@@ -12,10 +10,9 @@
         <child>
           <object class="AdwToastOverlay" id="toast_overlay">
             <property name="child">
-              <object class="GtkBox">
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkHeaderBar" id="header_bar">
+              <object class="AdwToolbarView">
+                <child type="top">
+                  <object class="AdwHeaderBar" id="header_bar">
                     <child type="end">
                       <object class="GtkMenuButton">
                         <property name="icon-name">open-menu-symbolic</property>
@@ -36,7 +33,7 @@
                     </child>
                   </object>
                 </child>
-                <child>
+                <property name="content">
                   <object class="GtkListBox" id="visual_voicemail">
                     <property name="visible">True</property>
                     <property name="vexpand">true</property>
@@ -47,7 +44,7 @@
                       </object>
                     </child>
                   </object>
-                </child>
+                </property>
               </object>
             </property>
           </object>

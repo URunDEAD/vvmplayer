@@ -28,7 +28,7 @@ struct _VvmplayerWindow
   AdwApplicationWindow  parent_instance;
 
   /* Template widgets */
-  GtkHeaderBar        *header_bar;
+  GtkWidget        *header_bar;
   GtkListBox          *visual_voicemail;
   GtkToggleButton     *speaker_output_button;
   GtkImage            *speaker_output_image;
