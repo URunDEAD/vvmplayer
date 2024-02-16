@@ -1,7 +1,7 @@
 ---
 .only-default: &only-default
   only:
-    - master
+    - main
     - merge_requests
     - tags
 
