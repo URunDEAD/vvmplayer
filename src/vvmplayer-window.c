@@ -197,6 +197,7 @@ vvmplayer_window_init (VvmplayerWindow *self)
   g_autoptr(GError) error = NULL;
   VvmVvmd *backend = vvm_vvmd_get_default ();
   gtk_widget_init_template (GTK_WIDGET (self));
+  gtk_widget_add_css_class (GTK_WIDGET (self->visual_voicemail), "navigation-sidebar");
   vvmplayer_vvmd_set_mm_vvm_list_box (backend, self);
 
   if (!call_audio_init (&error))
