@@ -105,6 +105,14 @@ foreach arg: test_c_args
 endforeach
 add_project_arguments(project_c_args, language: 'c')
 
+run_data = configuration_data()
+run_data.set('ABS_BUILDDIR', meson.current_build_dir())
+run_data.set('ABS_SRCDIR', meson.current_source_dir())
+configure_file(
+  input: 'run.in',
+  output: 'run',
+  configuration: run_data)
+
 subdir('data')
 subdir('src')
 subdir('po')
