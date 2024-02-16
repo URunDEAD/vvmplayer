@@ -5,8 +5,17 @@
     - merge_requests
     - tags
 
+variables:
+  DEB_IMAGE: debian:trixie
+  ALPINE_IMAGE: alpine:edge
+
+stages:
+  - build
+  - test
+
 build-debian:
-  image: debian:trixie
+  image: ${DEB_IMAGE}
+  stage: build
   <<: *only-default
   before_script:
     - apt update
@@ -30,7 +39,8 @@ build-debian:
       - _build/
 
 build-alpine:
-  image: alpine:edge
+  image: ${ALPINE_IMAGE}
+  stage: build
   <<: *only-default
   before_script:
     - apk -q add
@@ -52,3 +62,22 @@ build-alpine:
   artifacts:
     paths:
       - _build/
+
+check-po:
+  image: ${DEB_IMAGE}
+  stage: test
+  <<: *only-default
+  dependencies:
+    - build-debian
+  before_script:
+    - apt-get -y update
+    - apt-get -y install intltool git
+  script:
+    # barf on untranslated C files. Seems intltool
+    # can't be told to exit with non-zero exit status
+    # in this case
+    - cd po/
+    - intltool-update -m 2>&1 | grep -qs '/.*\.\(c\|ui\|in\)' && { intltool-update -m; exit 1; } || exit 0
+  except:
+    variables:
+      - $FP_ONLY == "1"
