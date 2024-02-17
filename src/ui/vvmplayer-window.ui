@@ -41,6 +41,7 @@
                   <object class="GtkListBox" id="visual_voicemail">
                     <property name="visible">True</property>
                     <property name="vexpand">true</property>
+                    <property name="selection-mode">2</property>
                     <child type="placeholder">
                       <object class="AdwStatusPage" id="window_status_page">
                         <property name="title" translatable="yes">No Voicemails!</property>
