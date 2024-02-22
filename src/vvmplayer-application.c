@@ -223,7 +223,7 @@ vvmplayer_application_about_action (GSimpleAction *action,
 
   debug_info = vvm_generate_debug_info ();
 
-  adw_show_about_window (window,
+  adw_show_about_dialog (GTK_WIDGET(window),
                          "application-name", "Visual Voicemail",
                          "application-icon", PACKAGE_ID,
                          "version", PACKAGE_VCS_VERSION,
