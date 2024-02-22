@@ -202,8 +202,7 @@ vvmplayer_application_show_preferences (GSimpleAction *action,
   GtkWindow *window = gtk_application_get_active_window (app);
   VvmplayerPreferencesWindow *preferences = vvm_player_preferences_window_new ();
 
-  gtk_window_set_transient_for (GTK_WINDOW (preferences), window);
-  gtk_window_present (GTK_WINDOW (preferences));
+  adw_dialog_present (ADW_DIALOG (preferences), GTK_WIDGET (window));
 }
 
 static void

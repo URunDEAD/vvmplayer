@@ -28,7 +28,7 @@
 
 struct _VvmplayerPreferencesWindow
 {
-  AdwPreferencesWindow parent_instance;
+  AdwPreferencesDialog parent_instance;
 
   //Refresh
   GtkButton *refresh_settings_button;
@@ -72,7 +72,7 @@ struct _VvmplayerPreferencesWindow
   gulong vvm_settings_watch_id;
 };
 
-G_DEFINE_TYPE (VvmplayerPreferencesWindow, vvm_player_preferences_window, ADW_TYPE_PREFERENCES_WINDOW)
+G_DEFINE_TYPE (VvmplayerPreferencesWindow, vvm_player_preferences_window, ADW_TYPE_PREFERENCES_DIALOG)
 
 static void update_settings_cb (VvmplayerPreferencesWindow *self);
 

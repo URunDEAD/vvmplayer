@@ -26,7 +26,7 @@ G_BEGIN_DECLS
 
 #define ADW_TYPE_DEMO_PREFERENCES_WINDOW (vvm_player_preferences_window_get_type ())
 
-G_DECLARE_FINAL_TYPE (VvmplayerPreferencesWindow, vvm_player_preferences_window, ADW, VVMPLAYER_PREFERENCES_WINDOW, AdwPreferencesWindow)
+G_DECLARE_FINAL_TYPE (VvmplayerPreferencesWindow, vvm_player_preferences_window, ADW, VVMPLAYER_PREFERENCES_WINDOW, AdwPreferencesDialog)
 
 VvmplayerPreferencesWindow *vvm_player_preferences_window_new (void);
 
