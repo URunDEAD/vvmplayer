@@ -1,3 +1,9 @@
+vvmplayer (2.5)
+
+  [ Chris Talbot ]
+  * Make friendlier to translating
+  * Update to use libadwaita 1.4 APIs
+
 vvmplayer (2.4)
 
   [ Chris Talbot ]
