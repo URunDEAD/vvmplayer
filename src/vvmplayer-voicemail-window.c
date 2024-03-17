@@ -116,7 +116,9 @@ save_dialog_finished (GObject         *dialog,
 
   if (error != NULL)
     {
-      g_warning ("Error saving: %s", error->message);
+      if (!g_error_matches (error, GTK_DIALOG_ERROR, GTK_DIALOG_ERROR_DISMISSED) &&
+          !g_error_matches (error, GTK_DIALOG_ERROR, GTK_DIALOG_ERROR_DISMISSED))
+        g_warning ("Error saving: %s", error->message);
       return;
     }
 
@@ -137,7 +139,10 @@ save_button_clicked_cb (GtkButton       *btn,
 {
   GtkFileDialog *dialog;
   g_autoptr(GFile) vvm_file = NULL;
+  g_autoptr(GFile) home_folder = NULL;
+  g_autoptr(GError) error = NULL;
   GtkWindow *window;
+  GFileInfo *file_info;
 
   g_debug ("Saving Voicemail...");
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
@@ -145,7 +150,18 @@ save_button_clicked_cb (GtkButton       *btn,
   dialog = gtk_file_dialog_new ();
   vvm_file = g_file_new_for_path (self->voicemail_file);
 
-  gtk_file_dialog_set_initial_file (dialog, vvm_file);
+  home_folder = g_file_new_build_filename (g_get_home_dir (), NULL);
+  gtk_file_dialog_set_initial_folder (dialog, home_folder);
+
+  file_info = g_file_query_info (vvm_file,
+                                 G_FILE_ATTRIBUTE_STANDARD_NAME,
+                                 G_FILE_QUERY_INFO_NONE,
+                                 NULL, &error);
+  if (error)
+    g_warning ("Error querying info: %s", error->message);
+  else
+    gtk_file_dialog_set_initial_name (dialog,  g_file_info_get_name (file_info));
+
   gtk_file_dialog_set_modal (dialog, TRUE);
   gtk_file_dialog_set_title (dialog, "Save Voicemail as....");
 
