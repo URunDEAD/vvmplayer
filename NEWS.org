@@ -1,3 +1,9 @@
+vvmplayer (2.6)
+
+  [ Chris Talbot ]
+  * Update dialogs to libadwaita 1.5
+  * Fix save location
+
 vvmplayer (2.5)
 
   [ Chris Talbot ]
