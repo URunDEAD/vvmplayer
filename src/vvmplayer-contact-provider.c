@@ -110,10 +110,11 @@ vvm_eds_load_contact (VvmEds       *self,
   g_assert (VVM_IS_EDS (self));
   g_assert (E_IS_CONTACT (contact));
 
-  /* Only container should be freed, attribute is freed in VvmContact */
-  attributes = e_contact_get_attributes (contact, field_id);
+  /* EDS 3.60 returns a new container with borrowed attributes. */
+  attributes = e_vcard_get_attributes_by_name (E_VCARD (contact),
+                                               e_contact_vcard_attribute (field_id));
 
-  for (GSList *l = (GSList *)attributes; l != NULL; l = l->next)
+  for (GList *l = attributes; l != NULL; l = l->next)
     {
       g_autofree char *value = NULL;
 
@@ -121,7 +122,8 @@ vvm_eds_load_contact (VvmEds       *self,
 
       if (value && *value)
         g_ptr_array_add (self->contacts_array,
-                         vvm_contact_new (contact, l->data));
+                         vvm_contact_new (contact,
+                                          e_vcard_attribute_copy (l->data)));
     }
 }
 
